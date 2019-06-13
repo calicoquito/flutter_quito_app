@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quito_1/openscreen.dart';
 
 
 class SignUpScreen extends StatelessWidget{
@@ -57,7 +58,15 @@ class SignUpScreen extends StatelessWidget{
                     Icon(Icons.arrow_forward)
                   ],
                 ),
-                onPressed: (){},
+                onPressed: (){
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context){
+                        return OpenScreen();
+                      }
+                    )
+                  );
+                },
             )
           ]
         )

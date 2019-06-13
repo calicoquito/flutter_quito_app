@@ -50,7 +50,7 @@ class SignInScreen extends StatelessWidget{
                   Navigator.of(context).push( 
                     MaterialPageRoute(
                       builder: (context){
-                        return MyHomePage();
+                        return OpenScreen();
                       }
                     )
                   );

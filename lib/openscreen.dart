@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'newproject.dart';
-import 'addmembers.dart';
 
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key}) : super(key: key);
+class OpenScreen extends StatefulWidget {
+  OpenScreen({Key key}) : super(key: key);
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _OpenScreenState createState() => _OpenScreenState();
 } 
 
-class _MyHomePageState extends State<MyHomePage> {
+class _OpenScreenState extends State<OpenScreen> {
 
   @override
   Widget build(BuildContext context) {

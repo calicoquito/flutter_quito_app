@@ -8,6 +8,7 @@ class AddMembersPage extends StatelessWidget{
   @override
   Widget build(BuildContext context){
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           'Add Members',
@@ -85,6 +86,8 @@ class MembersTabBarState extends State<MembersTabBar> with SingleTickerProviderS
           }
         );
       });
+    }).catchError((onError){
+      print('Error fetching data');
     });
   }
 
@@ -110,6 +113,8 @@ class MembersTabBarState extends State<MembersTabBar> with SingleTickerProviderS
           }
         );
       });
+    }).catchError((onError){
+      print('Error fetching data');
     });
   }
 
@@ -131,11 +136,12 @@ class MembersTabBarState extends State<MembersTabBar> with SingleTickerProviderS
   @override
   Widget build(BuildContext context){
     return Scaffold(
+      //backgroundColor: Color(0xff00306f),
+      backgroundColor: Colors.white,
       appBar: TabBar(
         indicator: BoxDecoration(color: Colors.amber),
         labelPadding: EdgeInsets.all(0.0),
         indicatorPadding: EdgeInsets.all(0.0),
-        indicatorColor: Colors.orange,
         unselectedLabelColor: Colors.black54,
           controller: controller,
           tabs: <Widget>[

@@ -15,19 +15,19 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.teal,
         scaffoldBackgroundColor: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: HomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key}) : super(key: key);
+class HomePage extends StatefulWidget {
+  HomePage({Key key}) : super(key: key);
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin{
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin{
   TabController tabController;
 
   @override
@@ -56,6 +56,9 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
         ],
       ),
       bottomNavigationBar: TabBar(
+        indicator: BoxDecoration(
+          color: Colors.teal
+        ),
         labelColor: Colors.white,
         controller: tabController,
         tabs: <Widget>[
