@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'openscreen.dart';
 
 class SignInScreen extends StatelessWidget{
   @override
@@ -50,9 +50,7 @@ class SignInScreen extends StatelessWidget{
                   Navigator.of(context).push( 
                     MaterialPageRoute(
                       builder: (context){
-                        return Scaffold(
-                          appBar: AppBar()
-                        );
+                        return MyHomePage();
                       }
                     )
                   );

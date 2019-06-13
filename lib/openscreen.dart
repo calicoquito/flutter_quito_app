@@ -1,5 +1,7 @@
-
 import 'package:flutter/material.dart';
+import 'newproject.dart';
+import 'addmembers.dart';
+
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key}) : super(key: key);
@@ -8,9 +10,6 @@ class MyHomePage extends StatefulWidget {
 } 
 
 class _MyHomePageState extends State<MyHomePage> {
-  void createNewEvent() {
-    Navigator.pushNamed(context, 'new');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +29,15 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: createNewEvent,
+        onPressed: (){
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context){
+                return NewProject();
+              }
+            )
+          );
+        },
         tooltip: 'New Event',
         child: Icon(Icons.add),
       ),

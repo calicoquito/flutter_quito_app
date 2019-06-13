@@ -16,6 +16,7 @@ class NewProjectState extends State<NewProject>{
   @override
   Widget build(BuildContext context){
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           'New Project',
@@ -87,7 +88,6 @@ class NewProjectState extends State<NewProject>{
         textColor: Colors.white70,
         child: Text('Next', style: TextStyle(color: Colors.black),),
         onPressed: (){
-          print(textString);
           controller.clear();
           Navigator.push(context, MaterialPageRoute(builder: (context){return AddMembersPage();}));
         },
