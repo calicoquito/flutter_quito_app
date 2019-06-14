@@ -11,17 +11,13 @@ class SignInScreen extends StatelessWidget{
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Text(
-              'Login',
+              'Welcome',
               style: TextStyle(
-              fontSize: 50.0,
-              foreground: Paint()..shader = LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Colors.deepPurpleAccent, Colors.blue]
-                ).createShader(Rect.fromLTRB(30.0, 10.0, 100.0, 100.0))
-              ),
+                fontSize: 40.0,
+                color: Colors.red
+              )
             ),
-            SizedBox(height: 40.0,),
+            SizedBox(height: 30.0,),
             TextField(
               decoration: InputDecoration(
                 filled: true,
@@ -39,13 +35,16 @@ class SignInScreen extends StatelessWidget{
             Center(
               child: RaisedButton(
                 shape: StadiumBorder(),
-                color: Colors.blue,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text('Login'),
-                    Icon(Icons.arrow_forward)
-                  ],
+                color: Colors.red,
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text('Login',style: TextStyle(color: Colors.white),),
+                      Icon(Icons.arrow_forward, color: Colors.white,)
+                    ],
+                  ),
                 ),
                 onPressed: (){
                   Navigator.of(context).push( 
