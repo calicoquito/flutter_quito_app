@@ -12,8 +12,7 @@ class MyApp extends StatelessWidget {
       title: 'Quito',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.teal,
-        scaffoldBackgroundColor: Colors.blue,
+        primarySwatch: Colors.red,
       ),
       home: HomePage(),
     );
@@ -55,33 +54,36 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           SignUpScreen()
         ],
       ),
-      bottomNavigationBar: TabBar(
-        indicator: BoxDecoration(
-          color: Colors.teal
-        ),
-        labelColor: Colors.white,
-        controller: tabController,
-        tabs: <Widget>[
-          Tab(
-            child: Text(
-              'Sign In',
-              style: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold
-              ),
+      bottomNavigationBar: DecoratedBox(
+          decoration: BoxDecoration(color: Colors.blue),
+          child: TabBar(
+            indicator: BoxDecoration(
+              color: Colors.red
             ),
-          ),
-          Tab(
-            child: Text(
-              'Sign Up',
-              style: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold
+            labelColor: Colors.white,
+            controller: tabController,
+            tabs: <Widget>[
+              Tab(
+                child: Text(
+                  'Sign In',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold
+                  ),
+                ),
+              ),
+              Tab(
+                child: Text(
+                  'Sign Up',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold
+                  )
+                )
               )
-            )
-          )
-        ],
-      ),
+            ],
+          ),
+        ),
     );
   }
 }

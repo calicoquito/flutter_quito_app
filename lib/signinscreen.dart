@@ -17,7 +17,7 @@ class SignInScreen extends StatelessWidget{
               foreground: Paint()..shader = LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Colors.teal, Colors.yellow]
+                  colors: [Colors.deepPurpleAccent, Colors.blue]
                 ).createShader(Rect.fromLTRB(30.0, 10.0, 100.0, 100.0))
               ),
             ),
@@ -38,7 +38,8 @@ class SignInScreen extends StatelessWidget{
             SizedBox(height: 20.0,),
             Center(
               child: RaisedButton(
-                color: Colors.yellowAccent,
+                shape: StadiumBorder(),
+                color: Colors.blue,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[

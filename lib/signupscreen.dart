@@ -18,7 +18,7 @@ class SignUpScreen extends StatelessWidget{
               foreground: Paint()..shader = LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Colors.yellow, Colors.teal]
+                  colors: [Colors.blue, Colors.deepPurpleAccent]
                 ).createShader(Rect.fromLTRB(90.0, 80.0, 200.0, 200.0))
               ),
             ),
@@ -49,8 +49,9 @@ class SignUpScreen extends StatelessWidget{
               ),
             ),
             SizedBox(height: 20.0,),
-            RaisedButton(
-              color: Colors.yellowAccent,
+            RaisedButton(                
+              shape: StadiumBorder(),
+              color: Colors.blueAccent,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
