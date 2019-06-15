@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'openscreen.dart';
 
 class SignInScreen extends StatelessWidget{
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context){
     return Center(
@@ -19,6 +22,7 @@ class SignInScreen extends StatelessWidget{
             ),
             SizedBox(height: 30.0,),
             TextField(
+              controller: usernameController,
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white70,
@@ -30,7 +34,9 @@ class SignInScreen extends StatelessWidget{
               ),
             ),
             SizedBox(height: 30.0,),
-            PasswordTextField(),
+            PasswordTextField(
+              textEditingController: passwordController,
+            ),
             SizedBox(height: 20.0,),
             Center(
               child: RaisedButton(
@@ -42,20 +48,31 @@ class SignInScreen extends StatelessWidget{
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text('Login',style: TextStyle(color: Colors.white),),
-                      Icon(Icons.arrow_forward, color: Colors.white,)
+                      Icon(Icons.arrow_forward, color: Colors.white,),
                     ],
                   ),
                 ),
                 onPressed: (){
-                  Navigator.of(context).push( 
-                    MaterialPageRoute(
-                      builder: (context){
-                        return OpenScreen();
-                      }
-                    )
-                  );
-                },
+                  print('Username: '+usernameController.text +'0\n');
+                  print('Password: '+passwordController.text+'0\n');
+                  if(passwordController.text=="admin" && usernameController.text.trim()=="admin"){
+                    Navigator.of(context).push( 
+                      MaterialPageRoute(
+                        builder: (context){
+                          return OpenScreen();
+                        }
+                      )
+                    );
+                  }
+                }
               ),
+            ),
+            SizedBox(height: 40.0,),
+            RawMaterialButton(
+              onPressed: (){
+                print('Forgot Password');
+              },
+              child: Text('Forgot Password?', style: TextStyle(color: Colors.pink),)
             )
           ],
         )
@@ -65,6 +82,9 @@ class SignInScreen extends StatelessWidget{
 }
 
 class PasswordTextField extends StatefulWidget{
+  PasswordTextField({Key key, this.textEditingController});
+
+  final TextEditingController textEditingController;
   @override
   PasswordTextFieldState createState() => PasswordTextFieldState();
 }
@@ -89,6 +109,7 @@ class PasswordTextFieldState extends State<PasswordTextField>{
   @override
   Widget build(BuildContext context){
     return TextField(
+      controller: widget.textEditingController,
       obscureText: !isPressed,
       decoration: InputDecoration(
         filled: true,
