@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'signinscreen.dart';
-import 'signupscreen.dart';
+//import 'signupscreen.dart';
 
 void main() => runApp(MyApp());
 
@@ -27,17 +27,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin{
-  TabController tabController;
 
   @override
   void initState() {
     super.initState();
-    tabController = TabController(vsync: this, length: 2);
   }
 
   @override
   void dispose() {
-    tabController.dispose();
     super.dispose();
   }
 
@@ -45,45 +42,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Welcome"),
+        leading: Icon(Icons.verified_user),
+        title: Text("Quito"),
+        centerTitle: true,
       ),
-      body: TabBarView(
-        controller: tabController,
-        children: <Widget>[
-          SignInScreen(),
-          SignUpScreen()
-        ],
-      ),
-      bottomNavigationBar: DecoratedBox(
-          decoration: BoxDecoration(color: Colors.blue),
-          child: TabBar(
-            indicator: BoxDecoration(
-              color: Colors.red
-            ),
-            labelColor: Colors.white,
-            controller: tabController,
-            tabs: <Widget>[
-              Tab(
-                child: Text(
-                  'Sign In',
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold
-                  ),
-                ),
-              ),
-              Tab(
-                child: Text(
-                  'Sign Up',
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold
-                  )
-                )
-              )
-            ],
-          ),
-        ),
+      body: SignInScreen(),
     );
   }
 }
