@@ -75,7 +75,7 @@ class MembersTabBarState extends State<MembersTabBar> with SingleTickerProviderS
 
   void fetchContacts() async {
     try {
-      var resp = await http.get("http://192.168.137.137:3000/contacts", headers:{"Accept":"application/json"});
+      var resp = await http.get("http://192.168.137.1:3000/contacts", headers:{"Accept":"application/json"});
       setState(() {
         contacts = jsonDecode(resp.body);
       }); 
@@ -87,7 +87,7 @@ class MembersTabBarState extends State<MembersTabBar> with SingleTickerProviderS
 
   void fetchGroups() async {
     try{
-      var resp = await http.get('http://192.168.137.137:3000/groups', headers: {"Accept":"application/json"});
+      var resp = await http.get('http://192.168.137.1:3000/groups', headers: {"Accept":"application/json"});
       setState(() {
         groups = jsonDecode(resp.body);
       });
