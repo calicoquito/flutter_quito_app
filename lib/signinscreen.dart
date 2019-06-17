@@ -56,9 +56,17 @@ class SignInScreen extends StatelessWidget{
                   ),
                 ),
                 onPressed: () async {
+                  Scaffold.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor:Theme.of(context).backgroundColor,
+                      content: LinearProgressIndicator(),
+                    )
+                  );
+                  
                   var resp = await http.post('http://192.168.137.1:3000/login', 
                     headers: {"Accept":"application/json", "Content-Type":"application/json"}, 
                     body: jsonEncode({"username":usernameController.text.trim(), "password":passwordController.text.trim()}));
+                  
                   if(resp.statusCode==200){
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -67,7 +75,17 @@ class SignInScreen extends StatelessWidget{
                     );
                   }
                   else {
-                    print('Login Failed');
+                    Scaffold.of(context).hideCurrentSnackBar();
+                    Scaffold.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor:Theme.of(context).backgroundColor,
+                        content: Text(
+                          'Login Failed',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      )
+                    );
                   }
                 }
               ),

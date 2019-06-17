@@ -9,7 +9,11 @@ class SideDrawer extends StatelessWidget{
         child: ListView(
           padding: EdgeInsets.zero,
           children:<Widget>[
-            DrawerHeader(child: Icon(Icons.person),),
+            UserAccountsDrawerHeader(
+              currentAccountPicture: Icon(Icons.person),
+              accountEmail: Text('test@gmail.com'),
+              accountName: Text('test'),
+            ),
             ListTile(
               title: Text('Projects'),
               onTap: (){
@@ -20,6 +24,8 @@ class SideDrawer extends StatelessWidget{
               title: Text('Logout'),
               onTap: (){
                 print('Logout');
+                // Navigator.of(context).pop();
+                // Navigator.of(context).pushNamed('/login');
               },
             )
           ]
