@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'openscreen.dart';
 
 class SignInScreen extends StatelessWidget{
@@ -33,13 +35,14 @@ class SignInScreen extends StatelessWidget{
                 labelText: 'Username'
               ),
             ),
-            SizedBox(height: 30.0,),
+            SizedBox(height: 20.0,),
             PasswordTextField(
               textEditingController: passwordController,
             ),
-            SizedBox(height: 20.0,),
+            SizedBox(height: 30.0,),
             Center(
               child: RaisedButton(
+                elevation: 10.0 ,
                 shape: StadiumBorder(),
                 color: Colors.red,
                 child: Padding(
@@ -52,17 +55,19 @@ class SignInScreen extends StatelessWidget{
                     ],
                   ),
                 ),
-                onPressed: (){
-                  print('Username: '+usernameController.text +'0\n');
-                  print('Password: '+passwordController.text+'0\n');
-                  if(passwordController.text=="admin" && usernameController.text.trim()=="admin"){
-                    Navigator.of(context).push( 
+                onPressed: () async {
+                  var resp = await http.post('http://192.168.137.137:3000/login', 
+                    headers: {"Accept":"application/json", "Content-Type":"application/json"}, 
+                    body: jsonEncode({"username":usernameController.text.trim(), "password":passwordController.text.trim()}));
+                  if(resp.statusCode==200){
+                    Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context){
-                          return OpenScreen();
-                        }
+                        builder: (context)=>OpenScreen()
                       )
                     );
+                  }
+                  else {
+                    print('Login Failed');
                   }
                 }
               ),

@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
       title: 'Quito',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.red,
+        primarySwatch: Colors.blue,
       ),
       home: HomePage(),
     );

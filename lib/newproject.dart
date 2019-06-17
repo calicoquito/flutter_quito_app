@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:quito_1/sidedrawer.dart';
 import 'addmembers.dart';
 
 class NewProject extends StatefulWidget{
@@ -10,12 +11,28 @@ class NewProject extends StatefulWidget{
 }
 
 class NewProjectState extends State<NewProject>{
-  TextEditingController controller = TextEditingController();
+  TextEditingController controller;
   String textString = "";
   
   @override
+  void initState() {
+    super.initState();
+    controller = TextEditingController();
+  }
+
+  @override
+  void dispose(){
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context){
     return Scaffold(
+      drawer: Hero(
+        tag: 'navdrawer',
+        child: SideDrawer()
+      ),
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
@@ -24,7 +41,18 @@ class NewProjectState extends State<NewProject>{
             fontFamily: 'Nunito',
             fontSize: 20.0
           ),
-        )
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon:Icon(Icons.widgets),
+            onPressed: (){
+              SnackBar(
+                content: Text('Snack Time'),
+                duration: Duration(seconds: 3),
+              );
+            },
+          )
+        ],
       ),
       body: SingleChildScrollView(
         child:Column(
@@ -33,7 +61,7 @@ class NewProjectState extends State<NewProject>{
             Padding(
               padding: EdgeInsets.all(8.0),
               child: Text(
-                'Event Name',
+                'Project Name',
                 textAlign: TextAlign.left,
                 ),
             ),
@@ -43,7 +71,7 @@ class NewProjectState extends State<NewProject>{
                 autocorrect: true,
                 controller: controller,
                 decoration: InputDecoration(
-                  labelText:"Enter Here...",
+                  labelText:"Project name",
                   contentPadding: EdgeInsets.all(14.0),
                   border: OutlineInputBorder()
                   ),
@@ -51,10 +79,7 @@ class NewProjectState extends State<NewProject>{
                   setState(() {
                     textString = string;
                   });
-                },
-                onEditingComplete: (){
-                  controller.clear();
-                },
+                }
               ),
             ),
             Padding(
@@ -89,7 +114,9 @@ class NewProjectState extends State<NewProject>{
         child: Text('Next', style: TextStyle(color: Colors.black),),
         onPressed: (){
           controller.clear();
-          Navigator.push(context, MaterialPageRoute(builder: (context){return AddMembersPage();}));
+          Navigator.of(context).push(MaterialPageRoute(
+            maintainState: true,
+            builder: (context){return AddMembersPage();}));
         },
       ),
     );

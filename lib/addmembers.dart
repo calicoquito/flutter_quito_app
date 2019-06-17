@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'sidedrawer.dart';
+
+//MonaConnect IP Address 172.16.236.24
+//Owner IP Address 192.168.137.137
 
 class AddMembersPage extends StatelessWidget{
 
@@ -9,6 +13,10 @@ class AddMembersPage extends StatelessWidget{
   Widget build(BuildContext context){
     return Scaffold(
       backgroundColor: Colors.white,
+      drawer: Hero(
+        tag: 'navdrawer',
+        child: SideDrawer(),
+      ),
       appBar: AppBar(
         title: Text(
           'Add Members',
@@ -59,69 +67,40 @@ class MembersTabBar extends StatefulWidget {
 }
 
 class MembersTabBarState extends State<MembersTabBar> with SingleTickerProviderStateMixin{
-
+  List<ListView> views = List<ListView>();
+  List contacts;
+  List groups;
+  
   TabController controller;
-  ListView contactsList;
-  ListView groupsList;
 
-  void fetchContacts(){
-    http.get("http://192.168.137.137:3000/contacts", 
-    headers:{"Accept":"application/json"})
-    .then((resp){
+  void fetchContacts() async {
+    try {
+      var resp = await http.get("http://192.168.137.137:3000/contacts", headers:{"Accept":"application/json"});
       setState(() {
-        List contacts = jsonDecode(resp.body);
-        contactsList = ListView.builder(
-          itemCount: contacts.length,
-          itemBuilder: (BuildContext context, int index) {
-            return Container(
-              child: Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    ContactItem(title: contacts[index]["name"], image:Image.network(contacts[0]["image"]))
-                  ],
-                ),
-              ),
-            );
-          }
-        );
-      });
-    }).catchError((onError){
-      print('Error fetching data');
-    });
+        contacts = jsonDecode(resp.body);
+      }); 
+    }
+    catch(err){
+      print('Error fetching contacts');
+    }
   }
 
-  void fetchGroups(){
-    http.get('http://192.168.137.137:3000/groups', 
-    headers: {"Accept":"application/json"})
-    .then((resp){
+  void fetchGroups() async {
+    try{
+      var resp = await http.get('http://192.168.137.137:3000/groups', headers: {"Accept":"application/json"});
       setState(() {
-        List groups = jsonDecode(resp.body);
-        groupsList = ListView.builder(
-          itemCount: groups.length,
-          itemBuilder: (BuildContext context, int index) {
-            return Container(
-              child: Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    GroupItem(title: groups[index]["groupName"])
-                  ],
-                ),
-              ),
-            );
-          }
-        );
+        groups = jsonDecode(resp.body);
       });
-    }).catchError((onError){
-      print('Error fetching data');
-    });
+    }
+    catch(err){
+      print('Error fetching groups');
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    controller = TabController(vsync: this, length: 2);
+    controller = TabController(vsync: this, initialIndex: 0, length: 2);
     fetchContacts();
     fetchGroups();
   }
@@ -139,27 +118,30 @@ class MembersTabBarState extends State<MembersTabBar> with SingleTickerProviderS
       //backgroundColor: Color(0xff00306f),
       backgroundColor: Colors.white,
       appBar: TabBar(
+        controller: controller,
         indicator: BoxDecoration(color: Colors.amber),
         labelPadding: EdgeInsets.all(0.0),
         indicatorPadding: EdgeInsets.all(0.0),
         unselectedLabelColor: Colors.black54,
-          controller: controller,
           tabs: <Widget>[
-            Tab(icon: Icon(Icons.group_add)),
-            Tab(icon: Icon(Icons.person_add))
+            Tab(icon: Icon(Icons.person_add)),
+            Tab(icon: Icon(Icons.group_add))
           ],
         ),
       body: TabBarView(
         controller: controller,
         children: <Widget>[
-          Center(child: groupsList),
-          Center(child: contactsList)
-        ],
+          contacts==null ? 
+          Scaffold(body:Center(child: CircularProgressIndicator())) :
+          ContactPage(contacts: contacts),
+          groups==null ? 
+          Scaffold(body:Center(child: CircularProgressIndicator())):
+          GroupPage(groups: groups)
+        ]
       ),
     );
   }
 }
-
 
 
 // Custom class designed to manage each individual contact
@@ -174,9 +156,7 @@ class ContactItem extends StatefulWidget{
 }
 
 class ContactItemState extends State<ContactItem>{
-
   bool state=false; 
-
   void change(bool newValue){
     setState(() {
       state = !state;
@@ -190,19 +170,17 @@ class ContactItemState extends State<ContactItem>{
 
   @override
   Widget build(BuildContext context){
-    return RawMaterialButton(
-      onPressed: onchange,
-      splashColor: Colors.amber,
-      child:ListTile(
-        leading: CircleAvatar(
-          child: widget.image,
-          //backgroundImage: ,   To be figured out 
-        ),
-        title: Text(widget.title),
-        trailing: Checkbox(
-          value: state,
-          onChanged: change,
-        )
+    return ListTile(
+      onTap: onchange,
+      leading: CircleAvatar(
+        backgroundColor: Colors.black.withOpacity(0),
+        child: widget.image,
+        //backgroundImage: ,   To be figured out 
+      ),
+      title: Text(widget.title),
+      trailing: Checkbox(
+        value: state,
+        onChanged: change,
       )
     );
   }
@@ -234,17 +212,73 @@ class GroupItemState extends State<GroupItem>{
 
   @override
   Widget build(BuildContext context){
-    return RawMaterialButton(
-      onPressed: onchange,
-      splashColor: Colors.amber,
-      child: ListTile(
-        leading: Icon(Icons.group),
-        title: Text(widget.title),
-        trailing: Checkbox(
-          value: state,
-          onChanged: change,
-        ),
+    return ListTile(
+      onTap: onchange,
+      leading: Icon(Icons.group),
+      title: Text(widget.title),
+      trailing: Checkbox(
+        value: state,
+        onChanged: change,
       ),
+    );
+  }
+}
+
+class ContactPage extends StatefulWidget {
+  ContactPage({this.contacts});
+
+  final List contacts;
+  @override
+  ContactPageState createState() => ContactPageState();
+}
+
+class ContactPageState extends State<ContactPage> with AutomaticKeepAliveClientMixin<ContactPage>{
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState(){
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context){
+    super.build(context);
+    return ListView.builder(
+      itemCount: widget.contacts.length,
+      itemBuilder: (BuildContext context, int index) {
+        return ContactItem(title: widget.contacts[index]["name"]??'Loading...');
+      }
+    );
+  }
+}
+
+
+class GroupPage extends StatefulWidget {
+  GroupPage({this.groups});
+
+  final List groups;
+  @override
+  GroupPageState createState() => GroupPageState();
+}
+
+class GroupPageState extends State<GroupPage> with AutomaticKeepAliveClientMixin<GroupPage>{
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState(){
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context){
+    super.build(context);
+    return ListView.builder(
+      itemCount: widget.groups.length,
+      itemBuilder: (BuildContext context, int index) {
+        return GroupItem(title: widget.groups[index]["groupName"]??'Loading...');
+      }
     );
   }
 }
