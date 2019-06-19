@@ -58,35 +58,49 @@ class SignInScreen extends StatelessWidget{
                 onPressed: () async {
                   Scaffold.of(context).showSnackBar(
                     SnackBar(
-                      backgroundColor:Theme.of(context).backgroundColor,
                       content: LinearProgressIndicator(),
                     )
                   );
-                  
-                  var resp = await http.post('http://192.168.137.1:3000/login', 
-                    headers: {"Accept":"application/json", "Content-Type":"application/json"}, 
-                    body: jsonEncode({"username":usernameController.text.trim(), "password":passwordController.text.trim()}));
-                  
-                  if(resp.statusCode==200){
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context)=>OpenScreen()
-                      )
-                    );
-                  }
-                  else {
+                  await http.post('http://192.168.137.1:8080/Plone', 
+                    headers: {"Accept":"application/json", 
+                    "Content-Type":"application/json", 
+                    "Authorization":"Basic YWRtaW46YWRtaW4="}, 
+                    body: jsonEncode({"username":usernameController.text.trim(), "password":passwordController.text.trim()}))
+                  .then((resp){
+                    if(true){
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context)=>OpenScreen()
+                        )
+                      );
+                    }
+                    else {
+                      Scaffold.of(context).hideCurrentSnackBar();
+                      Scaffold.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor:Theme.of(context).backgroundColor,
+                          content: Text(
+                            'Username or password incorrect',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        )
+                      );
+                    }
+                  })
+                  .catchError((err){
                     Scaffold.of(context).hideCurrentSnackBar();
                     Scaffold.of(context).showSnackBar(
                       SnackBar(
                         backgroundColor:Theme.of(context).backgroundColor,
                         content: Text(
-                          'Login Failed',
+                          'Check internet connection',
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.red),
                         ),
                       )
                     );
-                  }
+                  });
                 }
               ),
             ),

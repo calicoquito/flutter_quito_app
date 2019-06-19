@@ -14,9 +14,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(),
+      initialRoute: '/',
       routes: <String, WidgetBuilder>{
-        'login': (context)=>SignInScreen(),
+        '/':(context)=>HomePage(),
       },
     );
   }
@@ -53,23 +53,3 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 }
-
-
-
-
-// floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-// floatingActionButton: RaisedButton(
-//   textColor: Colors.white,
-//   color: Colors.blue,
-//   splashColor: Colors.cyan,
-//   shape: StadiumBorder(),
-//   onPressed: (){},
-//   child: Row(
-//     crossAxisAlignment: CrossAxisAlignment.center,
-//     mainAxisSize: MainAxisSize.min,
-//     children: <Widget>[
-//       Text('Login'),
-//       Icon(Icons.arrow_forward),
-//     ],
-//   )
-// )

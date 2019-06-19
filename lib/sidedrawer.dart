@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class SideDrawer extends StatelessWidget{
+  SideDrawer({Key key}): super(key:key);
+
   @override
   Widget build(BuildContext context){
     return SizedBox(
@@ -23,9 +25,8 @@ class SideDrawer extends StatelessWidget{
             ListTile(
               title: Text('Logout'),
               onTap: (){
-                print('Logout');
-                // Navigator.of(context).pop();
-                // Navigator.of(context).pushNamed('/login');
+                Navigator.of(context).pop();
+                Navigator.of(context).popUntil(ModalRoute.withName('/'));
               },
             )
           ]
