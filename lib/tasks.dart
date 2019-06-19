@@ -11,8 +11,7 @@ class TaskList extends StatefulWidget {
 }
 
 class TaskListState extends State<TaskList> {
-  final String url =
-      "http://192.168.100.69:8080/Plone/projects/copy4_of_concert/need-to-do";
+  final String url = "http://192.168.100.69:8080/Plone/projects/copy4_of_concert/need-to-do";
   List data = List();
   List<bool> setval = List();
 
