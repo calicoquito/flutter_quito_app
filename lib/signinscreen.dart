@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'helperclasses/user.dart';
 import 'openscreen.dart';
 
-class SignInScreen extends StatelessWidget{
+class SignInScreen extends StatefulWidget{
+  SignInScreen({Key key}):super(key:key);
+  @override
+  SignInScreenState createState() => SignInScreenState();
+}
+
+class SignInScreenState extends State<SignInScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  User user = User('username', 'password');
 
   @override
   Widget build(BuildContext context){
@@ -56,12 +64,17 @@ class SignInScreen extends StatelessWidget{
                   ),
                 ),
                 onPressed: () async {
+                  setState(() {
+                   user.username = usernameController.text.trim();
+                   user.password = passwordController.text.trim();
+                  });
+
                   Scaffold.of(context).showSnackBar(
                     SnackBar(
                       content: LinearProgressIndicator(),
                     )
                   );
-                  await http.post('http://192.168.137.1:8080/Plone', 
+                  http.post('http://192.168.137.198:8080/Plone', 
                     headers: {"Accept":"application/json", 
                     "Content-Type":"application/json", 
                     "Authorization":"Basic YWRtaW46YWRtaW4="}, 
@@ -70,7 +83,7 @@ class SignInScreen extends StatelessWidget{
                     if(true){
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context)=>OpenScreen()
+                          builder: (context)=>OpenScreen(user:user)
                         )
                       );
                     }

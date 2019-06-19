@@ -3,19 +3,21 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'sidedrawer.dart';
+import 'helperclasses/user.dart';
 
 //MonaConnect IP Address 172.16.236.24
 //Owner IP Address 192.168.137.137
 
 class AddMembersPage extends StatelessWidget{
+  AddMembersPage({Key key, this.user}):super(key:key);
+  final User user;
 
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      backgroundColor: Colors.white,
       drawer: Hero(
         tag: 'navdrawer',
-        child: SideDrawer(),
+        child: SideDrawer(user:user),
       ),
       appBar: AppBar(
         title: Text(

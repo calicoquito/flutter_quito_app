@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:quito_1/sidedrawer.dart';
 import 'addmembers.dart';
+import 'helperclasses/user.dart';
 
 class NewProject extends StatefulWidget{
+  NewProject({Key key, this.user}):super(key:key);
+  final User user;
 
+  @override
   NewProjectState createState() => NewProjectState();
-
 }
 
 class NewProjectState extends State<NewProject>{
@@ -31,9 +34,8 @@ class NewProjectState extends State<NewProject>{
     return Scaffold(
       drawer: Hero(
         tag: 'navdrawer',
-        child: SideDrawer()
+        child: SideDrawer(user:widget.user,)
       ),
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           'New Project',
@@ -116,7 +118,7 @@ class NewProjectState extends State<NewProject>{
           controller.clear();
           Navigator.of(context).push(MaterialPageRoute(
             maintainState: true,
-            builder: (context){return AddMembersPage();}));
+            builder: (context){return AddMembersPage(user: widget.user,);}));
         },
       ),
     );

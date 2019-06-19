@@ -1,28 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
+import 'helperclasses/user.dart';
 
 class SideDrawer extends StatelessWidget{
-  SideDrawer({Key key}): super(key:key);
+  SideDrawer({Key key, this.user}): super(key:key);
+  final User user;
 
   @override
   Widget build(BuildContext context){
     return SizedBox(
-      width: MediaQuery.of(context).size.width*0.4,
+      width: MediaQuery.of(context).size.width*0.5,
       child: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children:<Widget>[
-            UserAccountsDrawerHeader(
-              currentAccountPicture: Icon(Icons.person),
-              accountEmail: Text('test@gmail.com'),
-              accountName: Text('test'),
+            GestureDetector(
+              onTap: (){
+                showDialog(context: context, 
+                  builder: (context)=>Dialog(
+                    backgroundColor: Color(0xff003366),
+                    child:Container(
+                      height: MediaQuery.of(context).size.height*0.2,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          Icon(
+                            Icons.person,
+                            size: 50.0
+                          ),
+                          Text(
+                            user.username,
+                            style: TextStyle(
+                              fontSize: 30.0,
+                              color: Colors.blue
+                            ),
+                          )
+                        ],
+                      ),
+                    )
+                  )
+                );
+              },
+              child: UserAccountsDrawerHeader(
+                currentAccountPicture: CircleAvatar(
+                  child: Icon(Icons.person),
+                  foregroundColor: Colors.white,
+                ),
+                accountEmail: Text('test@gmail.com'),
+                accountName: Text(user.username),
+              ),
+            ),
+            Container(
+              child: ListTile(
+                leading: Icon(Icons.work),
+                title: Text('Projects'),
+                onTap: (){
+                  print('Projects');
+                },
+              ),
             ),
             ListTile(
-              title: Text('Projects'),
+              leading: Icon(Icons.settings),
+              title: Text('Settings'),
               onTap: (){
-                print('Projects');
+                Navigator.of(context).pop();
+                Navigator.of(context).popUntil(ModalRoute.withName('/'));
               },
             ),
             ListTile(
+              leading: Icon(Icons.exit_to_app),
               title: Text('Logout'),
               onTap: (){
                 Navigator.of(context).pop();

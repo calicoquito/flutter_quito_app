@@ -1,20 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:quito_1/sidedrawer.dart';
 import 'newproject.dart';
+import 'helperclasses/user.dart';
 
-class OpenScreen extends StatefulWidget {
-  OpenScreen({Key key}) : super(key: key);
-  @override
-  _OpenScreenState createState() => _OpenScreenState();
-} 
+class OpenScreen extends StatelessWidget {
 
-class _OpenScreenState extends State<OpenScreen> {
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
+  OpenScreen({Key key, this.user}) : super(key: key);
+  final User user;
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -22,13 +14,12 @@ class _OpenScreenState extends State<OpenScreen> {
       child: Scaffold(
         drawer: Hero(
           tag:'navdrawer',
-          child: SideDrawer()
+          child: SideDrawer(user: user)
         ),
         appBar: AppBar(
           title: Text('Welcome'),
           centerTitle: true,
         ),
-        backgroundColor: Colors.white,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -45,10 +36,10 @@ class _OpenScreenState extends State<OpenScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: (){
-            Navigator.of(context).push(
+            Navigator.push( context,
               MaterialPageRoute(
                 builder: (context){
-                  return NewProject();
+                  return NewProject(user:user);
                 }
               )
             );
@@ -59,10 +50,4 @@ class _OpenScreenState extends State<OpenScreen> {
       ),
     );
   }
-}
-
-
-// Icon icon = Icon(Icons.person);
-//         if (!(contact["image"] == "image-url")){
-//           icon = Image.network(contact["image"]);
-//         }
+} 
