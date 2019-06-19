@@ -25,7 +25,15 @@ class AddMembersPage extends StatelessWidget{
           style: TextStyle(
             fontSize: 20.0
           )
-        )
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.check),
+            onPressed: (){
+              Navigator.of(context).popUntil(ModalRoute.withName('/home'));
+            },
+          )
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quito_1/openscreen.dart';
 import 'signinscreen.dart';
 //import 'signupscreen.dart';
 
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: <String, WidgetBuilder>{
         '/':(context)=>HomePage(),
+        '/home':(context)=>OpenScreen()
       },
     );
   }

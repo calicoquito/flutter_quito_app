@@ -115,7 +115,6 @@ class NewProjectState extends State<NewProject>{
         textColor: Colors.white70,
         child: Text('Next', style: TextStyle(color: Colors.black),),
         onPressed: (){
-          controller.clear();
           Navigator.of(context).push(MaterialPageRoute(
             maintainState: true,
             builder: (context){return AddMembersPage(user: widget.user,);}));

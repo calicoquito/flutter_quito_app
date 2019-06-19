@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'helperclasses/user.dart';
-import 'openscreen.dart';
 
 class SignInScreen extends StatefulWidget{
   SignInScreen({Key key}):super(key:key);
@@ -71,7 +70,20 @@ class SignInScreenState extends State<SignInScreen> {
 
                   Scaffold.of(context).showSnackBar(
                     SnackBar(
-                      content: LinearProgressIndicator(),
+                      content: Container(
+                        child: Scaffold(
+                          body:Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Text('Loading'),
+                                SizedBox(height: 30.0,),
+                                CircularProgressIndicator(),
+                              ],
+                            )
+                          )
+                        )
+                      ),
                     )
                   );
                   http.post('http://192.168.137.198:8080/Plone', 
@@ -81,11 +93,7 @@ class SignInScreenState extends State<SignInScreen> {
                     body: jsonEncode({"username":usernameController.text.trim(), "password":passwordController.text.trim()}))
                   .then((resp){
                     if(true){
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context)=>OpenScreen(user:user)
-                        )
-                      );
+                      Navigator.of(context).pushNamed('/home',arguments:user);
                     }
                     else {
                       Scaffold.of(context).hideCurrentSnackBar();

@@ -27,6 +27,7 @@ class SideDrawer extends StatelessWidget{
                         children: <Widget>[
                           Icon(
                             Icons.person,
+                            color:Colors.white,
                             size: 50.0
                           ),
                           Text(
@@ -56,7 +57,25 @@ class SideDrawer extends StatelessWidget{
                 leading: Icon(Icons.work),
                 title: Text('Projects'),
                 onTap: (){
-                  print('Projects');
+                  Navigator.of(context).pop();
+                  showDialog(context: context,  
+                    builder: (context)=>Dialog(
+                      backgroundColor: Color(0xff003366),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Icon(Icons.filter_none,size: 50.0,color: Colors.white,),
+                          Text(
+                            'No Projects Available',
+                            style: TextStyle(
+                                fontSize: 25.0,
+                                color: Colors.orangeAccent
+                            )
+                          )
+                        ],
+                      ),
+                    )
+                  );
                 },
               ),
             ),
@@ -65,7 +84,24 @@ class SideDrawer extends StatelessWidget{
               title: Text('Settings'),
               onTap: (){
                 Navigator.of(context).pop();
-                Navigator.of(context).popUntil(ModalRoute.withName('/'));
+                showDialog(context: context,  
+                  builder: (context)=>Dialog(
+                    backgroundColor: Color(0xff003366),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Icon(Icons.build,size: 50.0,),
+                        Text(
+                          'Under Construction',
+                           style: TextStyle(
+                              fontSize: 30.0,
+                              color: Colors.blue
+                           )
+                        )
+                      ],
+                    ),
+                  )
+                );
               },
             ),
             ListTile(
