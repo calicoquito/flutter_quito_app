@@ -4,8 +4,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'newproject.dart';
 import 'tasks.dart';
-import 'dart:math';
-
+import 'dart:async';
+// import 'dart:math';
+// import 'package:image/image.dart';
 
 class EventList extends StatefulWidget{
 
@@ -14,27 +15,46 @@ class EventList extends StatefulWidget{
 }
 
 class EventListState extends State<EventList>{
-  final String url = "http://localhost:8080/Core/project-list/test-project";
-  final List data = ['hey', 'how', 'hall', 'hat', 'ham', 'heap', 'help', 'health', 'hemp', 'hex', 'hack', 'hump'];
+  final String url = "http://192.168.100.69:8080/Plone/projects";
+  List data;
+  List <String> image_links = List();
+  List<String> event_names = List();
 
+  @override
+  void initState() {
+    super.initState();
+    getSWData();
+  }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   getSWData();
-  // }
-
-  // Future<String> getSWData() async {
-  //   var response = await http.get(url, headers: {"Accept": "application/json"});
-
-  //   setState(() {
-  //     var resBody = json.decode(response.body);
-  //     data = resBody["results"];
-  //     print(data as String);
-  //   });
-
-  //   return "Success!";
-  // }
+  Future<String> getSWData() async {
+    var response = await http.get(url, headers: {"Accept": "application/json"});
+    var resBody = json.decode(response.body);
+    data = resBody["items"];
+ 
+    Future<String> getimglinks(int i) async {
+      try{
+      var resp = await http.get(data[i]["@id"], headers: {"Accept": "application/json"});
+      var respBody = json.decode(resp.body);
+      //print(respBody["image"]["scales"]["thumb"]["download"]);
+      return respBody["image"]["scales"]["thumb"]["download"];
+      }catch(e){}}
+    gettitle(int i){
+      try{
+        return data[i]["title"];
+        }catch(e){}
+      }
+    print(data);
+    for (var i = 0; i < 6; i++){
+      var imgs = await getimglinks(i);
+      image_links.add(imgs);
+      event_names.add(data[i]["title"]);
+    }
+    setState((){
+        image_links = image_links;
+        event_names = event_names;
+    });
+    return "Success!";
+  }
 
 
 
@@ -44,8 +64,9 @@ class EventListState extends State<EventList>{
 
     Widget lst(Icon ico, List data) {
       return ListView.builder(
-          itemCount: data == null ? 0 : data.length,
+          itemCount: data == null ? 0 : 1,
           itemBuilder: (BuildContext context, int index) {
+            index = index + 5;
             return Container(
               child: Center(
                 child: Column(
@@ -57,15 +78,13 @@ class EventListState extends State<EventList>{
                         Navigator.push(context, MaterialPageRoute(builder: (context){return TaskList();}));
                       },
                       leading: CircleAvatar(
-                        child: Text("${data[index].split('')[2]}", 
-                        style: TextStyle(color: Colors.white, fontSize: 25, )
-                        ),
-                        radius:48.0,
-                        backgroundColor: Colors.primaries[Random().nextInt(15)],
+                       radius:28.0,
+                        backgroundImage: NetworkImage(image_links[index]),
+                        backgroundColor: Colors.transparent,
                       ),
                       title: Text(
-                          "Event Name: Event $index "),
-                      subtitle: Text("Event Data: Saying ${data[index]}",
+                          "Event Name: ${event_names[index]} "),
+                      subtitle: Text("Event type: ${data[index]["@type"]}",
                           style:
                               TextStyle(fontSize: 10.0, color: Colors.black54)),
                     ),
