@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import 'package:provider/provider.dart';
+import 'helperclasses/projectsbloc.dart';
 import 'helperclasses/user.dart';
 
 class SideDrawer extends StatelessWidget{
@@ -8,6 +10,7 @@ class SideDrawer extends StatelessWidget{
 
   @override
   Widget build(BuildContext context){
+    final ProjectsBloc projectsBloc = Provider.of<ProjectsBloc>(context);
     return SizedBox(
       width: MediaQuery.of(context).size.width*0.5,
       child: Drawer(
@@ -65,11 +68,27 @@ class SideDrawer extends StatelessWidget{
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           Icon(Icons.filter_none,size: 50.0,color: Colors.white,),
-                          Text(
-                            'No Projects Available',
-                            style: TextStyle(
-                                fontSize: 25.0,
-                                color: Colors.orangeAccent
+                          Container(
+                            height: MediaQuery.of(context).size.height*0.4,
+                            child: projectsBloc.length()==0 ? Center(
+                              child:Text(
+                                'No Projects Available',
+                                style: TextStyle(
+                                    fontSize: 25.0,
+                                    color: Colors.orangeAccent
+                                )
+                              )
+                            ): ListView.builder(
+                              itemCount: projectsBloc.length(),
+                              itemBuilder: (context, index)=>Center(
+                                child:Text(
+                                  projectsBloc.get(index).projectName,
+                                  style: TextStyle(
+                                      fontSize: 25.0,
+                                      color: Colors.orangeAccent
+                                  ),
+                                )
+                              ),
                             )
                           )
                         ],

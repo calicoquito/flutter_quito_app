@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
+import 'package:quito_1/helperclasses/projectsbloc.dart';
 import 'package:quito_1/sidedrawer.dart';
 import 'addmembers.dart';
 import 'helperclasses/user.dart';
@@ -31,6 +33,7 @@ class NewProjectState extends State<NewProject>{
 
   @override
   Widget build(BuildContext context){
+    final ProjectsBloc projectsBloc = Provider.of<ProjectsBloc>(context);
     return Scaffold(
       drawer: Hero(
         tag: 'navdrawer',
@@ -115,6 +118,7 @@ class NewProjectState extends State<NewProject>{
         textColor: Colors.white70,
         child: Text('Next', style: TextStyle(color: Colors.black),),
         onPressed: (){
+          projectsBloc.addProject(Project(controller.text));
           Navigator.of(context).push(MaterialPageRoute(
             maintainState: true,
             builder: (context){return AddMembersPage(user: widget.user,);}));

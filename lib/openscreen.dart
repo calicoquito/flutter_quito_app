@@ -14,7 +14,7 @@ class OpenScreen extends StatelessWidget {
       child: Scaffold(
         drawer: Hero(
           tag:'navdrawer',
-          child: SideDrawer(user:ModalRoute.of(context).settings.arguments)
+          child: SideDrawer(user:user)
         ),
         appBar: AppBar(
           title: Text('Welcome'),
@@ -39,7 +39,7 @@ class OpenScreen extends StatelessWidget {
             Navigator.push( context,
               MaterialPageRoute(
                 builder: (context){
-                  return NewProject(user:ModalRoute.of(context).settings.arguments);
+                  return NewProject(user:user);
                 }
               )
             );

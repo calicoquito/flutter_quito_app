@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:quito_1/openscreen.dart';
+import 'package:provider/provider.dart';
+import 'helperclasses/projectsbloc.dart';
+import 'openscreen.dart';
 import 'signinscreen.dart';
 //import 'signupscreen.dart';
 
@@ -9,17 +11,30 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Quito',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return ChangeNotifierProvider<ProjectsBloc>.value(
+      value: ProjectsBloc(),
+      child: MaterialApp(
+        title: 'Quito',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        initialRoute: '/',
+        onGenerateRoute: (RouteSettings settings){
+          if(settings.name=='/home'){
+            return MaterialPageRoute(
+              settings: settings,
+              maintainState: true,
+              builder: ((context){
+                return OpenScreen(user: settings.arguments,);
+              })
+            );
+          }
+        },
+        routes: <String, WidgetBuilder>{
+          '/':(context)=>HomePage(),
+        },
       ),
-      initialRoute: '/',
-      routes: <String, WidgetBuilder>{
-        '/':(context)=>HomePage(),
-        '/home':(context)=>OpenScreen()
-      },
     );
   }
 }
