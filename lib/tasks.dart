@@ -7,11 +7,14 @@ import 'taskdata.dart';
 import 'dart:math';
 
 class TaskList extends StatefulWidget {
-  TaskListState createState() => TaskListState();
+  final String url;
+  TaskList({@required this.url});
+  TaskListState createState() => TaskListState(url: url);
 }
 
 class TaskListState extends State<TaskList> {
-  final String url = "http://192.168.100.69:8080/Plone/projects/copy4_of_concert/need-to-do";
+  final String url;
+  TaskListState({@required this.url});
   List data = List();
   List<bool> setval = List();
 
@@ -62,7 +65,7 @@ class TaskListState extends State<TaskList> {
                               Colors.primaries[Random().nextInt(15)],
                         ),
                         title: Text("Task Name: ${data[index]["title"]}"),
-                        subtitle: Text("Task Data: To do ${data[index]} ",
+                        subtitle: Text("Task Data: To do ${data[index]["description"]} ",
                             style: TextStyle(
                                 fontSize: 10.0, color: Colors.black54)),
                         trailing: Checkbox(
