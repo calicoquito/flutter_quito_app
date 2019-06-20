@@ -8,6 +8,7 @@ import 'addmembers.dart';
 import 'helperclasses/user.dart';
 
 class NewProject extends StatefulWidget{
+  @override
   NewProject({Key key, this.user}):super(key:key);
   final User user;
 
