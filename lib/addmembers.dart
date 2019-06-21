@@ -8,6 +8,11 @@ import 'helperclasses/user.dart';
 //MonaConnect IP Address 172.16.236.24
 //Owner IP Address 192.168.137.137
 
+/*
+ * This widget describes how the page which will allow an admin
+ * to add a specific person or specific group of persons  to a new
+ * project will look. 
+ */
 class AddMembersPage extends StatelessWidget{
   AddMembersPage({Key key, this.user}):super(key:key);
   final User user;

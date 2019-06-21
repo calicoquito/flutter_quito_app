@@ -3,6 +3,24 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'helperclasses/user.dart';
 
+
+/*
+  This screen allows a user to enter his/her username and password
+  and if valid will take him/her to the OpenScreen route defined in 
+  this application, if not, then the user will be notifed.
+
+  This widget is stateful so as to allow storing of the user's username
+  and password as well as to initialize an User object which will be 
+  shared further down the app's paths
+
+  This class makes use of the SnackBar widget to allow a pop up the 
+  screen when an action is performed and in this case, it is tapping 
+  the Login button. This used to let the user know that the app is 
+  processing his/her login. This process is making a POST request to
+  the web server with the user's credentials to authenticate the 
+  inputted data.
+*/
+
 class SignInScreen extends StatefulWidget{
   SignInScreen({Key key}):super(key:key);
   @override
@@ -71,8 +89,8 @@ class SignInScreenState extends State<SignInScreen> {
                   Scaffold.of(context).showSnackBar(
                     SnackBar(
                       content: Container(
-                        child: Scaffold(
-                          body:Center(
+                        child: Material(
+                          child:Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
@@ -138,6 +156,12 @@ class SignInScreenState extends State<SignInScreen> {
     );
   }
 }
+
+/*
+  This class is reponsible for rendering the password field. This was 
+  separated from the above code for readablilty sake as a few extra 
+  features were added to this widget to improve user experience
+*/
 
 class PasswordTextField extends StatefulWidget{
   PasswordTextField({Key key, this.textEditingController});

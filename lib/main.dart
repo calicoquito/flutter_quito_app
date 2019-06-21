@@ -5,6 +5,17 @@ import 'openscreen.dart';
 import 'signinscreen.dart';
 //import 'signupscreen.dart';
 
+
+/* 
+ * This file houses the entry point to the app
+ * Here the MaterialApp widget is wrapped with a ChangeNotifierProvider
+ * to all the notifier to alert listeners located on every Navigation route 
+ * that the app may span.
+ *
+ * Here, onGenerateRoute is also used to allow data to be passed from route to route
+ * at the time the route is being created
+*/
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
