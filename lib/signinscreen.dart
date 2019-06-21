@@ -86,7 +86,7 @@ class SignInScreenState extends State<SignInScreen> {
                       ),
                     )
                   );
-                  http.post('http://my-json-server.typicode.com/typicode/demo/db', 
+                  http.post('http://my-json-server.typicode.com/typicode/demo/posts', 
                     headers: {"Accept":"application/json", 
                     "Content-Type":"application/json", 
                     "Authorization":"Basic YWRtaW46YWRtaW4="}, 
