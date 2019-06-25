@@ -71,13 +71,39 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Icon(Icons.verified_user),
-        title: Text("Quito"),
-        centerTitle: true,
+    return WillPopScope(
+      onWillPop:() async{
+        return showDialog(context: context, 
+          builder: (context) {
+            return AlertDialog(
+              title: Text('Exit?'),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('Yes'),
+                  onPressed: (){
+                    Navigator.pop(context, true);
+                  },
+                ),
+                RaisedButton(
+                  textColor: Colors.black,
+                  child: Text('No'),
+                  onPressed: (){
+                    Navigator.pop(context, false);
+                  },
+                )
+              ],
+            );
+          }
+        );
+      } ,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: Icon(Icons.verified_user),
+          title: Text("Quito"),
+          centerTitle: true,
+        ),
+        body: SignInScreen(),
       ),
-      body: SignInScreen(),
     );
   }
 }

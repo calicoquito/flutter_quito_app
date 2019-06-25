@@ -31,7 +31,7 @@ class SignInScreen extends StatefulWidget{
 class SignInScreenState extends State<SignInScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  User user = User('username', 'password');
+  User user = User(username: 'username', password: 'password', token: 'token');
 
   @override
   Widget build(BuildContext context){
@@ -82,11 +82,6 @@ class SignInScreenState extends State<SignInScreen> {
                   ),
                 ),
                 onPressed: () async {
-                  setState(() {
-                   user.username = usernameController.text.trim();
-                   user.password = passwordController.text.trim();
-                  });
-
                   showDialog(context: context, 
                     builder: (context) => Material(
                       elevation: 10.0,
@@ -96,45 +91,48 @@ class SignInScreenState extends State<SignInScreen> {
                       )
                     ),
                   );
-                  
-                  Navigator.of(context).pushNamed('/home',arguments:user); //Temporary: For debugging without internet
-                  
-                  // http.post('http://my-json-server.typicode.com/typicode/demo/posts', 
-                  //   headers: {"Accept":"application/json", 
-                  //   "Content-Type":"application/json", 
-                  //   "Authorization":"Basic YWRtaW46YWRtaW4="}, 
-                  //   body: jsonEncode({"username":usernameController.text.trim(), "password":passwordController.text.trim()}))
-                  // .then((resp){
-                  //   if(true){
-                  //     Navigator.of(context).pushNamed('/home',arguments:user);
-                  //   }
-                  //   else {
-                  //     Navigator.pop(context);
-                  //     Scaffold.of(context).showSnackBar(
-                  //       SnackBar(
-                  //         backgroundColor:Theme.of(context).backgroundColor,
-                  //         content: Text(
-                  //           'Username or password incorrect',
-                  //           textAlign: TextAlign.center,
-                  //           style: TextStyle(color: Colors.red),
-                  //         ),
-                  //       )
-                  //     );
-                  //   }
-                  // })
-                  // .catchError((err){
-                  //   Navigator.pop(context);
-                  //   Scaffold.of(context).showSnackBar(
-                  //     SnackBar(
-                  //       backgroundColor:Theme.of(context).backgroundColor,
-                  //       content: Text(
-                  //         'Check internet connection',
-                  //         textAlign: TextAlign.center,
-                  //         style: TextStyle(color: Colors.red),
-                  //       ),
-                  //     )
-                  //   );
-                  // });
+                                    
+                  http.post('http://10.22.0.63:8080/Plone/@login', 
+                    headers: {"Accept":"application/json", 
+                      "Content-Type":"application/json"}, 
+                    body: jsonEncode({"login":usernameController.text.trim(), "password":passwordController.text.trim()}))
+                  .then((resp){
+                    if(resp.statusCode==200){
+                      setState(() {
+                        user.username = usernameController.text.trim();
+                        user.password = passwordController.text.trim();
+                        user.token = jsonDecode(resp.body)['token'];
+                      });
+                      Navigator.of(context).pushNamed('/home', arguments:user);
+                    }
+                    else {
+                      Navigator.pop(context);
+                      Scaffold.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor:Theme.of(context).backgroundColor,
+                          content: Text(
+                            'Username or password incorrect',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        )
+                      );
+                    }
+                  })
+                  .catchError((err){
+                    print(err);
+                    Navigator.pop(context);
+                    Scaffold.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor:Theme.of(context).backgroundColor,
+                        content: Text(
+                          'Check internet connection',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      )
+                    );
+                  });
                 }
               ),
             ),
