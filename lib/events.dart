@@ -5,15 +5,14 @@ import 'dart:convert';
 import 'newproject.dart';
 import 'tasks.dart';
 import 'dart:async';
-// import 'dart:math';
-// import 'package:image/image.dart';
+
 
 class EventList extends StatefulWidget {
   EventListState createState() => EventListState();
 }
 
 class EventListState extends State<EventList> {
-  final String url = "http://192.168.100.69:8080/Plone/projects";
+  final String url = "http://192.168.100.67:8080/Plone/projects";
   List data;
   List<String> image_links = List();
   List event_names = List();
@@ -24,10 +23,55 @@ class EventListState extends State<EventList> {
     getSWData();
   }
 
+
   Future<String> getSWData() async {
     var response = await http.get(url, headers: {"Accept": "application/json"});
     var resBody = json.decode(response.body);
     data = resBody["items"];
+
+    Map jsonstr = { 
+    "@type": "project",
+      "allow_discussion": false,
+      "attendees": [],
+      "changeNote": "",
+      "contact_email": "umain@gmail.com",
+      "contact_name": "User main",
+      "contact_phone": "18761234567",
+      "contributors": [],
+      "created": "2019-06-12T17:39:26+00:00",
+      "creators": [
+        "admin"
+      ],
+      "description": "Project for tessting purposes",
+      "effective": "2019-06-12T12:53:08",
+      "end": "2019-06-16T18:20:00+00:00",
+      "event_url": null,
+      "exclude_from_nav":false,
+      "expires": null,
+      "recurrence": null,
+      "review_state": "published",
+      "rights": null,
+      "start": "2019-06-12T17:20:00+00:00",
+      "subjects": [],
+      "text": {
+        "content-type": "text/html",
+        "data": "<h1><em><strong>This event is just for test that starts at 12 today and goes on until I feel like it should stop</strong></em></h1>",
+        "encoding": "utf-8"
+      },
+      "title": "Test project5",
+      "versioning_enabled": true,
+      "whole_day": false
+    };
+
+
+    var bytes = utf8.encode("admin:admin");
+    var credentials = base64.encode(bytes);
+    var resp = await http.post(url, headers: 
+    {"Accept": "application/json",
+    "Content-Type": "application/json",
+    "Authorization": "Basic $credentials"},
+    body: jsonEncode(jsonstr));
+      print(resp.body);
 
     Future<String> getimglinks(int i) async {
       try {
@@ -108,7 +152,6 @@ class EventListState extends State<EventList> {
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
       body: Container(child: lst(Icon(Icons.person), data)),
-      //floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.blue,
