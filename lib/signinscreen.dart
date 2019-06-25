@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -86,60 +87,54 @@ class SignInScreenState extends State<SignInScreen> {
                    user.password = passwordController.text.trim();
                   });
 
-                  Scaffold.of(context).showSnackBar(
-                    SnackBar(
-                      content: Container(
-                        child: Material(
-                          child:Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Text('Loading'),
-                                SizedBox(height: 30.0,),
-                                CircularProgressIndicator(),
-                              ],
-                            )
-                          )
-                        )
-                      ),
-                    )
-                  );
-                  http.post('http://my-json-server.typicode.com/typicode/demo/posts', 
-                    headers: {"Accept":"application/json", 
-                    "Content-Type":"application/json", 
-                    "Authorization":"Basic YWRtaW46YWRtaW4="}, 
-                    body: jsonEncode({"username":usernameController.text.trim(), "password":passwordController.text.trim()}))
-                  .then((resp){
-                    if(true){
-                      Navigator.of(context).pushNamed('/home',arguments:user);
-                    }
-                    else {
-                      Scaffold.of(context).hideCurrentSnackBar();
-                      Scaffold.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor:Theme.of(context).backgroundColor,
-                          content: Text(
-                            'Username or password incorrect',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.red),
-                          ),
-                        )
-                      );
-                    }
-                  })
-                  .catchError((err){
-                    Scaffold.of(context).hideCurrentSnackBar();
-                    Scaffold.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor:Theme.of(context).backgroundColor,
-                        content: Text(
-                          'Check internet connection',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.red),
-                        ),
+                  showDialog(context: context, 
+                    builder: (context) => Material(
+                      elevation: 10.0,
+                      type: MaterialType.transparency,
+                      child:Center(
+                        child: CircularProgressIndicator()
                       )
-                    );
-                  });
+                    ),
+                  );
+                  
+                  Navigator.of(context).pushNamed('/home',arguments:user); //Temporary: For debugging without internet
+                  
+                  // http.post('http://my-json-server.typicode.com/typicode/demo/posts', 
+                  //   headers: {"Accept":"application/json", 
+                  //   "Content-Type":"application/json", 
+                  //   "Authorization":"Basic YWRtaW46YWRtaW4="}, 
+                  //   body: jsonEncode({"username":usernameController.text.trim(), "password":passwordController.text.trim()}))
+                  // .then((resp){
+                  //   if(true){
+                  //     Navigator.of(context).pushNamed('/home',arguments:user);
+                  //   }
+                  //   else {
+                  //     Navigator.pop(context);
+                  //     Scaffold.of(context).showSnackBar(
+                  //       SnackBar(
+                  //         backgroundColor:Theme.of(context).backgroundColor,
+                  //         content: Text(
+                  //           'Username or password incorrect',
+                  //           textAlign: TextAlign.center,
+                  //           style: TextStyle(color: Colors.red),
+                  //         ),
+                  //       )
+                  //     );
+                  //   }
+                  // })
+                  // .catchError((err){
+                  //   Navigator.pop(context);
+                  //   Scaffold.of(context).showSnackBar(
+                  //     SnackBar(
+                  //       backgroundColor:Theme.of(context).backgroundColor,
+                  //       content: Text(
+                  //         'Check internet connection',
+                  //         textAlign: TextAlign.center,
+                  //         style: TextStyle(color: Colors.red),
+                  //       ),
+                  //     )
+                  //   );
+                  // });
                 }
               ),
             ),
@@ -188,11 +183,21 @@ class PasswordTextFieldState extends State<PasswordTextField>{
     });
   }
 
+  void handleChange(String _){
+    if(isPressed){
+      setState(() {
+        isPressed=false;
+        icon = Icon(Icons.visibility_off, size: 20,);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context){
     return TextField(
       controller: widget.textEditingController,
       obscureText: !isPressed,
+      onChanged: handleChange,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white70,

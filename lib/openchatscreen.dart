@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'helperclasses/message.dart';
+
+/*
+ * This screen defines how the chats will appear when 
+ * opened and how they will be animated and managed
+ */
 
 class OpenChatScreen extends StatefulWidget{
   final String title;
@@ -11,15 +18,26 @@ class OpenChatScreen extends StatefulWidget{
 }
 
 class OpenChatScreenState extends State<OpenChatScreen>{
+  TextEditingController controller = TextEditingController();
+  List<Message> messages = [
+    IncomingMessage(message: "Hi",),
+    OutgoingMessage(message: "Hey",),
+    IncomingMessage(message: "How arjhadikbdbdoakbckjrbvkwrbkwvwe you?",),
+    OutgoingMessage(message: "Not badskfjnwjks ksbkfskejvwkslkdnvadkn you?",),
+    IncomingMessage(message: "I'm fine",),
+  ];
+
+  @override
+  void dispose(){
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onHorizontalDragStart: (details){
-        print(details.globalPosition.direction);
-        Navigator.of(context).pop();
-      },
       onHorizontalDragEnd: (details){
-        print(details.velocity.pixelsPerSecond.direction);
+        if(details.velocity.pixelsPerSecond.dx>0)
+          Navigator.of(context).pop();
       },
       child: Scaffold(
         appBar: AppBar(
@@ -36,16 +54,21 @@ class OpenChatScreenState extends State<OpenChatScreen>{
             ],
           ),
           actions: <Widget>[
-            Icon(Icons.more_vert)
+            IconButton(
+              icon: Icon(Icons.more_vert),
+              onPressed: (){},
+            )
           ],
         ),
         body: Stack(
           children: <Widget>[
             Positioned(
-              height: MediaQuery.of(context).size.height*0.91,
-              child: Column(
-                children: <Widget>[
-                ],
+              top: 0.0,
+              bottom: MediaQuery.of(context).size.height*0.09,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: messages?? <Widget>[]
+                ),
               ),
             ),
             Positioned(
@@ -77,6 +100,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextField(
+                          controller: controller,
                           expands: true,
                           maxLines: null,
                           autocorrect: true,
@@ -100,7 +124,12 @@ class OpenChatScreenState extends State<OpenChatScreen>{
                     IconButton(
                       color: Theme.of(context).primaryColor,
                       icon: Icon(Icons.send),
-                      onPressed: (){},
+                      onPressed: (){
+                        setState(() {
+                          messages.add(OutgoingMessage(message: controller.text,));
+                          controller.clear();
+                        });
+                      },
                     )
                   ],
                 ),

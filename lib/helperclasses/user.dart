@@ -1,11 +1,17 @@
 import 'package:flutter/cupertino.dart';
 
+/*
+ * This InheritedWidget is used to pass the user's
+ * information down the widget tree as the user 
+ * traverses the app
+ */
+
 class InheritedUser extends InheritedWidget{
   final User user;
   InheritedUser({Widget child, this.user}): super(child: child);
 
   @override
-  bool updateShouldNotify(InheritedWidget oldWidget) =>true;
+  bool updateShouldNotify(InheritedWidget oldWidget) => true;
 
   static InheritedUser of(BuildContext context)=> 
     context.inheritFromWidgetOfExactType(InheritedUser);

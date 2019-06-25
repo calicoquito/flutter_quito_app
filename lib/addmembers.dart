@@ -67,7 +67,7 @@ class AddMembersPage extends StatelessWidget{
                 maxHeight: 400.0,
                 maxWidth: MediaQuery.of(context).size.width
               ),
-              child: MembersTabBar(),
+              child: MembersTabView(),
             )
           ],
         ),
@@ -77,11 +77,11 @@ class AddMembersPage extends StatelessWidget{
 }
 
 
-class MembersTabBar extends StatefulWidget {
-  MembersTabBarState createState() => MembersTabBarState();
+class MembersTabView extends StatefulWidget {
+  MembersTabViewState createState() => MembersTabViewState();
 }
 
-class MembersTabBarState extends State<MembersTabBar> with SingleTickerProviderStateMixin{
+class MembersTabViewState extends State<MembersTabView> with SingleTickerProviderStateMixin{
   List<ListView> views = List<ListView>();
   List contacts;
   List groups;

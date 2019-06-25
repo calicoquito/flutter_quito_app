@@ -1,5 +1,11 @@
 import 'package:flutter/cupertino.dart';
 
+/*
+ * This class implements a ChangeNotifier to provide 
+ * functionality so users may create projects which 
+ * will be shared and accessible throughout the app
+ */
+
 class ProjectsBloc extends ChangeNotifier{
   List<Project> _projects = List();
   
@@ -8,7 +14,7 @@ class ProjectsBloc extends ChangeNotifier{
     notifyListeners();
   }
   Project get(index){
-    return _projects.length==0?null:_projects[index];
+    return _projects.length==0 ? null : _projects[index];
   }
   int length(){
     return _projects.length;
