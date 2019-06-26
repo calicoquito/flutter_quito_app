@@ -55,21 +55,18 @@ class EventsInfoState extends State<EventsInfo> {
   //   });
   //   }
 
-  Widget lst({icon: Icon, swit: bool, txt: Text, drop: DropdownButton}) {
-    return ListView.builder(
-        itemCount: 1,
-        itemBuilder: (BuildContext context, int index) {
-          var text = txt == null
-              ? Container(
-                  child: TextField(
-                    maxLines: 4,
+  Widget inputWidget({icon: Icon, swit: bool, txt: Text, drop: DropdownButton}) {
+          double width = MediaQuery.of(context).size.width;
+          var padtext =  Text(txt,
+          style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
+          );
+          var text =  TextField(
                     autocorrect: true,
                     controller: controller,
                     textAlign: TextAlign.justify,
                     decoration: InputDecoration(
-                        labelText: fields[index],
-                        contentPadding: EdgeInsets.all(14.0),
-                        border: OutlineInputBorder()),
+                        labelText: txt,
+                        contentPadding: EdgeInsets.all(14.0),),
                     onChanged: (string) {
                       setState(() {
                         textString = string;
@@ -78,44 +75,40 @@ class EventsInfoState extends State<EventsInfo> {
                     onEditingComplete: () {
                       controller.clear();
                     },
-                  ),
-                )
-              : null;
-          var swi = Switch(
-              value: swit,
+                  );
+          var switch_true = Switch(
+              value: isSwitched,
               onChanged: (value) {
                 setState(() {
                   isSwitched = value;
                 });
               });
           return Container(
+            padding: EdgeInsets.only(top: 4.0),
               child: Center(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    Expanded(
-                      flex: 1,
+                    Padding(
+                      padding: EdgeInsets.only(left:4.0, right: 8.0),
                       child: icon),
-                    Expanded(
-                      flex: 8,
-                      child: TextField(
-                        decoration:
-                            const InputDecoration(helperText: "Enter App ID"),
-                        style: Theme.of(context).textTheme.body1,
-                      ),
+                    swit == false ?Container(
+                      width: width*.7,
+                      child: text,
+                    ): Container(
+                      width: width*.7,
+                      child:padtext,
                     ),
-                    Expanded(
-                      flex: 1,
-                      child: icon),
+                    swit != false ?  switch_true: Text("")
                   ],
                 ),
               ],
             ),
           ));
-        });
   }
 
   @override
@@ -123,11 +116,15 @@ class EventsInfoState extends State<EventsInfo> {
     return Scaffold(
       appBar: AppBar(
           title: Text(
-        'Assign Task',
+        'Add Project',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
-      body: Container(
-          child: lst(icon: Icon(Icons.person), txt: fields[1], swit: true)),
+      body: Column(
+          children: <Widget>[
+            inputWidget(icon: Icon(Icons.person), txt: fields[1], swit: true),
+            inputWidget(icon: Icon(Icons.add_a_photo), txt: fields[2], swit: false),
+          ]
+          ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) {
