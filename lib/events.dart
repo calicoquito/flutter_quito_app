@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'eventsinfo.dart';
 import 'newproject.dart';
 import 'tasks.dart';
 import 'dart:async';
@@ -76,7 +77,8 @@ class EventListState extends State<EventList> {
     Future<String> getimglinks(int i) async {
       try {
         var resp = await http
-            .get(data[i]["@id"], headers: {"Accept": "application/json"});
+            .get(data[i]["@id"], headers: {
+              "Accept": "application/json"});
         var respBody = json.decode(resp.body);
         if (respBody != null) {
           return respBody["image"]["scales"]["thumb"]["download"];
@@ -161,7 +163,7 @@ class EventListState extends State<EventList> {
         ),
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return NewProject();
+            return EventsInfo();
           }));
         },
       ),
