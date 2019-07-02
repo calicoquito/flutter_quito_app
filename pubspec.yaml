@@ -25,6 +25,8 @@ dependencies:
   cupertino_icons: ^0.1.2
   http: any
   image: any
+  image_picker: any
+  dio: 2.1.0
 
 dev_dependencies:
   flutter_test:
@@ -42,7 +44,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:            
-    - images/lake.jpg
+    - assets/images/lake.jpg
   # To add assets to your application, add an assets section, like this:
   # assets:
   #  - images/a_dot_burr.jpeg
