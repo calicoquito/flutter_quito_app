@@ -1,14 +1,10 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:async/async.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
-import 'package:dio/dio.dart' as dio;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 
 class EventsInfo extends StatefulWidget {
   // EventsInfo({Key key}) : super(key: key);
@@ -23,38 +19,36 @@ class EventsInfoState extends State<EventsInfo> {
   bool isSwitched = false;
   List setval;
 
-  var jsonstr = {
+  Map jsonstr = {
     "@type": "project",
-    "allow_discussion": false,
-    "attendees": [],
-    "changeNote": "",
-    "contact_email": "umain@gmail.com",
-    "contact_name": "User main",
-    "contact_phone": "18761234567",
-    "contributors": [],
-    "created": "2019-06-12T17:39:26+00:00",
-    "creators": ["admin"],
+    "title": "Project by api 2",
     "description": "Project for tessting purposes",
-    "effective": "2019-06-12T12:53:08",
-    "end": "2019-06-16T18:20:00+00:00",
-    "event_url": null,
-    "exclude_from_nav": false,
-    "expires": null,
-    "recurrence": null,
-    "review_state": "published",
-    "rights": null,
+    "attendees": [],
     "start": "2019-06-12T17:20:00+00:00",
-    "subjects": [],
+    "end": "2020-06-17T19:00:00+00:00",
+    "whole_day": true,
+    "open_end": true,
+    "sync_uid": null,
+    "contact_name": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "event_url": null,
+    "location": "Office Quito",
+    "recurrence": null,
+    "image": {
+      "filename": "test.jpg",
+      "content-type": "image/jpeg",
+      "data": "",
+      "encoding": "base64"
+    },
+    "image_caption": "Image captions",
     "text": {
       "content-type": "text/html",
       "data":
           "<h1><em><strong>This event is just for test that starts at 12 today and goes on until I feel like it should stop</strong></em></h1>",
       "encoding": "utf-8"
     },
-    "title": "Test project5",
-    "versioning_enabled": true,
-    "whole_day": false,
-    "image": null,
+    "changeNote": null
   };
 
   Future<String> setProjectData() async {
@@ -71,59 +65,24 @@ class EventsInfoState extends State<EventsInfo> {
     return "Success!";
   }
 
-  //  Future uploadImg(String fileName) async {
-  //    var file = await ImagePicker.pickImage(source: ImageSource.gallery);
-  //    String uri = 'http://localhost:8080/Plone/projects/test-project5/@@images/';
-  //    //var file= File('assets/images/lake.jpg');
-  //    //var file =Image(image: image, width: 20, height: 10);
-  //    //var isExist = await file.exists();
-  //    //if (isExist) {
-  //    String base64Image = base64Encode(file.readAsBytesSync());
-  //    //jsonstr["image"] = file;
-  
-  //    var resp = await http.post(uri, body: {
-  //      'image': base64Image,
-  //      //"name": fileName,
-  //    });
-  //    print(resp.body);
-  //    //}
-  //    //else
-  //    print("Nope");
-  //    return "Success!";
-  //  }
-
-
-upload() async {   
-    var imageFile = await ImagePicker.pickImage(source: ImageSource.gallery); 
-      // open a bytestream
-      var stream = new http.ByteStream(DelegatingStream.typed(imageFile.openRead()));
-      // get file length
-      var length = await imageFile.length();
-
-      // string to uri
-      var uri = Uri.parse('http://192.168.100.67:8080/Plone/projects/test-project5/@@images/');
-
-      // create multipart request
-      var request = new http.MultipartRequest("POST", uri);
-
-      // multipart that takes file
-      var multipartFile = new http.MultipartFile('file', stream, length,
-          filename: path.basename(imageFile.path));
-
-      // add file to multipart
-      request.files.add(multipartFile);
-
-      // send
-      var response = await request.send();
-      print(response.statusCode);
-
-      // listen for response
-      response.stream.transform(utf8.decoder).listen((value) {
-        print(value);
-      });
-    }
-
-
+  Future uploadImg(String fileName) async {
+    var bytes = utf8.encode("admin:admin");
+    var credentials = base64.encode(bytes);
+    var file = await ImagePicker.pickImage(source: ImageSource.gallery);
+    String uri = 'http://192.168.100.67:8080/Plone/projects';
+    String base64Image = base64Encode(file.readAsBytesSync());
+    jsonstr["image"]["data"] = base64Image;
+    var resp = await http.post(url, headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "Basic $credentials"
+    }, body: {
+      jsonEncode(jsonstr)
+    });
+    print(resp.body);
+    print("Nope");
+    return "Success!";
+  }
 
   Widget inputWidget(
       {icon: Icon, use_switch = "", txt: Text, drop: DropdownButton}) {
@@ -199,21 +158,13 @@ upload() async {
         inputWidget(
             icon: Icon(Icons.person),
             txt: jsonstr.keys.elementAt(1),
-            use_switch: jsonstr.keys.elementAt(1)),
+            use_switch: jsonstr.keys.elementAt(6)),
         inputWidget(
-            icon: Icon(Icons.add_a_photo), txt: jsonstr.keys.elementAt(4)),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/lake.jpg'),
-            ),
-          ),
-        )
+            icon: Icon(Icons.add_a_photo), txt: jsonstr.keys.elementAt(1)),
       ]),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          upload();
-          //setProjectData();
+          uploadImg("lake.jpg");
         },
         tooltip: 'Create Project',
         child: Icon(Icons.check),
