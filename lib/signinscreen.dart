@@ -42,10 +42,10 @@ class SignInScreenState extends State<SignInScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Text(
-              'Welcome',
+              'Quito',
               style: TextStyle(
                 fontSize: 40.0,
-                color: Colors.red
+                color: Theme.of(context).primaryColor
               )
             ),
             SizedBox(height: 30.0,),
@@ -54,10 +54,7 @@ class SignInScreenState extends State<SignInScreen> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white70,
-                contentPadding: EdgeInsets.all(13.0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0)
-                ),
+                contentPadding: EdgeInsets.zero,
                 labelText: 'Username',
                 hintText: 'username'
               ),
@@ -71,7 +68,7 @@ class SignInScreenState extends State<SignInScreen> {
               child: RaisedButton(
                 elevation: 10.0 ,
                 shape: StadiumBorder(),
-                color: Colors.red,
+                color: Theme.of(context).primaryColor,
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Row(
@@ -146,7 +143,8 @@ class SignInScreenState extends State<SignInScreen> {
             Center(
               child: RaisedButton( 
                 color: Theme.of(context).primaryColor, 
-                child: Text('Sign in with Google'),
+                child: Text('Sign in with Google',
+                  style: TextStyle(color: Colors.white),),
                 onPressed: (){},
               ),
             )
@@ -173,17 +171,17 @@ class PasswordTextField extends StatefulWidget{
 
 class PasswordTextFieldState extends State<PasswordTextField>{
   bool isPressed = false;
-  Icon icon = Icon(Icons.visibility_off, size: 20,);
+  Icon icon = Icon(Icons.visibility_off, size: 18,);
 
   void handlePress(){
     setState((){
       if (!isPressed){
         isPressed=true;
-        icon = Icon(Icons.visibility, size: 20,);
+        icon = Icon(Icons.visibility, size: 18,);
       }
       else{
         isPressed=false;
-        icon = Icon(Icons.visibility_off, size: 20,);
+        icon = Icon(Icons.visibility_off, size: 18,);
       }
     });
   }
@@ -192,7 +190,7 @@ class PasswordTextFieldState extends State<PasswordTextField>{
     if(isPressed){
       setState(() {
         isPressed=false;
-        icon = Icon(Icons.visibility_off, size: 20,);
+        icon = Icon(Icons.visibility_off, size: 18,);
       });
     }
   }
@@ -206,14 +204,12 @@ class PasswordTextFieldState extends State<PasswordTextField>{
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white70,
-        contentPadding: EdgeInsets.only(left:10.0, ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0)
-        ),
+        contentPadding: EdgeInsets.zero,
         labelText: 'Password',
         hintText: 'password',
         suffixIcon: FlatButton.icon(
-          padding: EdgeInsets.all(0.0),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          padding: EdgeInsets.zero,
           label: Text(''),
           icon: icon,
           onPressed: handlePress

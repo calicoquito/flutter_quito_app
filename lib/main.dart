@@ -29,6 +29,11 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.blue,
+          primaryColor: Color(0xff7e1946),
+          buttonTheme: ButtonThemeData(
+            minWidth: 50,
+            height: 30
+          )
         ),
         initialRoute: '/',
         onGenerateRoute: (RouteSettings settings){
@@ -75,21 +80,25 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       onWillPop:() async{
         return showDialog(context: context, 
           builder: (context) {
-            return AlertDialog(
+            return SimpleDialog(
               title: Text('Exit?'),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text('Yes'),
-                  onPressed: (){
-                    Navigator.pop(context, true);
-                  },
+              children: <Widget>[
+                SimpleDialogOption(
+                  child: FlatButton(
+                    child: Text('Yes'),
+                    onPressed: (){
+                      Navigator.pop(context, true);
+                    },
+                  ),
                 ),
-                RaisedButton(
-                  textColor: Colors.black,
-                  child: Text('No'),
-                  onPressed: (){
-                    Navigator.pop(context, false);
-                  },
+                SimpleDialogOption(
+                  child: RaisedButton(
+                    textColor: Colors.black,
+                    child: Text('No'),
+                    onPressed: (){
+                      Navigator.pop(context, false);
+                    },
+                  ),
                 )
               ],
             );
@@ -97,11 +106,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         );
       } ,
       child: Scaffold(
-        appBar: AppBar(
-          leading: Icon(Icons.verified_user),
-          title: Text("Quito"),
-          centerTitle: true,
-        ),
         body: SignInScreen(),
       ),
     );

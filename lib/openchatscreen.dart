@@ -16,9 +16,10 @@ import 'helperclasses/user.dart';
 class OpenChatScreen extends StatefulWidget{
   final String title;
   final User user;
+  final User sender;
 
   @override
-  OpenChatScreen({Key key, this.title, this.user}):super(key:key);
+  OpenChatScreen({Key key, this.title, this.user, this.sender}):super(key:key);
 
   @override
   OpenChatScreenState createState() => OpenChatScreenState(); 
@@ -28,7 +29,9 @@ class OpenChatScreenState extends State<OpenChatScreen>{
   TextEditingController controller = TextEditingController();
   ScrollController scrollController = ScrollController();
   FirebaseMessaging firebaseMessaging = FirebaseMessaging();
-  var data = Firestore.instance.collection('/data');
+  final firestore = Firestore.instance;
+  CollectionReference chatCollectionReference;
+  StreamSubscription chatStream;
 
   List<Widget> messages = [
   ];
@@ -61,15 +64,51 @@ class OpenChatScreenState extends State<OpenChatScreen>{
     );
   }
 
+  void handleSend() async {
+    if(controller.text.isNotEmpty){
+      final chatDocument = await firestore.document('/users/${widget.user.userID}/contacts/${widget.sender.userID}').get();
+      try{
+        print(chatDocument.data['messages'].runtimeType);
+        chatDocument.data['messages'].add({
+          'type': 'incoming',
+          'body': controller.text
+        });        
+        setState(() {
+          messages.add(OutgoingMessage(message: controller.text,));
+          controller.clear();
+        });
+        Timer(Duration(milliseconds: 100),(){scrollController.jumpTo(scrollController.position.maxScrollExtent);});
+      }
+      catch(err){
+        print(err);
+      }
+    }
+  }
 
   @override
   void initState(){
     super.initState();
     messageListener();
+    chatCollectionReference = firestore.collection('/users/${widget.user.userID}/contacts');
+    chatStream = chatCollectionReference.snapshots().listen((snapshot){
+      final chatDocument = snapshot.documentChanges.where((documentChange)=>documentChange.document.documentID==widget.sender.userID).toList();
+      try{
+        final chat = chatDocument[0].document;
+        if(chat.data['messages'].length>0){
+          setState(() {
+            messages.add(IncomingMessage(message: chat.data[messages][chat.data['messages'].length]['body']));
+          });
+        }
+      }
+      catch(err){
+        print(err);
+      }
+    });
   }
 
   @override
   void dispose(){
+    chatStream.cancel();
     super.dispose();
   }
 
@@ -192,16 +231,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
                     IconButton(
                       color: Theme.of(context).primaryColor,
                       icon: Icon(Icons.send),
-                      onPressed: (){
-                        if(controller.text.isNotEmpty){
-                          data.add({'message':controller.text, 'sender':'app'});
-                          setState(() {
-                            messages.add(OutgoingMessage(message: controller.text,));
-                            controller.clear();
-                          });
-                          Timer(Duration(milliseconds: 100),(){scrollController.jumpTo(scrollController.position.maxScrollExtent);});
-                        }
-                      },
+                      onPressed: handleSend
                     )
                   ],
                 ),
