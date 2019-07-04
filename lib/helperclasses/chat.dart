@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../openchatscreen.dart';
+import 'user.dart';
 
 /*
  * This class serves to manage how a single chat instance 
@@ -8,14 +9,15 @@ import '../openchatscreen.dart';
  */
 
 class Chat extends StatefulWidget{
-  @override
-  Chat({Key key, this.title}): super(key:key);
   final String title;
+  final User user;
+
+  @override
+  Chat({Key key, this.user, this.title}): super(key:key);
 
   @override
   ChatState createState() => ChatState();
 }
-
 
 class ChatState extends State<Chat> {
   bool isSelected =false;
@@ -40,7 +42,7 @@ class ChatState extends State<Chat> {
     else{
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context)=>OpenChatScreen(title:widget.title)
+          builder: (context)=>OpenChatScreen(title:widget.title, user:widget.user,)
         )
       );
     }
@@ -56,6 +58,7 @@ class ChatState extends State<Chat> {
         leading: CircleAvatar(child:Icon(Icons.person)),
         title: Text(widget.title),
         trailing: trailing,
+        subtitle: Text('Hey'),
       ),
     );
   }

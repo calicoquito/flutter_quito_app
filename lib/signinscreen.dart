@@ -58,7 +58,8 @@ class SignInScreenState extends State<SignInScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0)
                 ),
-                labelText: 'Username'
+                labelText: 'Username',
+                hintText: 'username'
               ),
             ),
             SizedBox(height: 20.0,),
@@ -82,57 +83,55 @@ class SignInScreenState extends State<SignInScreen> {
                   ),
                 ),
                 onPressed: () async {
-                  showDialog(context: context, 
-                    builder: (context) => Material(
-                      elevation: 10.0,
-                      type: MaterialType.transparency,
-                      child:Center(
-                        child: CircularProgressIndicator()
-                      )
-                    ),
-                  );
-                                    
-                  http.post('http://10.22.0.63:8080/Plone/@login', 
-                    headers: {"Accept":"application/json", 
-                      "Content-Type":"application/json"}, 
-                    body: jsonEncode({"login":usernameController.text.trim(), "password":passwordController.text.trim()}))
-                  .then((resp){
-                    if(resp.statusCode==200){
-                      setState(() {
-                        user.username = usernameController.text.trim();
-                        user.password = passwordController.text.trim();
-                        user.token = jsonDecode(resp.body)['token'];
-                      });
-                      Navigator.of(context).pushNamed('/home', arguments:user);
-                    }
-                    else {
-                      Navigator.pop(context);
-                      Scaffold.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor:Theme.of(context).backgroundColor,
-                          content: Text(
-                            'Username or password incorrect',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.red),
-                          ),
-                        )
-                      );
-                    }
-                  })
-                  .catchError((err){
-                    print(err);
-                    Navigator.pop(context);
-                    Scaffold.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor:Theme.of(context).backgroundColor,
-                        content: Text(
-                          'Check internet connection',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      )
-                    );
+                  setState(() {
+                    user.username = usernameController.text.trim();
+                    user.password = passwordController.text.trim();
+                    user.userID='user1';
+                    //user.token = jsonDecode(resp.body)['token'];
                   });
+                  Navigator.of(context).pushNamed('/home', arguments:user);
+                                    
+                  // http.post('http://10.22.0.63:8080/Plone/@login', 
+                  //   headers: {"Accept":"application/json", 
+                  //     "Content-Type":"application/json"}, 
+                  //   body: jsonEncode({"login":usernameController.text.trim(), "password":passwordController.text.trim()}))
+                  // .then((resp){
+                  //   if(resp.statusCode==200){
+                  //     setState(() {
+                  //       user.username = usernameController.text.trim();
+                  //       user.password = passwordController.text.trim();
+                  //       user.token = jsonDecode(resp.body)['token'];
+                  //     });
+                  //     Navigator.of(context).pushNamed('/home', arguments:user);
+                  //   }
+                  //   else {
+                  //     Navigator.pop(context);
+                  //     Scaffold.of(context).showSnackBar(
+                  //       SnackBar(
+                  //         backgroundColor:Theme.of(context).backgroundColor,
+                  //         content: Text(
+                  //           'Username or password incorrect',
+                  //           textAlign: TextAlign.center,
+                  //           style: TextStyle(color: Colors.red),
+                  //         ),
+                  //       )
+                  //     );
+                  //   }
+                  // })
+                  // .catchError((err){
+                  //   print(err);
+                  //   Navigator.pop(context);
+                  //   Scaffold.of(context).showSnackBar(
+                  //     SnackBar(
+                  //       backgroundColor:Theme.of(context).backgroundColor,
+                  //       content: Text(
+                  //         'Check internet connection',
+                  //         textAlign: TextAlign.center,
+                  //         style: TextStyle(color: Colors.red),
+                  //       ),
+                  //     )
+                  //   );
+                  // });
                 }
               ),
             ),
@@ -142,6 +141,14 @@ class SignInScreenState extends State<SignInScreen> {
                 print('Forgot Password');
               },
               child: Text('Forgot Password?', style: TextStyle(color: Colors.pink),)
+            ),
+            SizedBox(height: 10.0,),
+            Center(
+              child: RaisedButton( 
+                color: Theme.of(context).primaryColor, 
+                child: Text('Sign in with Google'),
+                onPressed: (){},
+              ),
             )
           ],
         )
@@ -204,6 +211,7 @@ class PasswordTextFieldState extends State<PasswordTextField>{
           borderRadius: BorderRadius.circular(8.0)
         ),
         labelText: 'Password',
+        hintText: 'password',
         suffixIcon: FlatButton.icon(
           padding: EdgeInsets.all(0.0),
           label: Text(''),

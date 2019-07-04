@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 abstract class Message extends StatefulWidget{
   final String message;
-
   Message({Key key, this.message}):super(key:key);
-
 }
 
 class OutgoingMessage extends Message{
@@ -65,7 +63,13 @@ class OutgoingMessageState extends State<OutgoingMessage>{
                   child: Card(
                     color: color,
                     elevation: elevation,
-                    child: Text(widget.message)
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(widget.message,
+                        style: TextStyle(fontSize: 20),
+                        softWrap: true,
+                      ),
+                    )
                   ),
                 ),
               ),
@@ -135,7 +139,13 @@ class IncomingMessageState extends State<IncomingMessage>{
                   child: Card(
                     color: color,
                     elevation: elevation, 
-                    child: Text(widget.message)
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(widget.message,
+                        style: TextStyle(fontSize: 20),
+                        softWrap: true,
+                      ),
+                    )
                   ),
                 ),
               ),

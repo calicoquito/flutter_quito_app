@@ -21,16 +21,19 @@ class User{
   String _username;
   String _password;
   String _token;
+  String _userID;
 
-  User({String username, String password, String token}){
+  User({String username, String password, String token, String userID}){
     this._username = username;
     this._password = password;
     this._token = token;
+    this._userID = userID;
   }
 
   String get username => _username;
   String get password => _password;
   String get token => _token;
+  String get userID => _userID;
 
   set username(String username){
     this._username = username;
@@ -41,5 +44,7 @@ class User{
   set token(String token){
     this._token = token;
   }
-  
+  set userID(String userID){
+    this._userID = userID;
+  }
 }

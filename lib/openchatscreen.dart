@@ -1,17 +1,24 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'helperclasses/message.dart';
+import 'helperclasses/user.dart';
 
 /*
  * This screen defines how the chats will appear when 
  * opened and how they will be animated and managed
  */
 
+// All print statements are temporary and for debugging purposes
+
 class OpenChatScreen extends StatefulWidget{
   final String title;
+  final User user;
 
   @override
-  OpenChatScreen({Key key, this.title}):super(key:key);
+  OpenChatScreen({Key key, this.title, this.user}):super(key:key);
 
   @override
   OpenChatScreenState createState() => OpenChatScreenState(); 
@@ -19,13 +26,47 @@ class OpenChatScreen extends StatefulWidget{
 
 class OpenChatScreenState extends State<OpenChatScreen>{
   TextEditingController controller = TextEditingController();
-  List<Message> messages = [
-    IncomingMessage(message: "Hi",),
-    OutgoingMessage(message: "Hey",),
-    IncomingMessage(message: "How arjhadikbdbdoakbckjrbvkwrbkwvwe you?",),
-    OutgoingMessage(message: "Not badskfjnwjks ksbkfskejvwkslkdnvadkn you?",),
-    IncomingMessage(message: "I'm fine",),
+  ScrollController scrollController = ScrollController();
+  FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  var data = Firestore.instance.collection('/data');
+
+  List<Widget> messages = [
   ];
+
+  Future<dynamic> onNotificationReceived(Map<String, dynamic> message) async{
+    setState(() {
+      messages.add(IncomingMessage(message:message['data']['message']??'null'));
+    });
+    //scrolls to the last message received
+    Timer(Duration(milliseconds: 100),(){scrollController.jumpTo(scrollController.position.maxScrollExtent);});
+    //data.add({'message':message['data']['message'].toString(),'sender':'firebase'});
+  }
+
+  Future<dynamic> onMessageReceived(Map<String, dynamic> message) async{
+    if(message['data']['to']==widget.user.userID){
+      setState(() {
+        messages.add(IncomingMessage(message:message['data']['message']??'null'));
+      });
+    //scrolls to the last message received
+    Timer(Duration(milliseconds: 100),(){scrollController.jumpTo(scrollController.position.maxScrollExtent);});
+    }
+    //data.add({'message':message['notification']['body'],'sender':'firebase'}); 
+  }
+
+  void messageListener(){
+    firebaseMessaging.configure(
+      onLaunch: onNotificationReceived,
+      onMessage: onMessageReceived,
+      onResume: onNotificationReceived
+    );
+  }
+
+
+  @override
+  void initState(){
+    super.initState();
+    messageListener();
+  }
 
   @override
   void dispose(){
@@ -40,6 +81,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
           Navigator.of(context).pop();
       },
       child: Scaffold(
+        //Appbar at the top of the page
         appBar: AppBar(
           elevation: 10.0,
           titleSpacing: 0.0,
@@ -54,23 +96,47 @@ class OpenChatScreenState extends State<OpenChatScreen>{
             ],
           ),
           actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.more_vert),
-              onPressed: (){},
+            PopupMenuButton(
+              onSelected: (item){
+                print('item was selected');
+              },
+              itemBuilder: (context){
+                return <PopupMenuItem>[
+                  PopupMenuItem(
+                    child: Text('Settings'),
+                  ),
+                  PopupMenuItem(
+                    child: Text('Log out'),
+                  )
+                ];
+              },
             )
           ],
         ),
+
+        //Contents of the page
         body: Stack(
           children: <Widget>[
+            //This is the area where the chat messages will be displayed
             Positioned(
               top: 0.0,
               bottom: MediaQuery.of(context).size.height*0.09,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: messages?? <Widget>[]
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height*0.09,
+                child: messages.length==0?
+                Center(child: Text('No messages'),)
+                :ListView.builder(
+                  controller: scrollController,
+                  itemCount: messages.length,
+                  itemBuilder: (context, index){
+                    return messages[index];
+                  },
                 ),
               ),
             ),
+
+            //This is the bar at the bottom of the page where text is written to be sent
             Positioned(
               bottom: 0.0,
               width: MediaQuery.of(context).size.width,
@@ -121,20 +187,26 @@ class OpenChatScreenState extends State<OpenChatScreen>{
                       icon: Icon(Icons.camera_alt),
                       onPressed: (){},
                     ),
+
+                    //This button sends the message
                     IconButton(
                       color: Theme.of(context).primaryColor,
                       icon: Icon(Icons.send),
                       onPressed: (){
-                        setState(() {
-                          messages.add(OutgoingMessage(message: controller.text,));
-                          controller.clear();
-                        });
+                        if(controller.text.isNotEmpty){
+                          data.add({'message':controller.text, 'sender':'app'});
+                          setState(() {
+                            messages.add(OutgoingMessage(message: controller.text,));
+                            controller.clear();
+                          });
+                          Timer(Duration(milliseconds: 100),(){scrollController.jumpTo(scrollController.position.maxScrollExtent);});
+                        }
                       },
                     )
                   ],
                 ),
               )
-            )
+            ),
           ],
         ),
       ),

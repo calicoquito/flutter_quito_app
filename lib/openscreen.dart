@@ -55,7 +55,7 @@ class OpenScreen extends StatelessWidget {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: (){
-            Navigator.push( context,
+            Navigator.push(context,
               MaterialPageRoute(
                 builder: (context){
                   return NewProject(user:user);

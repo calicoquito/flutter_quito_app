@@ -63,7 +63,7 @@ class SideDrawer extends StatelessWidget{
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context)=> ChatScreen()
+                    builder: (context)=> ChatScreen(user:user)
                   )
                 );
               },
