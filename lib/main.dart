@@ -81,6 +81,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         return showDialog(context: context, 
           builder: (context) {
             return SimpleDialog(
+              backgroundColor: Theme.of(context).primaryColor,
               title: Text('Exit?'),
               children: <Widget>[
                 SimpleDialogOption(
