@@ -17,6 +17,7 @@ class EventListState extends State<EventList> {
   List data;
   List<String> image_links = List();
   List event_names = List();
+  List event_links = List();
 
   @override
   void initState() {
@@ -25,54 +26,11 @@ class EventListState extends State<EventList> {
   }
 
 
-  Future<String> getSWData() async {
+  Future<void> getSWData() async {
     var response = await http.get(url, headers: {"Accept": "application/json"});
     var resBody = json.decode(response.body);
     data = resBody["items"];
 
-    Map jsonstr = { 
-    "@type": "project",
-      "allow_discussion": false,
-      "attendees": [],
-      "changeNote": "",
-      "contact_email": "umain@gmail.com",
-      "contact_name": "User main",
-      "contact_phone": "18761234567",
-      "contributors": [],
-      "created": "2019-06-12T17:39:26+00:00",
-      "creators": [
-        "admin"
-      ],
-      "description": "Project for tessting purposes",
-      "effective": "2019-06-12T12:53:08",
-      "end": "2019-06-16T18:20:00+00:00",
-      "event_url": null,
-      "exclude_from_nav":false,
-      "expires": null,
-      "recurrence": null,
-      "review_state": "published",
-      "rights": null,
-      "start": "2019-06-12T17:20:00+00:00",
-      "subjects": [],
-      "text": {
-        "content-type": "text/html",
-        "data": "<h1><em><strong>This event is just for test that starts at 12 today and goes on until I feel like it should stop</strong></em></h1>",
-        "encoding": "utf-8"
-      },
-      "title": "Test project5",
-      "versioning_enabled": true,
-      "whole_day": false
-    };
-
-
-    var bytes = utf8.encode("admin:admin");
-    var credentials = base64.encode(bytes);
-    var resp = await http.post(url, headers: 
-    {"Accept": "application/json",
-    "Content-Type": "application/json",
-    "Authorization": "Basic $credentials"},
-    body: jsonEncode(jsonstr));
-      print(resp.body);
 
     Future<String> getimglinks(int i) async {
       try {
@@ -97,6 +55,7 @@ class EventListState extends State<EventList> {
         image_links.add(imgs);
       }
       if (i < data.length){
+      event_links.add(data[i]["@id"]);
       event_names.add(data[i]["title"]);
 
       }
@@ -108,13 +67,47 @@ class EventListState extends State<EventList> {
     return "Success!";
   }
 
+  Future delete(int index) async {
+    String url = data[index]["@id"];
+    var bytes = utf8.encode("admin:admin");
+    var credentials = base64.encode(bytes);
+    var resp = await http.delete(url, headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "Basic $credentials"
+    },);
+    print(resp.statusCode);
+    return "Success!";
+  }
+
+  //final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
     Widget lst(Icon ico, List data) {
-      return ListView.builder(
+      return 
+      ///RefreshIndicator(
+        //key: _refreshIndicatorKey,
+        //onRefresh: (){getSWData();},
+        //child: 
+        ListView.builder(
           itemCount: data == null ? 0 : data.length-1,
           itemBuilder: (BuildContext context, int index) {
-            return Container(
+            final item = data[index]["@id"];
+            return Dismissible(
+              direction: DismissDirection.startToEnd,
+              background: Container(color: Colors.red,
+              padding: EdgeInsets.only(right: 0.8 * width),
+              child: Icon(Icons.delete, color: Colors.white)),
+              key: Key(item),
+              onDismissed: (direction) {
+                  // Remove the item from the data source.
+                  setState(() {
+                    data.removeAt(index);
+                    delete(index);
+                  });  
+              },
               child: Center(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -145,6 +138,7 @@ class EventListState extends State<EventList> {
               ),
             );
           });
+        //);
     }
 
     return Scaffold(
@@ -153,7 +147,8 @@ class EventListState extends State<EventList> {
         'Events',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
-      body: Container(child: lst(Icon(Icons.person), data)),
+      body: Container(child:
+       lst(Icon(Icons.person), data)),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.blue,

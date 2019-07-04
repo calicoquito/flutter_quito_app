@@ -1,33 +1,31 @@
 import 'dart:convert';
 import 'package:async/async.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class EventsInfo extends StatefulWidget {
-  // EventsInfo({Key key}) : super(key: key);
-  // @override
   EventsInfoState createState() => EventsInfoState();
 }
 
 class EventsInfoState extends State<EventsInfo> {
   final String url = "http://192.168.100.67:8080/Plone/projects";
-  TextEditingController controller = TextEditingController();
+  //TextEditingController controller = TextEditingController();
   String textString = "";
   bool isSwitched = false;
   List setval;
+  var photo = null;
 
   Map jsonstr = {
     "@type": "project",
-    "title": "Project by api 2",
+    "title": "Project by api 3",
     "description": "Project for tessting purposes",
     "attendees": [],
     "start": "2019-06-12T17:20:00+00:00",
     "end": "2020-06-17T19:00:00+00:00",
-    "whole_day": true,
-    "open_end": true,
+    "whole_day": false,
+    "open_end": false,
     "sync_uid": null,
     "contact_name": "",
     "contact_email": "",
@@ -51,52 +49,46 @@ class EventsInfoState extends State<EventsInfo> {
     "changeNote": null
   };
 
-  Future<String> setProjectData() async {
-    var bytes = utf8.encode("admin:admin");
-    var credentials = base64.encode(bytes);
-    var resp = await http.post(url,
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": "Basic $credentials"
-        },
-        body: jsonEncode(jsonstr));
-    print(resp.body);
-    return "Success!";
-  }
 
-  Future uploadImg(String fileName) async {
+  Future addImg() async {
+    var file = await ImagePicker.pickImage(source: ImageSource.gallery);
+    var base64Image = file != null ? base64Encode(file.readAsBytesSync()) : "";
+    jsonstr["image"]["data"] = base64Image;
+    setState(() {
+      photo = file;
+      });
+    }
+
+
+  Future<String> uploadImg(String fileName) async {
     var bytes = utf8.encode("admin:admin");
     var credentials = base64.encode(bytes);
-    var file = await ImagePicker.pickImage(source: ImageSource.gallery);
-    String uri = 'http://192.168.100.67:8080/Plone/projects';
-    String base64Image = base64Encode(file.readAsBytesSync());
-    jsonstr["image"]["data"] = base64Image;
     var resp = await http.post(url, headers: {
       "Accept": "application/json",
       "Content-Type": "application/json",
       "Authorization": "Basic $credentials"
-    }, body: {
-      jsonEncode(jsonstr)
-    });
-    print(resp.body);
-    print("Nope");
+    }, body: jsonEncode(jsonstr));
+    print(resp.statusCode);
     return "Success!";
   }
 
+
+
   Widget inputWidget(
       {icon: Icon, use_switch = "", txt: Text, drop: DropdownButton}) {
+    String diplaytxt = txt.replaceAll(new RegExp(r'_'), ' ');
+      diplaytxt = '${diplaytxt[0].toUpperCase()}${diplaytxt.substring(1)}';
     double width = MediaQuery.of(context).size.width;
     var padtext = Text(
-      txt,
+      diplaytxt,
       style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
     );
     var text = TextField(
       autocorrect: true,
-      controller: controller,
+      //controller: controller,
       textAlign: TextAlign.justify,
       decoration: InputDecoration(
-        labelText: txt,
+        labelText: diplaytxt,
         contentPadding: EdgeInsets.all(14.0),
       ),
       onSubmitted: (string) {
@@ -105,7 +97,7 @@ class EventsInfoState extends State<EventsInfo> {
         });
       },
       onEditingComplete: () {
-        controller.clear();
+        //controller.clear();
       },
     );
     var switch_true = Switch(
@@ -147,7 +139,6 @@ class EventsInfoState extends State<EventsInfo> {
 
   @override
   Widget build(BuildContext context) {
-    print(jsonstr[jsonstr.keys.elementAt(1)]);
     return Scaffold(
       appBar: AppBar(
           title: Text(
@@ -155,12 +146,37 @@ class EventsInfoState extends State<EventsInfo> {
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
       body: ListView(children: <Widget>[
+        Container(
+          color: Colors.black54,
+          //padding: EdgeInsets.all(20.0),
+        child:FlatButton(
+          padding: EdgeInsets.only(top: 50.0, bottom: 50.0),
+          color: Colors.black54,
+        child: photo == null? 
+        Icon(Icons.add_a_photo, size: 80.0, color: Colors.white,)
+        : Image.file(photo),
+        onPressed: (){addImg();},
+        ),),
         inputWidget(
-            icon: Icon(Icons.person),
-            txt: jsonstr.keys.elementAt(1),
+            icon: Icon(Icons.title), txt: jsonstr.keys.elementAt(1)),
+        inputWidget(
+            icon: Icon(Icons.import_contacts), txt: jsonstr.keys.elementAt(2)),
+        inputWidget(
+            icon: Icon(Icons.access_time),
+            txt: jsonstr.keys.elementAt(6),
             use_switch: jsonstr.keys.elementAt(6)),
         inputWidget(
-            icon: Icon(Icons.add_a_photo), txt: jsonstr.keys.elementAt(1)),
+            icon: Icon(Icons.timer_off),
+            txt: jsonstr.keys.elementAt(7),
+            use_switch: jsonstr.keys.elementAt(7)),
+        inputWidget(
+            icon: Icon(Icons.contacts), txt: jsonstr.keys.elementAt(9)),
+        inputWidget(
+            icon: Icon(Icons.email), txt: jsonstr.keys.elementAt(10)),
+        inputWidget(
+            icon: Icon(Icons.phone), txt: jsonstr.keys.elementAt(11)),
+        inputWidget(
+            icon: Icon(Icons.add_location), txt: jsonstr.keys.elementAt(13)),
       ]),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
