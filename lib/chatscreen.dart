@@ -58,7 +58,11 @@ class ChatScreenState extends State<ChatScreen>{
       Center(child: Text('No Chats'),)
       :ListView.builder(
         itemCount: chats.length,
-        itemBuilder: (context, index)=>chats[index],
+        itemBuilder: (context, index){
+          if(chats[index].user.userID!=widget.user.userID){
+            return chats[index];
+          }
+        },
       ),
     );
   }
