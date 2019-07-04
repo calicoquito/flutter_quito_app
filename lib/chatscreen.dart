@@ -20,15 +20,15 @@ class ChatScreen extends StatefulWidget{
 }
 
 class ChatScreenState extends State<ChatScreen>{
-  List<Chat> chats;
-
+  List<Chat> chats =[
+    Chat(user:User(username: 'Javeke', userID:'user1',), title:"Javeke"),
+    Chat(user:User(username: 'Avel', userID:'test_user1',), title:"Avel"),
+    Chat(user:User(username: 'Bruno', userID:'test_user2',), title:"Bruno"),
+  ];
+  
   void initState(){
     super.initState();
-    chats = [
-      Chat(user:User(username: 'Javeke', userID:'user1',), title:"Javeke"),
-      Chat(user:User(username: 'Avel', userID:'test_user1',), title:"Avel"),
-      Chat(user:User(username: 'Bruno', userID:'test_user2',), title:"Bruno"),
-    ];
+    chats.removeWhere((chat)=>chat.user.userID==widget.user.userID);
   }
 
   @override
@@ -59,9 +59,7 @@ class ChatScreenState extends State<ChatScreen>{
       :ListView.builder(
         itemCount: chats.length,
         itemBuilder: (context, index){
-          if(chats[index].user.userID!=widget.user.userID){
-            return chats[index];
-          }
+          return chats[index];
         },
       ),
     );

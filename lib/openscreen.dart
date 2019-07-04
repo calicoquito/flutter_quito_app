@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quito_1/events.dart';
 import 'package:quito_1/sidedrawer.dart';
 import 'newproject.dart';
 import 'helperclasses/user.dart';
@@ -58,7 +59,7 @@ class OpenScreen extends StatelessWidget {
             Navigator.push(context,
               MaterialPageRoute(
                 builder: (context){
-                  return NewProject(user:user);
+                  return EventList();
                 }
               )
             );

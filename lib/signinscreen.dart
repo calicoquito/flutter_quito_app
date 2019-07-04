@@ -54,7 +54,7 @@ class SignInScreenState extends State<SignInScreen> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white70,
-                contentPadding: EdgeInsets.zero,
+                contentPadding: EdgeInsets.all(8.0),
                 labelText: 'Username',
                 hintText: 'username'
               ),
@@ -67,11 +67,11 @@ class SignInScreenState extends State<SignInScreen> {
             Center(
               child: RaisedButton(
                 elevation: 10.0 ,
-                shape: StadiumBorder(),
                 color: Theme.of(context).primaryColor,
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text('Login',style: TextStyle(color: Colors.white),),
@@ -132,7 +132,6 @@ class SignInScreenState extends State<SignInScreen> {
                 }
               ),
             ),
-            SizedBox(height: 40.0,),
             RawMaterialButton(
               onPressed: (){
                 print('Forgot Password');
@@ -204,7 +203,7 @@ class PasswordTextFieldState extends State<PasswordTextField>{
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white70,
-        contentPadding: EdgeInsets.zero,
+        contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
         labelText: 'Password',
         hintText: 'password',
         suffixIcon: FlatButton.icon(
