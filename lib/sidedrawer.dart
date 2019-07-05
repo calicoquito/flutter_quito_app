@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
-import 'package:provider/provider.dart';
-import 'helperclasses/projectsbloc.dart';
 import 'chatscreen.dart';
 import 'helperclasses/user.dart';
+import 'projectscreen.dart';
+import 'settings.dart';
 
 class SideDrawer extends StatelessWidget{
   SideDrawer({Key key, this.user}): super(key:key);
@@ -11,7 +11,6 @@ class SideDrawer extends StatelessWidget{
 
   @override
   Widget build(BuildContext context){
-    final ProjectsBloc projectsBloc = Provider.of<ProjectsBloc>(context);
     return SizedBox(
       width: MediaQuery.of(context).size.width*0.5,
       child: Drawer(
@@ -73,38 +72,9 @@ class SideDrawer extends StatelessWidget{
               title: Text('Projects'),
               onTap: (){
                 Navigator.of(context).pop();
-                showDialog(context: context,  
-                  builder: (context)=>Dialog(
-                    backgroundColor: Color(0xff003366),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Icon(Icons.filter_none,size: 50.0,color: Colors.white,),
-                        Container(
-                          height: MediaQuery.of(context).size.height*0.4,
-                          child: projectsBloc.length()==0 ? Center(
-                            child:Text(
-                              'No Projects Available',
-                              style: TextStyle(
-                                  fontSize: 25.0,
-                                  color: Colors.orangeAccent
-                              )
-                            )
-                          ): ListView.builder(
-                            itemCount: projectsBloc.length(),
-                            itemBuilder: (context, index)=>Center(
-                              child:Text(
-                                projectsBloc.get(index).projectName,
-                                style: TextStyle(
-                                    fontSize: 25.0,
-                                    color: Colors.orangeAccent
-                                ),
-                              )
-                            ),
-                          )
-                        )
-                      ],
-                    ),
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context)=>Projects()
                   )
                 );
               },
@@ -114,22 +84,9 @@ class SideDrawer extends StatelessWidget{
               title: Text('Settings'),
               onTap: (){
                 Navigator.of(context).pop();
-                showDialog(context: context,  
-                  builder: (context)=>Dialog(
-                    backgroundColor: Color(0xff003366),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Icon(Icons.build,size: 50.0,),
-                        Text(
-                          'Under Construction',
-                           style: TextStyle(
-                              fontSize: 30.0,
-                              color: Colors.blue
-                           )
-                        )
-                      ],
-                    ),
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context)=>Settings()
                   )
                 );
               },

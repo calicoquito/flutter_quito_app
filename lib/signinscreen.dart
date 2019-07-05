@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'helperclasses/user.dart';
@@ -42,8 +43,9 @@ class SignInScreenState extends State<SignInScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Container(
-              height: 40,
-              child: Text('image'),
+              height: 70,
+              width:200,
+              child: SvgPicture.asset('images/quitologo.svg'),
             ),
             SizedBox(height: 30.0,),
             TextField(

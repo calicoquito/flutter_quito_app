@@ -21,7 +21,7 @@ class PeopleState extends State<People> {
 
   void getSWData(){
     setState(() {
-      for (var i in data) {
+      for (var _ in data) {
         setval.add(false);
       }
     });

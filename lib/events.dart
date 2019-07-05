@@ -149,8 +149,6 @@ class EventListState extends State<EventList> {
       body: Container(child:
        lst(Icon(Icons.person), data)),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.lightBlue,
-        foregroundColor: Colors.blue,
         child: Icon(
           Icons.add,
           color: Colors.white,

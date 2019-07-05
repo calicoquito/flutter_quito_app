@@ -36,15 +36,21 @@ class OpenScreenState extends State<OpenScreen> {
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
 
   Future<dynamic> onNotificationReceived(Map<String, dynamic> message) async{
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => OpenChatScreen(title:message['data']['sender'])
-      )
-    );
+    if(message['data']['sender']!=null){
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => OpenChatScreen(title:message['data']['sender'])
+        )
+      );
+    }
   }
 
   Future<dynamic> onMessageReceived(Map<String, dynamic> message) async {
-    print("${message['data']['sender']} sent ${message['data']}");
+    Scaffold.of(context).showSnackBar(
+      SnackBar(
+        content: Text('New Message'),
+      )
+    );
   }
 
   void messageListener(){

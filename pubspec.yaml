@@ -25,6 +25,7 @@ dependencies:
   firebase_messaging: 
   cloud_firestore:
   image_picker:
+  flutter_svg:
 
 
 dev_dependencies:
