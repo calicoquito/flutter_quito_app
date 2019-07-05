@@ -33,6 +33,7 @@ class SignInScreenState extends State<SignInScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   User user = User(username: 'username', password: 'password', token: 'token');
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context){
@@ -63,81 +64,101 @@ class SignInScreenState extends State<SignInScreen> {
               textEditingController: passwordController,
             ),
             SizedBox(height: 30.0,),
-            Center(
-              child: RaisedButton(
-                elevation: 10.0 ,
-                color: Theme.of(context).primaryColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text('Login',style: TextStyle(color: Colors.white),),
-                      Icon(Icons.arrow_forward, color: Colors.white,),
-                    ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                Center(
+                  child: RaisedButton(
+                    elevation: 10.0 ,
+                    color: Theme.of(context).primaryColor,
+                    child: Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text('Login',style: TextStyle(color: Colors.white),),
+                          SizedBox(width: 5,),
+                          !isLoading ? Icon(Icons.arrow_forward, color: Colors.white,)
+                          :Container(
+                            width: 20.0,
+                            height: 20.0,
+                            child: CircularProgressIndicator(
+                              backgroundColor: Colors.white, 
+                              strokeWidth: 2.0,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                    onPressed: () async {
+                      setState(() {
+                        isLoading=true;
+                        user.username = usernameController.text.trim();
+                        user.password = passwordController.text.trim();
+                        user.userID = usernameController.text.trim();
+                        //user.token = jsonDecode(resp.body)['token'];
+                      });
+                      Navigator.of(context).pushNamed('/home', arguments:user);
+                                        
+                      // http.post('http://10.22.0.63:8080/Plone/@login', 
+                      //   headers: {"Accept":"application/json", 
+                      //     "Content-Type":"application/json"}, 
+                      //   body: jsonEncode({"login":usernameController.text.trim(), "password":passwordController.text.trim()}))
+                      // .then((resp){
+                      //   if(resp.statusCode==200){
+                      //     setState(() {
+                      //       user.username = usernameController.text.trim();
+                      //       user.password = passwordController.text.trim();
+                      //       user.token = jsonDecode(resp.body)['token'];
+                      //     });
+                      //     Navigator.of(context).pushNamed('/home', arguments:user);
+                      //   }
+                      //   else {
+                      //     setState((){
+                      //        isLoading = false;
+                      //     })
+                      //     Scaffold.of(context).showSnackBar(
+                      //       SnackBar(
+                      //         backgroundColor:Theme.of(context).backgroundColor,
+                      //         content: Text(
+                      //           'Username or password incorrect',
+                      //           textAlign: TextAlign.center,
+                      //           style: TextStyle(color: Colors.red),
+                      //         ),
+                      //       )
+                      //     );
+                      //   }
+                      // })
+                      // .catchError((err){
+                      //   print(err);
+                      //   setState((){
+                      //        isLoading = false;
+                      //   })
+                      //   Scaffold.of(context).showSnackBar(
+                      //     SnackBar(
+                      //       backgroundColor:Theme.of(context).backgroundColor,
+                      //       content: Text(
+                      //         'Check internet connection',
+                      //         textAlign: TextAlign.center,
+                      //         style: TextStyle(color: Colors.red),
+                      //       ),
+                      //     )
+                      //   );
+                      // });
+                    }
                   ),
                 ),
-                onPressed: () async {
-                  setState(() {
-                    user.username = usernameController.text.trim();
-                    user.password = passwordController.text.trim();
-                    user.userID = usernameController.text.trim();
-                    //user.token = jsonDecode(resp.body)['token'];
-                  });
-                  Navigator.of(context).pushNamed('/home', arguments:user);
-                                    
-                  // http.post('http://10.22.0.63:8080/Plone/@login', 
-                  //   headers: {"Accept":"application/json", 
-                  //     "Content-Type":"application/json"}, 
-                  //   body: jsonEncode({"login":usernameController.text.trim(), "password":passwordController.text.trim()}))
-                  // .then((resp){
-                  //   if(resp.statusCode==200){
-                  //     setState(() {
-                  //       user.username = usernameController.text.trim();
-                  //       user.password = passwordController.text.trim();
-                  //       user.token = jsonDecode(resp.body)['token'];
-                  //     });
-                  //     Navigator.of(context).pushNamed('/home', arguments:user);
-                  //   }
-                  //   else {
-                  //     Navigator.pop(context);
-                  //     Scaffold.of(context).showSnackBar(
-                  //       SnackBar(
-                  //         backgroundColor:Theme.of(context).backgroundColor,
-                  //         content: Text(
-                  //           'Username or password incorrect',
-                  //           textAlign: TextAlign.center,
-                  //           style: TextStyle(color: Colors.red),
-                  //         ),
-                  //       )
-                  //     );
-                  //   }
-                  // })
-                  // .catchError((err){
-                  //   print(err);
-                  //   Navigator.pop(context);
-                  //   Scaffold.of(context).showSnackBar(
-                  //     SnackBar(
-                  //       backgroundColor:Theme.of(context).backgroundColor,
-                  //       content: Text(
-                  //         'Check internet connection',
-                  //         textAlign: TextAlign.center,
-                  //         style: TextStyle(color: Colors.red),
-                  //       ),
-                  //     )
-                  //   );
-                  // });
-                }
-              ),
+                SizedBox(width: 20),
+                RawMaterialButton(
+                  onPressed: (){
+                    print('Forgot Password');
+                  },
+                  child: Text('Forgot Password?', style: TextStyle(color: Colors.pink),)
+                ),
+              ]
             ),
-            RawMaterialButton(
-              onPressed: (){
-                print('Forgot Password');
-              },
-              child: Text('Forgot Password?', style: TextStyle(color: Colors.pink),)
-            ),
-            SizedBox(height: 10.0,),
+            SizedBox(height:50.0,),
             Center(
               child: RaisedButton( 
                 color: Theme.of(context).primaryColor, 
