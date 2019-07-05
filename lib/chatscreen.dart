@@ -21,14 +21,14 @@ class ChatScreen extends StatefulWidget{
 
 class ChatScreenState extends State<ChatScreen>{
   List<Chat> chats =[
-    Chat(user:User(username: 'Javeke', userID:'user1',), title:"Javeke"),
-    Chat(user:User(username: 'Avel', userID:'test_user1',), title:"Avel"),
-    Chat(user:User(username: 'Bruno', userID:'test_user2',), title:"Bruno"),
+    Chat(User(username: 'Javeke', userID:'user1',), title:"Javeke"),
+    Chat(User(username: 'Avel', userID:'test_user1',), title:"Avel"),
+    Chat(User(username: 'Bruno', userID:'test_user2',), title:"Bruno"),
   ];
   
   void initState(){
     super.initState();
-    chats.removeWhere((chat)=>chat.user.userID==widget.user.userID);
+    chats.removeWhere((chat)=>chat.recipient.userID==widget.user.userID);
   }
 
   @override
@@ -47,9 +47,9 @@ class ChatScreenState extends State<ChatScreen>{
           IconButton(
             icon: Icon(Icons.message),
             onPressed: (){
-              setState((){
-                chats.add(Chat(title: 'New', user: widget.user,));
-              });
+              // setState((){
+              //   chats.add(Chat(title: 'New', recipient: widget.user,));
+              // });
             },
           )
         ],

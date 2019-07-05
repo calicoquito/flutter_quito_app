@@ -83,7 +83,7 @@ class SignInScreenState extends State<SignInScreen> {
                   setState(() {
                     user.username = usernameController.text.trim();
                     user.password = passwordController.text.trim();
-                    user.userID='user1';
+                    user.userID = usernameController.text.trim();;
                     //user.token = jsonDecode(resp.body)['token'];
                   });
                   Navigator.of(context).pushNamed('/home', arguments:user);

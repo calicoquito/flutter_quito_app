@@ -16,10 +16,10 @@ import 'helperclasses/user.dart';
 class OpenChatScreen extends StatefulWidget{
   final String title;
   final User user;
-  final User sender;
+  final User recipient;
 
   @override
-  OpenChatScreen({Key key, this.title, this.user, this.sender}):super(key:key);
+  OpenChatScreen({Key key, this.title, this.user, this.recipient}):super(key:key);
 
   @override
   OpenChatScreenState createState() => OpenChatScreenState(); 
@@ -66,7 +66,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
 
   void handleSend() async {
     if(controller.text.isNotEmpty){
-      final chatDocument = await firestore.document('/users/${widget.user.userID}/contacts/${widget.sender.userID}').get();
+      final chatDocument = await firestore.document('/users/${widget.user.userID}/contacts/${widget.recipient.userID}').get();
       try{
         print(chatDocument.data['messages'].runtimeType);
         chatDocument.data['messages'].add({
@@ -91,7 +91,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
     messageListener();
     chatCollectionReference = firestore.collection('/users/${widget.user.userID}/contacts');
     chatStream = chatCollectionReference.snapshots().listen((snapshot){
-      final chatDocument = snapshot.documentChanges.where((documentChange)=>documentChange.document.documentID==widget.sender.userID).toList();
+      final chatDocument = snapshot.documentChanges.where((documentChange)=>documentChange.document.documentID==widget.recipient.userID).toList();
       try{
         final chat = chatDocument[0].document;
         if(chat.data['messages'].length>0){

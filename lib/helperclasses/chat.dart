@@ -10,10 +10,14 @@ import 'user.dart';
 
 class Chat extends StatefulWidget{
   final String title;
-  final User user;
+  User _recipient;
+
+  get recipient =>_recipient;  
 
   @override
-  Chat({Key key, this.user, this.title}): super(key:key);
+  Chat(User recipient, {Key key, this.title}): super(key:key){
+    this._recipient = recipient;
+  }
 
   @override
   ChatState createState() => ChatState();
@@ -42,7 +46,7 @@ class ChatState extends State<Chat> {
     else{
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context)=>OpenChatScreen(title:widget.title, user:widget.user,)
+          builder: (context)=>OpenChatScreen(title:widget.title, recipient:widget.recipient,)
         )
       );
     }

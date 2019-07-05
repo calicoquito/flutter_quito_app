@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'helperclasses/projectsbloc.dart';
 import 'openscreen.dart';
@@ -28,7 +29,6 @@ class MyApp extends StatelessWidget {
         title: 'Quito',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          primarySwatch: Colors.blue,
           primaryColor: Color(0xff7e1946),
           buttonTheme: ButtonThemeData(
             minWidth: 50,
@@ -81,26 +81,34 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         return showDialog(context: context, 
           builder: (context) {
             return SimpleDialog(
-              backgroundColor: Theme.of(context).primaryColor,
-              title: Text('Exit?'),
+              title: Center(child: Text('Exit?')),
               children: <Widget>[
-                SimpleDialogOption(
-                  child: FlatButton(
-                    child: Text('Yes'),
-                    onPressed: (){
-                      Navigator.pop(context, true);
-                    },
-                  ),
+
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    SimpleDialogOption(
+                      child: FlatButton(
+                        shape: Border.all(width: 2.0, color: Theme.of(context).primaryColor),
+                        child: Text('Yes'),
+                        onPressed: (){
+                          Navigator.pop(context, true);
+                        },
+                      ),
+                    ),
+                    SimpleDialogOption(
+                      child: RaisedButton(
+                        color: Theme.of(context).primaryColor,
+                        textColor: Colors.black,
+                        child: Text('No', style: TextStyle(color: Colors.white),),
+                        onPressed: (){
+                          Navigator.pop(context, false);
+                        },
+                      ),
+                    )
+                  ],
                 ),
-                SimpleDialogOption(
-                  child: RaisedButton(
-                    textColor: Colors.black,
-                    child: Text('No'),
-                    onPressed: (){
-                      Navigator.pop(context, false);
-                    },
-                  ),
-                )
               ],
             );
           }
