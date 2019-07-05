@@ -38,6 +38,10 @@ class OpenChatScreenState extends State<OpenChatScreen>{
   void handleSend() async {
     print('Sent ${controller.text}');
     if(controller.text.isNotEmpty){
+      setState(() {
+        messages.add(OutgoingMessage(message: controller.text,));
+        controller.clear();
+      });
       final senderChatDocument = await senderChatDocumentReference.get();
       try{
         await senderChatDocument.reference.updateData({
@@ -58,10 +62,6 @@ class OpenChatScreenState extends State<OpenChatScreen>{
               'body': controller.text
             }
           ]
-        });
-        setState(() {
-          messages.add(OutgoingMessage(message: controller.text,));
-          controller.clear();
         });
         //scrolls to the last message received
         Timer(Duration(milliseconds: 100),(){scrollController.jumpTo(scrollController.position.maxScrollExtent);});

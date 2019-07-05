@@ -33,7 +33,18 @@ class SignInScreenState extends State<SignInScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   User user = User(username: 'username', password: 'password', token: 'token');
-  bool isLoading = false;
+  bool isLoading;
+
+  @override
+  void initState(){
+    super.initState();
+    isLoading = false;
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context){
@@ -100,6 +111,9 @@ class SignInScreenState extends State<SignInScreen> {
                         //user.token = jsonDecode(resp.body)['token'];
                       });
                       Navigator.of(context).pushNamed('/home', arguments:user);
+                      setState(() {
+                        isLoading=false; 
+                      });
                                         
                       // http.post('http://10.22.0.63:8080/Plone/@login', 
                       //   headers: {"Accept":"application/json", 
