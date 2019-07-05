@@ -23,7 +23,8 @@ dependencies:
   http: 
   provider: 
   firebase_messaging: 
-  cloud_firestore: 
+  cloud_firestore:
+  image_picker:
 
 
 dev_dependencies:

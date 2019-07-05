@@ -156,9 +156,9 @@ class EventListState extends State<EventList> {
           color: Colors.white,
         ),
         onPressed: () {
-          // Navigator.push(context, MaterialPageRoute(builder: (context) {
-          //   return EventsInfo();
-          // }));
+          Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return EventsInfo();
+          }));
         },
       ),
     );
