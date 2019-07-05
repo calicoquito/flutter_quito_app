@@ -41,12 +41,9 @@ class SignInScreenState extends State<SignInScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'Quito',
-              style: TextStyle(
-                fontSize: 40.0,
-                color: Theme.of(context).primaryColor
-              )
+            Container(
+              height: 40,
+              child: Text('image'),
             ),
             SizedBox(height: 30.0,),
             TextField(

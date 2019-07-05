@@ -28,7 +28,8 @@ class OpenChatScreenState extends State<OpenChatScreen>{
   TextEditingController controller = TextEditingController();
   ScrollController scrollController = ScrollController();
   final firestore = Firestore.instance;
-  DocumentReference chatDocumentReference;
+  DocumentReference senderChatDocumentReference;
+  DocumentReference receiverChatDocumentReference;
   StreamSubscription chatStream;
 
   List<Widget> messages =[
@@ -37,13 +38,23 @@ class OpenChatScreenState extends State<OpenChatScreen>{
   void handleSend() async {
     print('Sent ${controller.text}');
     if(controller.text.isNotEmpty){
-      final chatDocument = await chatDocumentReference.get();
+      final senderChatDocument = await senderChatDocumentReference.get();
       try{
-        await chatDocument.reference.updateData({
+        await senderChatDocument.reference.updateData({
           'messages':[
-            ...chatDocument.data['messages'],
+            ...senderChatDocument.data['messages'],
             {
               'type': 'outgoing',
+              'body': controller.text
+            }
+          ]
+        });
+        final receiverChatDocument = await receiverChatDocumentReference.get();
+        await receiverChatDocument.reference.updateData({
+          'messages':[
+            ...receiverChatDocument.data['messages'],
+            {
+              'type': 'incoming',
               'body': controller.text
             }
           ]
@@ -64,9 +75,9 @@ class OpenChatScreenState extends State<OpenChatScreen>{
   @override
   void initState(){
     super.initState();
-    chatDocumentReference = firestore.document('/users/${widget.user.userID}/contacts/${widget.recipient.userID}');
-    
-    chatStream = chatDocumentReference.snapshots().listen((snapshot){
+    senderChatDocumentReference = firestore.document('/users/${widget.user.userID}/contacts/${widget.recipient.userID}');
+    receiverChatDocumentReference = firestore.document('/users/${widget.recipient.userID}/contacts/${widget.user.userID}');
+    chatStream = senderChatDocumentReference.snapshots().listen((snapshot){
       try{
         if(snapshot['messages'].length-1>0 && snapshot['messages'][snapshot['messages'].length-1]['type']=='incoming'){
           setState(() {
@@ -85,7 +96,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
   @override
   void dispose(){
     chatStream.cancel();
-    chatDocumentReference.updateData({'messages':[]});
+    senderChatDocumentReference.updateData({'messages':[]});
     super.dispose();
   }
 
