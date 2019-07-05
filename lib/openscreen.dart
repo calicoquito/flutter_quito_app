@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:quito_1/events.dart';
 import 'package:quito_1/sidedrawer.dart';
-import 'newproject.dart';
 import 'helperclasses/user.dart';
+import 'openchatscreen.dart';
 
 
 /*
@@ -23,10 +24,44 @@ import 'helperclasses/user.dart';
   the route from which one may create a new project.
 */
 
-class OpenScreen extends StatelessWidget {
-
+class OpenScreen extends StatefulWidget {
   OpenScreen({Key key, this.user}) : super(key: key);
   final User user;
+
+  @override
+  OpenScreenState createState() => OpenScreenState();
+}
+
+class OpenScreenState extends State<OpenScreen> {
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+
+  Future<dynamic> onNotificationReceived(Map<String, dynamic> message) async{
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => OpenChatScreen(title:message['data']['sender'])
+      )
+    );
+  }
+
+  Future<dynamic> onMessageReceived(Map<String, dynamic> message) async {
+    print("${message['data']['sender']} sent ${message['data']}");
+  }
+
+  void messageListener(){
+    firebaseMessaging.configure(
+      onLaunch: onNotificationReceived,
+      onMessage: onMessageReceived,
+      onResume: onNotificationReceived
+    );
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    firebaseMessaging.subscribeToTopic('chats');
+    messageListener();
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -34,7 +69,7 @@ class OpenScreen extends StatelessWidget {
       child: Scaffold(
         drawer: Hero(
           tag:'navdrawer',
-          child: SideDrawer(user:user)
+          child: SideDrawer(user:widget.user)
         ),
         appBar: AppBar(
           title: Text('Welcome'),

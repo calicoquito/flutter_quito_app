@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'helperclasses/message.dart';
 import 'helperclasses/user.dart';
@@ -28,55 +27,32 @@ class OpenChatScreen extends StatefulWidget{
 class OpenChatScreenState extends State<OpenChatScreen>{
   TextEditingController controller = TextEditingController();
   ScrollController scrollController = ScrollController();
-  FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   final firestore = Firestore.instance;
-  CollectionReference chatCollectionReference;
+  DocumentReference chatDocumentReference;
   StreamSubscription chatStream;
 
-  List<Widget> messages = [
+  List<Widget> messages =[
   ];
 
-  Future<dynamic> onNotificationReceived(Map<String, dynamic> message) async{
-    setState(() {
-      messages.add(IncomingMessage(message:message['data']['message']??'null'));
-    });
-    //scrolls to the last message received
-    Timer(Duration(milliseconds: 100),(){scrollController.jumpTo(scrollController.position.maxScrollExtent);});
-    //data.add({'message':message['data']['message'].toString(),'sender':'firebase'});
-  }
-
-  Future<dynamic> onMessageReceived(Map<String, dynamic> message) async{
-    if(message['data']['to']==widget.user.userID){
-      setState(() {
-        messages.add(IncomingMessage(message:message['data']['message']??'null'));
-      });
-    //scrolls to the last message received
-    Timer(Duration(milliseconds: 100),(){scrollController.jumpTo(scrollController.position.maxScrollExtent);});
-    }
-    //data.add({'message':message['notification']['body'],'sender':'firebase'}); 
-  }
-
-  void messageListener(){
-    firebaseMessaging.configure(
-      onLaunch: onNotificationReceived,
-      onMessage: onMessageReceived,
-      onResume: onNotificationReceived
-    );
-  }
-
   void handleSend() async {
+    print('Sent ${controller.text}');
     if(controller.text.isNotEmpty){
-      final chatDocument = await firestore.document('/users/${widget.user.userID}/contacts/${widget.recipient.userID}').get();
+      final chatDocument = await chatDocumentReference.get();
       try{
-        print(chatDocument.data['messages'].runtimeType);
-        chatDocument.data['messages'].add({
-          'type': 'incoming',
-          'body': controller.text
-        });        
+        await chatDocument.reference.updateData({
+          'messages':[
+            ...chatDocument.data['messages'],
+            {
+              'type': 'outgoing',
+              'body': controller.text
+            }
+          ]
+        });
         setState(() {
           messages.add(OutgoingMessage(message: controller.text,));
           controller.clear();
         });
+        //scrolls to the last message received
         Timer(Duration(milliseconds: 100),(){scrollController.jumpTo(scrollController.position.maxScrollExtent);});
       }
       catch(err){
@@ -88,16 +64,16 @@ class OpenChatScreenState extends State<OpenChatScreen>{
   @override
   void initState(){
     super.initState();
-    messageListener();
-    chatCollectionReference = firestore.collection('/users/${widget.user.userID}/contacts');
-    chatStream = chatCollectionReference.snapshots().listen((snapshot){
-      final chatDocument = snapshot.documentChanges.where((documentChange)=>documentChange.document.documentID==widget.recipient.userID).toList();
+    chatDocumentReference = firestore.document('/users/${widget.user.userID}/contacts/${widget.recipient.userID}');
+    
+    chatStream = chatDocumentReference.snapshots().listen((snapshot){
       try{
-        final chat = chatDocument[0].document;
-        if(chat.data['messages'].length>0){
+        if(snapshot['messages'].length-1>0 && snapshot['messages'][snapshot['messages'].length-1]['type']=='incoming'){
           setState(() {
-            messages.add(IncomingMessage(message: chat.data[messages][chat.data['messages'].length]['body']));
+            messages.add(IncomingMessage(message: snapshot['messages'][snapshot['messages'].length-1]['body']));
           });
+          //scrolls to the last message received
+          Timer(Duration(milliseconds: 100),(){scrollController.jumpTo(scrollController.position.maxScrollExtent);});
         }
       }
       catch(err){
@@ -109,6 +85,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
   @override
   void dispose(){
     chatStream.cancel();
+    chatDocumentReference.updateData({'messages':[]});
     super.dispose();
   }
 

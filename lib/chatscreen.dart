@@ -20,15 +20,19 @@ class ChatScreen extends StatefulWidget{
 }
 
 class ChatScreenState extends State<ChatScreen>{
-  List<Chat> chats =[
-    Chat(User(username: 'Javeke', userID:'user1',), title:"Javeke"),
-    Chat(User(username: 'Avel', userID:'test_user1',), title:"Avel"),
-    Chat(User(username: 'Bruno', userID:'test_user2',), title:"Bruno"),
+
+  List<User> users = [
+    User(username: 'Javeke', userID:'user1',),
+    User(username: 'Avel', userID:'test_user1',),
+    User(username: 'Bruno', userID:'test_user2',)
   ];
+
+  List<Chat> chats;
   
   void initState(){
     super.initState();
-    chats.removeWhere((chat)=>chat.recipient.userID==widget.user.userID);
+    final validUsers = users.where((user)=>user.userID!=widget.user.userID).toList();
+    chats = validUsers.map((user)=>Chat(recipient: user,user: widget.user, title: user.username,)).toList();
   }
 
   @override
