@@ -1,28 +1,64 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
+import 'package:quito_1/helperclasses/projectsbloc.dart';
+import 'package:quito_1/sidedrawer.dart';
 import 'addmembers.dart';
+import 'helperclasses/user.dart';
 
 class NewProject extends StatefulWidget{
+  @override
+  NewProject({Key key, this.user}):super(key:key);
+  final User user;
 
+  @override
   NewProjectState createState() => NewProjectState();
-
 }
 
 class NewProjectState extends State<NewProject>{
-  TextEditingController controller = TextEditingController();
+  TextEditingController controller;
   String textString = "";
   
   @override
+  void initState() {
+    super.initState();
+    controller = TextEditingController();
+  }
+
+  @override
+  void dispose(){
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context){
+    final ProjectsBloc projectsBloc = Provider.of<ProjectsBloc>(context);
     return Scaffold(
+      drawer: Hero(
+        tag: 'navdrawer',
+        child: SideDrawer(user:widget.user,)
+      ),
       appBar: AppBar(
         title: Text(
           'New Project',
           style: TextStyle(
             fontFamily: 'Nunito',
-            fontSize: 20.0),
-        )
+            fontSize: 20.0
+          ),
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon:Icon(Icons.widgets),
+            onPressed: (){
+              SnackBar(
+                content: Text('Snack Time'),
+                duration: Duration(seconds: 3),
+              );
+            },
+          )
+        ],
       ),
       body: SingleChildScrollView(
         child:Column(
@@ -31,7 +67,7 @@ class NewProjectState extends State<NewProject>{
             Padding(
               padding: EdgeInsets.all(8.0),
               child: Text(
-                'Event Name',
+                'Project Name',
                 textAlign: TextAlign.left,
                 ),
             ),
@@ -41,7 +77,7 @@ class NewProjectState extends State<NewProject>{
                 autocorrect: true,
                 controller: controller,
                 decoration: InputDecoration(
-                  labelText:"Enter Here...",
+                  labelText:"Project name",
                   contentPadding: EdgeInsets.all(14.0),
                   border: OutlineInputBorder()
                   ),
@@ -49,10 +85,7 @@ class NewProjectState extends State<NewProject>{
                   setState(() {
                     textString = string;
                   });
-                },
-                onEditingComplete: (){
-                  controller.clear();
-                },
+                }
               ),
             ),
             Padding(
@@ -80,14 +113,16 @@ class NewProjectState extends State<NewProject>{
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FlatButton(
+        shape: StadiumBorder(),
         color: Colors.lightBlue,
         splashColor: Colors.blue,
         textColor: Colors.white70,
-        child: Text('Next'),
+        child: Text('Next', style: TextStyle(color: Colors.black),),
         onPressed: (){
-          print(textString);
-          controller.clear();
-          Navigator.push(context, MaterialPageRoute(builder: (context){return AddMembersPage();}));
+          projectsBloc.addProject(Project(controller.text));
+          // Navigator.of(context).push(MaterialPageRoute(
+          //   maintainState: true,
+          //   builder: (context){return AddMembersPage(user: widget.user,);}));
         },
       ),
     );
@@ -124,6 +159,7 @@ class CheckItemState extends State<CheckItem>{
       margin: EdgeInsets.all(1.0),
       child: RawMaterialButton(
         onPressed: onchange,
+        splashColor: Colors.amberAccent,
         child: Row(
           children: <Widget>[
             Checkbox(

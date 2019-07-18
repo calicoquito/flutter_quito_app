@@ -1,9 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:async/async.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'addmembers.dart';
+
+
 
 class EventsInfo extends StatefulWidget {
   EventsInfoState createState() => EventsInfoState();
@@ -49,18 +54,60 @@ class EventsInfoState extends State<EventsInfo> {
     "changeNote": null
   };
 
+Future<void> _optionsDialogBox() {
+  
+return showDialog(context: context,
+    builder: (BuildContext context) {
+        
+return AlertDialog(
+          content: 
+ SingleChildScrollView(
+            child: 
+ ListBody(
+              children: <Widget>[
+                GestureDetector(
+                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[ 
+                    Text('Take a photo'),
+                    Icon(Icons.camera)
+                    ],),
+                  onTap: (){openimg(ImageSource.camera);},
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                GestureDetector(
+                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[ 
+                    Text('Select from gallery'),
+                    Icon(Icons.image)
+                    ],),
 
-  Future addImg() async {
-    var file = await ImagePicker.pickImage(source: ImageSource.gallery);
+                  onTap: (){openimg(ImageSource.gallery);},
+                ),
+              ],
+            ),
+          ),
+        );
+      });
+}
+
+
+
+  Future openimg(ImageSource source) async {
+    //var file = File("assets/images/lake.jpg");
+    var file = await ImagePicker.pickImage(source: source);
     var base64Image = file != null ? base64Encode(file.readAsBytesSync()) : "";
     jsonstr["image"]["data"] = base64Image;
     setState(() {
       photo = file;
       });
+      Navigator.of(context, rootNavigator: true).pop(context);
     }
 
 
-  Future<String> uploadImg(String fileName) async {
+
+  Future<String> uploadImg() async {
     var bytes = utf8.encode("admin:admin");
     var credentials = base64.encode(bytes);
     var resp = await http.post(url, headers: {
@@ -73,10 +120,10 @@ class EventsInfoState extends State<EventsInfo> {
   }
 
 
-
   Widget inputWidget(
       {icon: Icon, use_switch = "", txt: Text, drop: DropdownButton}) {
-    String diplaytxt = txt.replaceAll(new RegExp(r'_'), ' ');
+
+    String diplaytxt = txt.replaceAll( RegExp(r'_'), ' ');
       diplaytxt = '${diplaytxt[0].toUpperCase()}${diplaytxt.substring(1)}';
     double width = MediaQuery.of(context).size.width;
     var padtext = Text(
@@ -94,6 +141,7 @@ class EventsInfoState extends State<EventsInfo> {
       onSubmitted: (string) {
         setState(() {
           jsonstr[txt] = string;
+          print(jsonstr);
         });
       },
       onEditingComplete: () {
@@ -135,7 +183,8 @@ class EventsInfoState extends State<EventsInfo> {
             ],
           ),
         ));
-  }
+      }
+
 
   @override
   Widget build(BuildContext context) {
@@ -155,8 +204,34 @@ class EventsInfoState extends State<EventsInfo> {
         child: photo == null? 
         Icon(Icons.add_a_photo, size: 80.0, color: Colors.white,)
         : Image.file(photo),
-        onPressed: (){addImg();},
+        onPressed: (){_optionsDialogBox();},
         ),),
+        Padding(
+              padding: EdgeInsets.only(top: 20.0, left:  50.0, right: 50.0),
+              child: Container(height: 60,
+                child: RaisedButton(
+                onPressed:()async {
+          setState(() async{
+                      jsonstr["attendees"] = await Navigator.push(context, 
+          MaterialPageRoute(builder: (context) {
+            return AddMembersPage(); 
+              }));
+          });
+
+              //print(jsonstr["attendees"]);
+              },
+              child: Icon(Icons.group_add, color: Colors.white,),
+              )
+              ),
+            ),Container(
+              padding: EdgeInsets.symmetric(vertical: 30.0),
+            child: 
+            Text( jsonstr["attendees"] == null? "No one assigned yet":
+            '${jsonstr["attendees"].length} person(s) added to this project',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black54),
+            )
+            ),
         inputWidget(
             icon: Icon(Icons.title), txt: jsonstr.keys.elementAt(1)),
         inputWidget(
@@ -180,7 +255,8 @@ class EventsInfoState extends State<EventsInfo> {
       ]),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          uploadImg("lake.jpg");
+          uploadImg();
+          Navigator.of(context, rootNavigator: true).pop(context);
         },
         tooltip: 'Create Project',
         child: Icon(Icons.check),

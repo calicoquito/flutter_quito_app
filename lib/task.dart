@@ -1,27 +1,58 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'people.dart';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+
+import 'addmembers.dart';
 
 class Task extends StatefulWidget {
-  Task({Key key}) : super(key: key);
+  String url;
+  Task({@required this.url});
   @override
-  TaskState createState() => TaskState();
+  TaskState createState() => TaskState(url: url);
 }
 
 class TaskState extends State<Task> {
-  TextEditingController controller = TextEditingController();
+  String url;
+  TaskState({@required this.url});
+  //TextEditingController controller = TextEditingController();
   String textString = "";
   bool isSwitched = false;
   List setval;
-  final List data = ['hey', 'how', 'hall', 'hat', 'ham', 'heap', 'help', 'health', 'hemp', 'hex', 'hack', 'hump'];
+  List assignedMembers;
+  
+  Map taskjson = {
+	"@type": "task",
+	"title":"Task upload by api",
+  "description":"the task is to test the api",
+  "task_detail": {
+    "content-type": "text/html",
+    "data": "<h2>Talk to some people to volunteer on the the project</h2>",
+    "encoding": "utf-8"
+  },
+  "additional_files":null,
+	"complete": false
+};
 
-
+Future<String> uploadTask() async {
+  print(url);
+  var bytes = utf8.encode("admin:admin");
+  var credentials = base64.encode(bytes);
+  var resp = await http.post(url + "/need-to-do", headers: {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "Authorization": "Basic $credentials"
+  }, body: jsonEncode(taskjson));
+  print(resp.statusCode);
+  return "Success!";
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
           title: Text(
-        'New Task',
+        'Task Info',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
       body: ListView(
@@ -30,18 +61,37 @@ class TaskState extends State<Task> {
               padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
               child: TextField(
                 autocorrect: true,
-                controller: controller,
+                ///controller: controller,
                 decoration: InputDecoration(
-                    labelText: "Enter Task Name...",
+                    labelText: "Title...",
                     contentPadding: EdgeInsets.all(14.0),
                     border: OutlineInputBorder()),
                 onChanged: (string) {
                   setState(() {
-                    textString = string;
+                    taskjson["title"] = string;
                   });
                 },
                 onEditingComplete: () {
-                  controller.clear();
+                  //controller.clear();
+                },
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+              child: TextField(
+                autocorrect: true,
+                //controller: controller,
+                decoration: InputDecoration(
+                    labelText: "Description...",
+                    contentPadding: EdgeInsets.all(14.0),
+                    border: OutlineInputBorder()),
+                onChanged: (string) {
+                  setState(() {
+                    taskjson["description"]["data"] = "<h2>$string<h2>";
+                  });
+                },
+                onEditingComplete: () {
+                  //controller.clear();
                 },
               ),
             ),
@@ -50,43 +100,56 @@ class TaskState extends State<Task> {
               child: TextField(
                 maxLines: 4,
                 autocorrect: true,
-                controller: controller,
+                //controller: controller,
                 textAlign:TextAlign.justify,
                 decoration: InputDecoration(
-                    labelText: "Enter Task Description...",
+                    labelText: "Task Details...",
                     contentPadding: EdgeInsets.all(14.0),
                     border: OutlineInputBorder()),
                 onChanged: (string) {
                   setState(() {
-                    textString = string;
+                    taskjson["task_detail"] = string;
                   });
                 },
                 onEditingComplete: () {
-                  controller.clear();
+                  //controller.clear();
                 },
               ),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
-              child: ListTile(
-                leading: Text("Set As High priority"),
-                trailing: Switch(
-                    value: isSwitched,
-                    onChanged: (value) {
-                      setState(() {
-                        isSwitched = value;
-                      });
-                    }),
+          Padding(
+              padding: EdgeInsets.only(top: 20.0, left:  50.0, right: 50.0),
+              child: Container(height: 60,
+                child: RaisedButton(
+                onPressed:()async {
+          setState(() async{
+                      assignedMembers = await Navigator.push(context, 
+          MaterialPageRoute(builder: (context) {
+            return AddMembersPage();
+              }));
+          });
+
+              print(assignedMembers);
+              },
+              child: Icon(Icons.group_add, color: Colors.white,),
+              )
               ),
             ),
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 30.0),
+            child: 
+            Text( assignedMembers == null? "No one assigned yet":
+            '${assignedMembers.length} person(s) added to this task',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black54),
+            )
+            )
           ],
         ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.lightBlue,
-        foregroundColor: Colors.blue,
-        child: Icon(Icons.add, color: Colors.white,),
+        child: Icon(Icons.arrow_upward, color: Colors.white,),
         onPressed: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context){return People();}));
+          uploadTask();
+          Navigator.of(context, rootNavigator: true).pop(context);
         },
       ),
     );
