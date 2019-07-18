@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:quito_1/membersview.dart';
 import 'dart:convert';
 import 'eventsinfo.dart';
 import 'eventsinfoedit.dart';
@@ -23,7 +24,6 @@ class EventListState extends State<EventList> {
   Widget appBarTitle = Text('Events');
   Icon actionIcon = Icon(Icons.search);
   List newdata = List();
-
 
   int count = 1;
   List holder = List();
@@ -47,9 +47,9 @@ class EventListState extends State<EventList> {
     var response = await http.get(url, headers: {"Accept": "application/json"});
     var resBody = json.decode(response.body);
     data = resBody["items"];
-  for (var i in data){
-    i = i as Map;
-  }
+    for (var i in data) {
+      i = i as Map;
+    }
 
     Future<String> getimglink(int i) async {
       try {
@@ -63,7 +63,6 @@ class EventListState extends State<EventList> {
       } catch (e) {}
     }
 
-
     for (var i = 1; i <= data.length; i++) {
       var imgs = await getimglink(i);
       if (imgs != null) {
@@ -71,11 +70,11 @@ class EventListState extends State<EventList> {
         data[i]['image'] = imgs;
       }
     }
-      setState(() {
-        data = data;
-      });
-      return "Success!";
-    }
+    setState(() {
+      data = data;
+    });
+    return "Success!";
+  }
 
   Future delete(int index) async {
     String url = data[index]["@id"];
@@ -93,8 +92,6 @@ class EventListState extends State<EventList> {
     return "Success!";
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     //double width = MediaQuery.of(context).size.width;
@@ -103,7 +100,7 @@ class EventListState extends State<EventList> {
           itemCount: data == null ? 0 : data.length,
           itemBuilder: (BuildContext context, int index) {
             return Slidable(
-              delegate:SlidableDrawerDelegate(),
+              delegate: SlidableDrawerDelegate(),
               actionExtentRatio: 0.25,
               child: Center(
                 child: Column(
@@ -119,13 +116,20 @@ class EventListState extends State<EventList> {
                       },
                       leading: CircleAvatar(
                         radius: 28.0,
-                        backgroundImage: data[index]["image"] == null ? 
-                        AssetImage('assets/images/default-image.jpg')
-                        : NetworkImage(data[index]["image"]
-                          ),
+                        backgroundImage: data[index]["image"] == null
+                            ? AssetImage('assets/images/default-image.jpg')
+                            : NetworkImage(data[index]["image"]),
                         backgroundColor: Colors.transparent,
                       ),
-                      trailing: Icon(Icons.more_vert),
+                      trailing: FlatButton(
+                        child: Icon(Icons.more_vert, color: Colors.black54),
+                        onPressed: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return Members(url: data[index]["@id"]);
+                          }));
+                        },
+                      ),
                       title: Text("Event Name: ${data[index]["title"]} "),
                       subtitle: Text("Event type: ${data[index]["@type"]}",
                           style:
@@ -138,17 +142,18 @@ class EventListState extends State<EventList> {
                 ),
               ),
               actions: <Widget>[
-               IconSlideAction(
+                IconSlideAction(
                   caption: 'Edit',
                   color: Colors.blue,
                   icon: Icons.edit,
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return EventsInfoEdit(url: data[index]["@id"]);
-          })),
+                  onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return EventsInfoEdit(url: data[index]["@id"]);
+                      })),
                 ),
               ],
               secondaryActions: <Widget>[
-               IconSlideAction(
+                IconSlideAction(
                   caption: 'Delete',
                   color: Colors.red,
                   icon: Icons.delete,
@@ -188,7 +193,6 @@ class EventListState extends State<EventList> {
                         var name = project["title"].toLowerCase();
                         return name.contains(text);
                       }).toList();
-                      
                     });
                     setsearchdata();
                   },
