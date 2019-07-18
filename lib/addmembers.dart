@@ -15,9 +15,9 @@ class AddMembersPageState extends State<AddMembersPage>
   final String url = "http://192.168.100.68:8080/Plone/@users";
   List data;
   List<bool> setval = List();
-  List select_users = List();
+  List select_users = [];
   List select_gorups;
-  List newdata = List();
+  List newdata = [List()];
 
   @override
   void initState() {

@@ -18,9 +18,6 @@ class EventList extends StatefulWidget {
 class EventListState extends State<EventList> {
   final String url = "http://192.168.100.68:8080/Plone/projects";
   List data;
-  List<String> image_links = List();
-  //List event_names = List();
-  //List event_links = List();
   Widget appBarTitle = Text('Events');
   Icon actionIcon = Icon(Icons.search);
   List newdata = List();
@@ -121,15 +118,32 @@ class EventListState extends State<EventList> {
                             : NetworkImage(data[index]["image"]),
                         backgroundColor: Colors.transparent,
                       ),
-                      trailing: FlatButton(
-                        child: Icon(Icons.more_vert, color: Colors.black54),
-                        onPressed: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) {
-                            return Members(url: data[index]["@id"]);
-                          }));
-                        },
-                      ),
+                      trailing: PopupMenuButton<int>(
+                            itemBuilder: (context) => [
+                                  PopupMenuItem(
+                                    value: 1,
+                                    child: FlatButton(
+                                      child: Text("Team Members"),
+                                      onPressed: () {
+                                        Navigator.push(context,
+                                            MaterialPageRoute(
+                                                builder: (context) {
+                                          return Members(
+                                              url: data[index]["@id"]);
+                                        }));
+                                      },
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 2,
+                                    child: FlatButton(
+                                      child: Text("Move to Top"),
+                                      onPressed: () {},
+                                    ),
+                                  ),
+                                ],
+                          ),
+                      
                       title: Text("Event Name: ${data[index]["title"]} "),
                       subtitle: Text("Event type: ${data[index]["@type"]}",
                           style:

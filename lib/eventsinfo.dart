@@ -8,15 +8,15 @@ import 'package:flutter/material.dart';
 
 import 'addmembers.dart';
 
-
-
 class EventsInfo extends StatefulWidget {
-  EventsInfoState createState() => EventsInfoState();
+  final String url;
+  EventsInfo({@required this.url});
+  EventsInfoState createState() => EventsInfoState(url: url);
 }
 
 class EventsInfoState extends State<EventsInfo> {
-  final String url = "http://192.168.100.67:8080/Plone/projects";
-  //TextEditingController controller = TextEditingController();
+  final String url;
+  EventsInfoState({@required this.url});
   String textString = "";
   bool isSwitched = false;
   List setval;
@@ -54,77 +54,76 @@ class EventsInfoState extends State<EventsInfo> {
     "changeNote": null
   };
 
-Future<void> _optionsDialogBox() {
-  
-return showDialog(context: context,
-    builder: (BuildContext context) {
-        
-return AlertDialog(
-          content: 
- SingleChildScrollView(
-            child: 
- ListBody(
-              children: <Widget>[
-                GestureDetector(
-                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[ 
-                    Text('Take a photo'),
-                    Icon(Icons.camera)
-                    ],),
-                  onTap: (){openimg(ImageSource.camera);},
-                ),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                GestureDetector(
-                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[ 
-                    Text('Select from gallery'),
-                    Icon(Icons.image)
-                    ],),
-
-                  onTap: (){openimg(ImageSource.gallery);},
-                ),
-              ],
+  Future<void> _optionsDialogBox() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  GestureDetector(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text('Take a photo'),
+                        Icon(Icons.camera)
+                      ],
+                    ),
+                    onTap: () {
+                      openimg(ImageSource.camera);
+                    },
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                  ),
+                  GestureDetector(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text('Select from gallery'),
+                        Icon(Icons.image)
+                      ],
+                    ),
+                    onTap: () {
+                      openimg(ImageSource.gallery);
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      });
-}
-
-
+          );
+        });
+  }
 
   Future openimg(ImageSource source) async {
-    //var file = File("assets/images/lake.jpg");
     var file = await ImagePicker.pickImage(source: source);
     var base64Image = file != null ? base64Encode(file.readAsBytesSync()) : "";
     jsonstr["image"]["data"] = base64Image;
     setState(() {
       photo = file;
-      });
-      Navigator.of(context, rootNavigator: true).pop(context);
-    }
-
-
+    });
+    Navigator.of(context, rootNavigator: true).pop(context);
+  }
 
   Future<String> uploadImg() async {
     var bytes = utf8.encode("admin:admin");
     var credentials = base64.encode(bytes);
-    var resp = await http.post(url, headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json",
-      "Authorization": "Basic $credentials"
-    }, body: jsonEncode(jsonstr));
+    var resp = await http.post(url,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Authorization": "Basic $credentials"
+        },
+        body: jsonEncode(jsonstr));
     print(resp.statusCode);
     return "Success!";
   }
 
-
   Widget inputWidget(
       {icon: Icon, use_switch = "", txt: Text, drop: DropdownButton}) {
-
-    String diplaytxt = txt.replaceAll( RegExp(r'_'), ' ');
-      diplaytxt = '${diplaytxt[0].toUpperCase()}${diplaytxt.substring(1)}';
+    String diplaytxt = txt.replaceAll(RegExp(r'_'), ' ');
+    diplaytxt = '${diplaytxt[0].toUpperCase()}${diplaytxt.substring(1)}';
     double width = MediaQuery.of(context).size.width;
     var padtext = Text(
       diplaytxt,
@@ -183,8 +182,7 @@ return AlertDialog(
             ],
           ),
         ));
-      }
-
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -198,42 +196,51 @@ return AlertDialog(
         Container(
           color: Colors.black54,
           //padding: EdgeInsets.all(20.0),
-        child:FlatButton(
-          padding: EdgeInsets.only(top: 50.0, bottom: 50.0),
-          color: Colors.black54,
-        child: photo == null? 
-        Icon(Icons.add_a_photo, size: 80.0, color: Colors.white,)
-        : Image.file(photo),
-        onPressed: (){_optionsDialogBox();},
-        ),),
+          child: FlatButton(
+            padding: EdgeInsets.only(top: 50.0, bottom: 50.0),
+            color: Colors.black54,
+            child: photo == null
+                ? Icon(
+                    Icons.add_a_photo,
+                    size: 80.0,
+                    color: Colors.white,
+                  )
+                : Image.file(photo),
+            onPressed: () {
+              _optionsDialogBox();
+            },
+          ),
+        ),
         Padding(
-              padding: EdgeInsets.only(top: 20.0, left:  50.0, right: 50.0),
-              child: Container(height: 60,
-                child: RaisedButton(
-                onPressed:()async {
-          setState(() async{
-                      jsonstr["attendees"] = await Navigator.push(context, 
-          MaterialPageRoute(builder: (context) {
-            return AddMembersPage(); 
-              }));
-          });
-
-              //print(jsonstr["attendees"]);
-              },
-              child: Icon(Icons.group_add, color: Colors.white,),
-              )
-              ),
-            ),Container(
-              padding: EdgeInsets.symmetric(vertical: 30.0),
-            child: 
-            Text( jsonstr["attendees"] == null? "No one assigned yet":
-            '${jsonstr["attendees"].length} person(s) added to this project',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.black54),
-            )
-            ),
-        inputWidget(
-            icon: Icon(Icons.title), txt: jsonstr.keys.elementAt(1)),
+          padding: EdgeInsets.only(top: 20.0, left: 50.0, right: 50.0),
+          child: Container(
+              height: 60,
+              child: RaisedButton(
+                onPressed: () async {
+                  var addedPersons = await Navigator.push(context,
+                      MaterialPageRoute(builder: (context) {
+                    return AddMembersPage();
+                  }));
+                  setState(() {
+                    jsonstr["attendees"] = addedPersons;
+                  });
+                },
+                child: Icon(
+                  Icons.group_add,
+                  color: Colors.white,
+                ),
+              )),
+        ),
+        Container(
+            padding: EdgeInsets.symmetric(vertical: 30.0),
+            child: Text(
+              jsonstr["attendees"] == null
+                  ? "No one assigned yet"
+                  : '${jsonstr["attendees"].length} person(s) added to this project',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black54),
+            )),
+        inputWidget(icon: Icon(Icons.title), txt: jsonstr.keys.elementAt(1)),
         inputWidget(
             icon: Icon(Icons.import_contacts), txt: jsonstr.keys.elementAt(2)),
         inputWidget(
@@ -244,12 +251,9 @@ return AlertDialog(
             icon: Icon(Icons.timer_off),
             txt: jsonstr.keys.elementAt(7),
             use_switch: jsonstr.keys.elementAt(7)),
-        inputWidget(
-            icon: Icon(Icons.contacts), txt: jsonstr.keys.elementAt(9)),
-        inputWidget(
-            icon: Icon(Icons.email), txt: jsonstr.keys.elementAt(10)),
-        inputWidget(
-            icon: Icon(Icons.phone), txt: jsonstr.keys.elementAt(11)),
+        inputWidget(icon: Icon(Icons.contacts), txt: jsonstr.keys.elementAt(9)),
+        inputWidget(icon: Icon(Icons.email), txt: jsonstr.keys.elementAt(10)),
+        inputWidget(icon: Icon(Icons.phone), txt: jsonstr.keys.elementAt(11)),
         inputWidget(
             icon: Icon(Icons.add_location), txt: jsonstr.keys.elementAt(13)),
       ]),

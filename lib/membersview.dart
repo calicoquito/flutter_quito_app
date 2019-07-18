@@ -34,7 +34,8 @@ class MembersState extends State<Members> {
 
     setState(() {
       var resBody = json.decode(response.body);
-      data = resBody["attendees"];
+      data = json.decode(resBody["attendees"][0]);
+      print(data[0]);
     });
 
     return "Success!";
@@ -55,7 +56,9 @@ class MembersState extends State<Members> {
                       onTap: () {},
                       leading: CircleAvatar(
                         radius:20.0,
-                        backgroundImage: NetworkImage(data[index]["portrait"]),
+                        backgroundImage: data[index]["portrait"] == null ? 
+                        AssetImage('assets/images/default-image.jpg') : 
+                        NetworkImage(data[index]["portrait"]),
                       backgroundColor: Colors.transparent,
                       ),
                     title: Text("${data[index]["fullname"]}"),

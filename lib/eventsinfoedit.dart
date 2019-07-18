@@ -7,6 +7,8 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'addmembers.dart';
+
 class EventsInfoEdit extends StatefulWidget {
   final String url;
   EventsInfoEdit({@required this.url});
@@ -23,21 +25,21 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   List setval = List();
   var photo = null;
   Map data = Map();
-  Map jsonstr = Map();
+
 
   @override
   void initState() {
     super.initState();
+    print(url);
     getdata();
-    setjson();
+
   }
 
-  void setjson() {
-    jsonstr.addAll({
+  Map jsonstr = {
       "@type": "project",
       "title": "Project by api 4",
       "description": "Project for tessting purposes",
-      "attendees": '[]',
+      "attendees": [],
       "start": "2019-06-12T17:20:00+00:00",
       "end": "2020-06-17T19:00:00+00:00",
       "whole_day": false,
@@ -63,8 +65,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
         "encoding": "utf-8"
       },
       "changeNote": null
-    });
-  }
+    };
 
   Future<void> _optionsDialogBox() {
     return showDialog(
@@ -115,15 +116,15 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     print(resp.statusCode);
     data = json.decode(resp.body);
 
-    for (String i in data.keys) {
-      if (data[i] == null) {
-        data[i] = false;
-      }
+    // for (String i in data.keys) {
+    //   if (data[i] == null) {
+    //     data[i] = false;
+    //   }
 
       setState(() {
-        photo = Image.network(data['image']['download']);
+        photo = data['image']['download'] == null ? null : Image.network(data['image']['download']);
       });
-    }
+    //}
     return "Success!";
   }
 
@@ -156,7 +157,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   Future<String> uploadImg() async {
     var bytes = utf8.encode("admin:admin");
     var credentials = base64.encode(bytes);
-    var resp = await http.post(url,
+    var resp = await http.patch(url,
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
@@ -164,6 +165,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
         },
         body: jsonEncode(jsonstr));
     print(resp.statusCode);
+    print(resp.body);
     return "Success!";
   }
 
@@ -200,7 +202,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
       },
     );
     var switch_true = Switch(
-        value: jsonstr[use_switch] == true ? true: false,
+        value: jsonstr[use_switch] == true ? true : false,
         onChanged: (value) {
           setState(() {
             jsonstr[use_switch] = value;
@@ -263,6 +265,35 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
             },
           ),
         ),
+        Padding(
+          padding: EdgeInsets.only(top: 20.0, left: 50.0, right: 50.0),
+          child: Container(
+              height: 60,
+              child: RaisedButton(
+                onPressed: () async {
+                  List addedPersons = await Navigator.push(context,
+                      MaterialPageRoute(builder: (context) {
+                    return AddMembersPage();
+                  }));
+                  setState(() {
+                    jsonstr["attendees"] = json.encode(addedPersons);
+                  });
+                },
+                child: Icon(
+                  Icons.group_add,
+                  color: Colors.white,
+                ),
+              )),
+        ),
+        Container(
+            padding: EdgeInsets.symmetric(vertical: 30.0),
+            child: Text(
+              jsonstr["attendees"] == null
+                  ? "No one assigned yet"
+                  : '${jsonstr["attendees"].length} person(s) added to this project',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black54),
+            )),
         inputWidget(icon: Icon(Icons.title), txt: jsonstr.keys.elementAt(1)),
         inputWidget(
             icon: Icon(Icons.import_contacts), txt: jsonstr.keys.elementAt(2)),
