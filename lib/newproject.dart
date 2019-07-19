@@ -5,13 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:quito_1/helperclasses/projectsbloc.dart';
 import 'package:quito_1/sidedrawer.dart';
 import 'addmembers.dart';
-import 'helperclasses/user.dart';
 
 class NewProject extends StatefulWidget{
-  @override
-  NewProject({Key key, this.user}):super(key:key);
-  final User user;
-
   @override
   NewProjectState createState() => NewProjectState();
 }
@@ -36,10 +31,7 @@ class NewProjectState extends State<NewProject>{
   Widget build(BuildContext context){
     final ProjectsBloc projectsBloc = Provider.of<ProjectsBloc>(context);
     return Scaffold(
-      drawer: Hero(
-        tag: 'navdrawer',
-        child: SideDrawer(user:widget.user,)
-      ),
+      drawer: SideDrawer(),
       appBar: AppBar(
         title: Text(
           'New Project',
@@ -122,7 +114,7 @@ class NewProjectState extends State<NewProject>{
           projectsBloc.addProject(Project(controller.text));
           Navigator.of(context).push(MaterialPageRoute(
             maintainState: true,
-            builder: (context){return AddMembersPage(user: widget.user,);}));
+            builder: (context){return AddMembersPage();}));
         },
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../openchatscreen.dart';
 import 'user.dart';
 
@@ -10,11 +11,10 @@ import 'user.dart';
 
 class Chat extends StatefulWidget{
   final String title;
-  final User recipient;
-  final User user;
+  final String channelId;
 
   @override
-  Chat({Key key, this.recipient, this.title, this.user}): super(key:key);
+  Chat({Key key, this.title, @required this.channelId,}): super(key:key);
 
   @override
   ChatState createState() => ChatState();
@@ -34,6 +34,7 @@ class ChatState extends State<Chat> {
   }
 
   handleTap(){
+    final User user = Provider.of<User>(context);
     if(isSelected){
       setState(() {
         isSelected =false;
@@ -43,7 +44,7 @@ class ChatState extends State<Chat> {
     else{
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context)=>OpenChatScreen(title:widget.title, recipient:widget.recipient, user: widget.user,)
+          builder: (context)=>OpenChatScreen(title:widget.title, channelId: widget.channelId, user: user,)
         )
       );
     }

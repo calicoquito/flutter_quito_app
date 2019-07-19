@@ -1,50 +1,27 @@
-import 'package:flutter/cupertino.dart';
-
 /*
- * This InheritedWidget is used to pass the user's
+ * This is used to pass the user's
  * information down the widget tree as the user 
  * traverses the app
  */
 
-class InheritedUser extends InheritedWidget{
-  final User user;
-  InheritedUser({Widget child, this.user}): super(child: child);
-
-  @override
-  bool updateShouldNotify(InheritedWidget oldWidget) => true;
-
-  static InheritedUser of(BuildContext context)=> 
-    context.inheritFromWidgetOfExactType(InheritedUser);
-}
-
 class User{
-  String _username;
-  String _password;
-  String _token;
-  String _userID;
+  String username;
+  String password;
+  String ploneToken;
+  String mattermostToken;
+  String userId;
+  Map<String, String> members;
 
-  User({String username, String password, String token, String userID}){
-    this._username = username;
-    this._password = password;
-    this._token = token;
-    this._userID = userID;
-  }
+  static final User _user = User._internal();
 
-  String get username => _username;
-  String get password => _password;
-  String get token => _token;
-  String get userID => _userID;
+  factory User()=> _user; 
 
-  set username(String username){
-    this._username = username;
-  }
-  set password(String password){
-    this._password = password;
-  }
-  set token(String token){
-    this._token = token;
-  }
-  set userID(String userID){
-    this._userID = userID;
+  User._internal(){
+    username = 'null';
+    password = 'null';
+    ploneToken= 'null';
+    mattermostToken = 'null';
+    userId = 'null';
+    members = Map();
   }
 }

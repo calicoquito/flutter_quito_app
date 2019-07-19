@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:provider/provider.dart';
 import 'helperclasses/user.dart';
+import 'splashscreen.dart';
+import 'dart:convert';
 
 
 /*
@@ -29,16 +32,37 @@ class SignInScreen extends StatefulWidget{
   SignInScreenState createState() => SignInScreenState();
 }
 
-class SignInScreenState extends State<SignInScreen> {
+class SignInScreenState extends State<SignInScreen> with SingleTickerProviderStateMixin{
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  User user = User(username: 'username', password: 'password', token: 'token');
+  String usernameErrorString;
   bool isLoading;
+  bool isTyping;
+  
+  void handleChange(String text){
+    setState(() {
+      isTyping=true;
+      usernameErrorString =null;
+    });
+  }
+
+  void handleSubmit(){
+    if(usernameController.text.isEmpty){
+      setState(() {
+       usernameErrorString = "Must not be empty"; 
+      });
+    }
+    setState(() {
+      isTyping=false; 
+    });
+  }
 
   @override
   void initState(){
     super.initState();
+    usernameErrorString= null;
     isLoading = false;
+    isTyping = false;
   }
 
   @override
@@ -48,141 +72,187 @@ class SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context){
-    return Center(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Container(
-              height: 70,
-              width:200,
-              child: SvgPicture.asset('images/quitologo.svg'),
-            ),
-            SizedBox(height: 30.0,),
-            TextField(
-              controller: usernameController,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white70,
-                contentPadding: EdgeInsets.all(8.0),
-                labelText: 'Username',
-                hintText: 'username'
-              ),
-            ),
-            SizedBox(height: 20.0,),
-            PasswordTextField(
-              textEditingController: passwordController,
-            ),
-            SizedBox(height: 30.0,),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+    final User user = Provider.of<User>(context);
+    return WillPopScope(
+      // Displays a dialog which will appear when a user hits the back button on the login screen
+      onWillPop:() async{
+        return showDialog(context: context, 
+          builder: (context) {
+            return SimpleDialog(
+              title: Center(child: Text('Exit?')),
               children: <Widget>[
-                Center(
-                  child: RaisedButton(
-                    elevation: 10.0 ,
-                    color: Theme.of(context).primaryColor,
-                    child: Padding(
-                      padding: const EdgeInsets.all(6.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Text('Login',style: TextStyle(color: Colors.white),),
-                          SizedBox(width: 5,),
-                          !isLoading ? Icon(Icons.arrow_forward, color: Colors.white,)
-                          :Container(
-                            width: 20.0,
-                            height: 20.0,
-                            child: CircularProgressIndicator(
-                              backgroundColor: Colors.white, 
-                              strokeWidth: 2.0,
-                            ),
-                          )
-                        ],
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    SimpleDialogOption(
+                      child: FlatButton(
+                        shape: Border.all(width: 2.0, color: Theme.of(context).primaryColor),
+                        child: Text('Yes'),
+                        onPressed: (){
+                          Navigator.pop(context, true);
+                        },
                       ),
                     ),
-                    onPressed: () async {
-                      setState(() {
-                        isLoading=true;
-                        user.username = usernameController.text.trim();
-                        user.password = passwordController.text.trim();
-                        user.userID = usernameController.text.trim();
-                        //user.token = jsonDecode(resp.body)['token'];
-                      });
-                      Navigator.of(context).pushNamed('/home', arguments:user);
-                      setState(() {
-                        isLoading=false; 
-                      });
-                                        
-                      // http.post('http://10.22.0.63:8080/Plone/@login', 
-                      //   headers: {"Accept":"application/json", 
-                      //     "Content-Type":"application/json"}, 
-                      //   body: jsonEncode({"login":usernameController.text.trim(), "password":passwordController.text.trim()}))
-                      // .then((resp){
-                      //   if(resp.statusCode==200){
-                      //     setState(() {
-                      //       user.username = usernameController.text.trim();
-                      //       user.password = passwordController.text.trim();
-                      //       user.token = jsonDecode(resp.body)['token'];
-                      //     });
-                      //     Navigator.of(context).pushNamed('/home', arguments:user);
-                      //   }
-                      //   else {
-                      //     setState((){
-                      //        isLoading = false;
-                      //     })
-                      //     Scaffold.of(context).showSnackBar(
-                      //       SnackBar(
-                      //         backgroundColor:Theme.of(context).backgroundColor,
-                      //         content: Text(
-                      //           'Username or password incorrect',
-                      //           textAlign: TextAlign.center,
-                      //           style: TextStyle(color: Colors.red),
-                      //         ),
-                      //       )
-                      //     );
-                      //   }
-                      // })
-                      // .catchError((err){
-                      //   print(err);
-                      //   setState((){
-                      //        isLoading = false;
-                      //   })
-                      //   Scaffold.of(context).showSnackBar(
-                      //     SnackBar(
-                      //       backgroundColor:Theme.of(context).backgroundColor,
-                      //       content: Text(
-                      //         'Check internet connection',
-                      //         textAlign: TextAlign.center,
-                      //         style: TextStyle(color: Colors.red),
-                      //       ),
-                      //     )
-                      //   );
-                      // });
-                    }
+                    SimpleDialogOption(
+                      child: RaisedButton(
+                        color: Theme.of(context).primaryColor,
+                        textColor: Colors.black,
+                        child: Text('No', style: TextStyle(color: Colors.white),),
+                        onPressed: (){
+                          Navigator.pop(context, false);
+                        },
+                      ),
+                    )
+                  ],
+                ),
+              ],
+            );
+          }
+        );
+      } ,
+      // the login screen
+      child: Scaffold(
+        body: Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  height: 70,
+                  width:200,
+                  child: Hero(tag:'logo', child: SvgPicture.asset('images/quitologo.svg')),
+                ),
+                SizedBox(height: 30.0,),
+                // Handles the username input
+                TextField(
+                  onChanged: handleChange,
+                  controller: usernameController,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white70,
+                    contentPadding: EdgeInsets.all(8.0),
+                    labelText: 'Username',
+                    hintText: 'username',
+                    errorText: usernameErrorString
                   ),
                 ),
-                SizedBox(width: 20),
-                RawMaterialButton(
-                  onPressed: (){
-                    print('Forgot Password');
-                  },
-                  child: Text('Forgot Password?', style: TextStyle(color: Colors.pink),)
+                SizedBox(height: 30.0,),
+                PasswordTextField(
+                  textEditingController: passwordController,
                 ),
-              ]
-            ),
-            SizedBox(height:50.0,),
-            Center(
-              child: RaisedButton( 
-                color: Theme.of(context).primaryColor, 
-                child: Text('Sign in with Google',
-                  style: TextStyle(color: Colors.white),),
-                onPressed: (){},
-              ),
+                SizedBox(height: 30.0,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    Center(
+                      child: RaisedButton(
+                        elevation: 10.0 ,
+                        color: Theme.of(context).primaryColor,
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Text('Login',style: TextStyle(color: Colors.white),),
+                              SizedBox(width: 5,),
+                              !isLoading ? Icon(Icons.arrow_forward, color: Colors.white,)
+                              :Container(
+                                width: 20.0,
+                                height: 20.0,
+                                child: CircularProgressIndicator(
+                                  backgroundColor: Colors.white, 
+                                  strokeWidth: 2.0,
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                        onPressed: () async {
+                          if(usernameController.text.isEmpty){
+                            setState(() {
+                             usernameErrorString ="Must not be empty"; 
+                            });
+                            return;
+                          }
+
+                          setState(() {
+                            isLoading=true;
+                          });
+
+                          http.post('http://calico.palisadoes.org/@login', 
+                            headers: {"Accept":"application/json",  "Content-Type":"application/json"}, 
+                            body: jsonEncode({"login":usernameController.text.trim(), "password":passwordController.text.trim()}))
+                          .then((resp){
+                            if(resp.statusCode==200){
+                              user.username =  usernameController.text.trim();
+                              user.password = passwordController.text.trim();
+                              user.ploneToken = jsonDecode(resp.body)['token'];
+                            
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context)=> SplashScreen()
+                                )
+                              );
+                              setState((){
+                                usernameController.clear();
+                                passwordController.clear();
+                                isLoading = false;
+                              });
+                            }
+                            else {
+                              setState((){
+                                 isLoading = false;
+                              });
+                              print('Username or password incorrect');
+                              // Scaffold.of(context).showSnackBar(
+                              //   SnackBar(
+                              //     backgroundColor:Theme.of(context).backgroundColor,
+                              //     content: Text(
+                              //       'Username or password incorrect',
+                              //       textAlign: TextAlign.center,
+                              //       style: TextStyle(color: Colors.red),
+                              //     ),
+                              //   )
+                              // );
+                            }
+                          })
+                          .catchError((err){
+                            setState((){
+                                 isLoading = false;
+                            });
+                            // Scaffold.of(context).showSnackBar(
+                            //   SnackBar(
+                            //     backgroundColor:Theme.of(context).backgroundColor,
+                            //     content: Text(
+                            //       'Check internet connection',
+                            //       textAlign: TextAlign.center,
+                            //       style: TextStyle(color: Colors.red),
+                            //     ),
+                            //   )
+                            // );
+                          });
+                        }
+                      ),
+                    ),
+                    SizedBox(width: 20),
+                    RichText(
+                      text: TextSpan(
+                        text: 'Forgot Password?', 
+                        style: TextStyle(color: Colors.pink),
+                        recognizer: TapGestureRecognizer()..onTap = (){
+                          print('Forgot password');
+                        }
+                     )
+                    ),
+                  ]
+                ),
+              ],
             )
-          ],
-        )
+          ),
+        ),
       ),
     );
   }
@@ -195,7 +265,8 @@ class SignInScreenState extends State<SignInScreen> {
 */
 
 class PasswordTextField extends StatefulWidget{
-  PasswordTextField({Key key, this.textEditingController});
+  final String errorString;
+  PasswordTextField({Key key, this.textEditingController, this.errorString});
 
   final TextEditingController textEditingController;
   @override
@@ -219,11 +290,11 @@ class PasswordTextFieldState extends State<PasswordTextField>{
     });
   }
 
-  void handleChange(String _){
+  void handleChange(String string){
     if(isPressed){
       setState(() {
         isPressed=false;
-        icon = Icon(Icons.visibility_off, size: 18,);
+        icon = Icon(Icons.visibility_off, size: 18);
       });
     }
   }

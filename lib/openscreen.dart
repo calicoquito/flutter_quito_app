@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:quito_1/events.dart';
-import 'package:quito_1/sidedrawer.dart';
-import 'helperclasses/user.dart';
-import 'openchatscreen.dart';
-
+import 'events.dart';
+import 'sidedrawer.dart';
 
 /*
   The OpenScreen Widget defines the screen a user see immediately after
@@ -25,90 +21,89 @@ import 'openchatscreen.dart';
 */
 
 class OpenScreen extends StatefulWidget {
-  OpenScreen({Key key, this.user}) : super(key: key);
-  final User user;
-
   @override
   OpenScreenState createState() => OpenScreenState();
 }
 
 class OpenScreenState extends State<OpenScreen> {
-  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
-
-  Future<dynamic> onNotificationReceived(Map<String, dynamic> message) async{
-    if(message['data']['sender']!=null){
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => OpenChatScreen(title:message['data']['sender'])
-        )
-      );
-    }
-  }
-
-  Future<dynamic> onMessageReceived(Map<String, dynamic> message) async {
-    Scaffold.of(context).showSnackBar(
-      SnackBar(
-        content: Text('New Message'),
-      )
-    );
-  }
-
-  void messageListener(){
-    firebaseMessaging.configure(
-      onLaunch: onNotificationReceived,
-      onMessage: onMessageReceived,
-      onResume: onNotificationReceived
-    );
-  }
-
   @override
   void initState(){
     super.initState();
-    firebaseMessaging.subscribeToTopic('chats');
-    messageListener();
+  }
+
+  @override 
+  void dispose(){
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Scaffold(
-        drawer: Hero(
-          tag:'navdrawer',
-          child: SideDrawer(user:widget.user)
-        ),
-        appBar: AppBar(
-          title: Text('Welcome'),
-          centerTitle: true,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Start something new today',
-                style: TextStyle(
-                  color: Colors.blueGrey,
-                  fontSize: 18.0
-                )
-              ),
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: (){
-            Navigator.push(context,
-              MaterialPageRoute(
-                builder: (context){
-                  return EventList();
-                }
+    return Scaffold(
+      drawer: Hero(
+        tag:'navdrawer',
+        child: SideDrawer()
+      ),
+      appBar: AppBar(
+        title: Text('Welcome'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Start something new today',
+              style: TextStyle(
+                color: Colors.blueGrey,
+                fontSize: 18.0
               )
-            );
-          },
-          tooltip: 'New Event',
-          child: Icon(Icons.add),
+            ),
+          ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){
+          Navigator.push(context,
+            MaterialPageRoute(
+              builder: (context){
+                return EventList();
+              }
+            )
+          );
+        },
+        tooltip: 'New Event',
+        child: Icon(Icons.add),
       ),
     );
   }
 } 
+
+//Push Notifications from firebase
+
+// void messageListener(){
+//     firebaseMessaging.configure(
+//       onLaunch: onNotificationReceived,
+//       onMessage: onMessageReceived,
+//       onResume: onNotificationReceived
+//     );
+//   }
+
+// final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+
+  // Future<dynamic> onNotificationReceived(Map<String, dynamic> message) async{
+  //   if(message['data']['sender']!=null){
+  //     Navigator.of(context).push(
+  //       MaterialPageRoute(
+  //         builder: (context) => OpenChatScreen(title:message['data']['sender'])
+  //       )
+  //     );
+  //   }
+  // }
+
+  // Future<dynamic> onMessageReceived(Map<String, dynamic> message) async {
+  //   Scaffold.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text('New Message'),
+  //     )
+  //   );
+  // }

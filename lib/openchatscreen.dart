@@ -1,7 +1,11 @@
-import 'dart:async';
+ import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'dart:async';
+import 'dart:convert';
 import 'helperclasses/message.dart';
 import 'helperclasses/user.dart';
 
@@ -14,11 +18,11 @@ import 'helperclasses/user.dart';
 
 class OpenChatScreen extends StatefulWidget{
   final String title;
+  final String channelId;
   final User user;
-  final User recipient;
 
   @override
-  OpenChatScreen({Key key, this.title, this.user, this.recipient}):super(key:key);
+  OpenChatScreen({Key key, this.title, @required this.channelId, this.user}) : super(key:key);
 
   @override
   OpenChatScreenState createState() => OpenChatScreenState(); 
@@ -27,203 +31,224 @@ class OpenChatScreen extends StatefulWidget{
 class OpenChatScreenState extends State<OpenChatScreen>{
   TextEditingController controller = TextEditingController();
   ScrollController scrollController = ScrollController();
-  final firestore = Firestore.instance;
-  DocumentReference senderChatDocumentReference;
-  DocumentReference receiverChatDocumentReference;
-  StreamSubscription chatStream;
+  WebSocket socket;
+  String message; //used to store the message after the controller is cleared so it can still be used
 
   List<Widget> messages =[
   ];
 
+  void connect() async{
+     socket = await WebSocket.connect(
+      'ws://mattermost.alteroo.com/api/v4/websocket',
+      headers: {'Authorization': 'Bearer ${widget.user.mattermostToken}'}
+    );
+    int seq = -1; // used to keep track of each data packet
+    socket.listen((data){
+      final jsonData = jsonDecode(data);
+      int newSeq = jsonData['seq'];
+      if(seq!=newSeq){
+        if (jsonData['event']=='posted'){
+          final postData = jsonData['data'];
+          final post = jsonDecode(postData['post']);
+          
+          if(post['user_id']!=widget.user.userId && post['channel_id']==widget.channelId){
+            setState(() {
+              messages.add(Message(message: post['message'], username: widget.user.members[post['user_id']],)); 
+            });
+            Timer(
+              Duration(milliseconds: 100),
+              (){
+                scrollController.jumpTo(scrollController.position.maxScrollExtent);
+              }
+            );
+          }
+        }
+      }
+      else{
+        seq = newSeq;
+      }
+    },
+    onError: (err){
+      print(err);
+    },
+    onDone: (){
+      print('done');
+    });
+  }
+
+  void getMessages() async{
+    try {
+      final resp = await http.get(
+        'http://mattermost.alteroo.com/api/v4/channels/${widget.channelId}/posts?page=0&per_page=30',
+        headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
+      );
+      final jsonData = jsonDecode(resp.body);
+      final order = jsonData['order'].reversed.toList();
+      final posts = jsonData['posts'];
+     
+      order.forEach((postId){
+        final type = posts[postId]['type'];
+        final message = posts[postId]['message'];
+        final senderId = posts[postId]['user_id'];
+        final channelId = posts[postId]['channel_id'];
+        if(channelId==widget.channelId && type ==""){
+          if(senderId==widget.user.userId){
+            setState(() {
+              messages.add(Message(message: message, username: "Me",));
+            });
+          }
+          else{
+            setState(() {
+              messages.add(Message(message: message, username: widget.user.members[senderId],));
+            });
+          }  
+        }
+        Timer(
+          Duration(milliseconds: 100),
+          (){
+            scrollController.jumpTo(scrollController.position.maxScrollExtent);
+          }
+        );
+      });
+    }
+    catch(err){
+      print(err);
+    }
+    
+  }
+
+  void closeConnection() async{
+    await socket.close();
+  }
+
   void handleSend() async {
-    print('Sent ${controller.text}');
+    final User user = Provider.of<User>(context);
     if(controller.text.isNotEmpty){
       setState(() {
-        messages.add(OutgoingMessage(message: controller.text,));
+        messages.add(Message(message: controller.text.trim(), username: "Me",));
+        message = controller.text.trim();
         controller.clear();
       });
-      final senderChatDocument = await senderChatDocumentReference.get();
-      try{
-        await senderChatDocument.reference.updateData({
-          'messages':[
-            ...senderChatDocument.data['messages'],
-            {
-              'type': 'outgoing',
-              'body': controller.text
-            }
-          ]
-        });
-        final receiverChatDocument = await receiverChatDocumentReference.get();
-        await receiverChatDocument.reference.updateData({
-          'messages':[
-            ...receiverChatDocument.data['messages'],
-            {
-              'type': 'incoming',
-              'body': controller.text
-            }
-          ]
-        });
-        //scrolls to the last message received
-        Timer(Duration(milliseconds: 100),(){scrollController.jumpTo(scrollController.position.maxScrollExtent);});
-      }
-      catch(err){
-        print(err);
-      }
+      http.post(
+        'http://mattermost.alteroo.com/api/v4/posts',
+        headers: {'Authorization':'Bearer ${user.mattermostToken}'},
+        body: jsonEncode({'message':message, 'channel_id':'${widget.channelId}'})
+      );
+      Timer(
+        Duration(milliseconds: 100),
+        (){
+          scrollController.jumpTo(scrollController.position.maxScrollExtent);
+        }
+      );
     }
   }
 
   @override
   void initState(){
     super.initState();
-    senderChatDocumentReference = firestore.document('/users/${widget.user.userID}/contacts/${widget.recipient.userID}');
-    receiverChatDocumentReference = firestore.document('/users/${widget.recipient.userID}/contacts/${widget.user.userID}');
-    chatStream = senderChatDocumentReference.snapshots().listen((snapshot){
-      try{
-        if(snapshot['messages'].length-1>0 && snapshot['messages'][snapshot['messages'].length-1]['type']=='incoming'){
-          setState(() {
-            messages.add(IncomingMessage(message: snapshot['messages'][snapshot['messages'].length-1]['body']));
-          });
-          //scrolls to the last message received
-          Timer(Duration(milliseconds: 100),(){scrollController.jumpTo(scrollController.position.maxScrollExtent);});
-        }
-      }
-      catch(err){
-        print(err);
-      }
-    });
+    connect();
+    getMessages();
   }
 
   @override
   void dispose(){
-    chatStream.cancel();
-    senderChatDocumentReference.updateData({'messages':[]});
+    closeConnection();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragEnd: (details){
-        if(details.velocity.pixelsPerSecond.dx>0)
-          Navigator.of(context).pop();
-      },
-      child: Scaffold(
-        //Appbar at the top of the page
-        appBar: AppBar(
-          elevation: 10.0,
-          titleSpacing: 0.0,
-          title: Row(
-            children: <Widget>[
-              CircleAvatar(
-                backgroundColor: Theme.of(context).primaryColor,
-                child: Icon(Icons.person),
-              ),
-              SizedBox(width: 5.0,),
-              Text(widget.title)
-            ],
-          ),
-          actions: <Widget>[
-            PopupMenuButton(
-              onSelected: (item){
-                print('item was selected');
-              },
-              itemBuilder: (context){
-                return <PopupMenuItem>[
-                  PopupMenuItem(
-                    child: Text('Settings'),
-                  ),
-                  PopupMenuItem(
-                    child: Text('Log out'),
-                  )
-                ];
-              },
-            )
+    return Scaffold(
+      backgroundColor: Colors.grey[100],
+      //Appbar at the top of the page
+      appBar: AppBar(
+        elevation: 10.0,
+        titleSpacing: 0.0,
+        title: Row(
+          children: <Widget>[
+            CircleAvatar(
+              backgroundColor: Theme.of(context).primaryColor,
+              child: Icon(Icons.person),
+            ),
+            SizedBox(width: 5.0,),
+            Text(widget.title)
           ],
         ),
+        actions: <Widget>[
+          PopupMenuButton(
+            onSelected: (index){
+              if(index==1){
+                Navigator.of(context).pushNamedAndRemoveUntil('/', ModalRoute.withName('/'));
+              }
+            },
+            itemBuilder: (context){
+              return <PopupMenuItem>[
+                PopupMenuItem(
+                  child: Text('Chat Settings'),
+                  value: 0,
+                ),
+                PopupMenuItem(
+                  child: Text('Log out'),
+                  value: 1,
+                )
+              ];
+            },
+          )
+        ],
+      ),
 
-        //Contents of the page
-        body: Stack(
+      //Contents of the page
+      body: Container(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             //This is the area where the chat messages will be displayed
-            Positioned(
-              top: 0.0,
-              bottom: MediaQuery.of(context).size.height*0.09,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height*0.09,
-                child: messages.length==0?
-                Center(child: Text('No messages'),)
-                :ListView.builder(
-                  controller: scrollController,
-                  itemCount: messages.length,
-                  itemBuilder: (context, index){
-                    return messages[index];
-                  },
-                ),
+            Flexible(
+              child: messages.length==0 
+              ?Center(child: Text('No messages'))
+              :ListView.builder(
+                controller: scrollController,
+                itemCount: messages.length,
+                itemBuilder: (context, index){
+                  return messages[index];
+                },
               ),
             ),
 
             //This is the bar at the bottom of the page where text is written to be sent
-            Positioned(
-              bottom: 0.0,
+            Container(
               width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height*0.09,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Color(0xffeeeeee),
-                  border: Border(
-                    top: BorderSide(width: 0.2),
-                    bottom: BorderSide(width: 0.2),
-                    left:BorderSide(width: 0.2),
-                    right: BorderSide(width: 0.2)
-                  )
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  children: <Widget>[
-                    IconButton(
-                      tooltip: "Add stuff",
-                      icon:Icon(Icons.add),
-                      onPressed: (){},
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    Container(
-                      width: MediaQuery.of(context).size.width*0.5,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextField(
-                          controller: controller,
-                          expands: true,
-                          maxLines: null,
-                          autocorrect: true,
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(horizontal:10),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
-                            focusedBorder: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(15.0))),
-                            filled: true,
-                            fillColor: Color(0xffffffff),
-                            hasFloatingPlaceholder: false,
-                            labelText: "Type..."
-                          ),
+              height: 50,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded( 
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        controller: controller,
+                        expands: true,
+                        maxLines: null,
+                        autocorrect: true,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(horizontal:10),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
+                          filled: true,
+                          fillColor: Color(0xffffffff),
+                          hasFloatingPlaceholder: false,
+                          labelText: "Type..."
                         ),
                       ),
                     ),
-                    IconButton(
-                      color: Theme.of(context).primaryColor,
-                      icon: Icon(Icons.camera_alt),
-                      onPressed: (){},
-                    ),
-
-                    //This button sends the message
-                    IconButton(
-                      color: Theme.of(context).primaryColor,
-                      icon: Icon(Icons.send),
-                      onPressed: handleSend
-                    )
-                  ],
-                ),
-              )
+                  ),
+                  //This button sends the message
+                  IconButton(
+                    color: Theme.of(context).primaryColor,
+                    icon: Icon(Icons.send),
+                    onPressed: handleSend
+                  )
+                ],
+              ),
             ),
           ],
         ),

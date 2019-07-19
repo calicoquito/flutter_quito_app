@@ -14,15 +14,12 @@ import 'helperclasses/user.dart';
  * project will look. 
  */
 class AddMembersPage extends StatelessWidget{
-  AddMembersPage({Key key, this.user}):super(key:key);
-  final User user;
-
   @override
   Widget build(BuildContext context){
     return Scaffold(
       drawer: Hero(
         tag: 'navdrawer',
-        child: SideDrawer(user:user),
+        child: SideDrawer(),
       ),
       appBar: AppBar(
         title: Text(

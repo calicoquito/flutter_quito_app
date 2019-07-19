@@ -4,9 +4,7 @@ import 'helperclasses/projectsbloc.dart';
 
 class Projects extends StatefulWidget{
   @override
-  ProjectsState createState() {
-    return ProjectsState();
-  }
+  ProjectsState createState()=>ProjectsState();
 }
     
 class ProjectsState extends State<Projects>{
@@ -18,7 +16,7 @@ class ProjectsState extends State<Projects>{
       body: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(Icons.filter_none,size: 50.0,color: Colors.white,),
+          Icon(Icons.filter_none, size: 50.0, color: Colors.white,),
           Container(
             height: MediaQuery.of(context).size.height*0.4,
             child: projectsBloc.length()==0 ? Center(

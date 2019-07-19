@@ -1,16 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import 'package:provider/provider.dart';
 import 'chatscreen.dart';
 import 'helperclasses/user.dart';
 import 'projectscreen.dart';
 import 'settings.dart';
 
-class SideDrawer extends StatelessWidget{
-  SideDrawer({Key key, this.user}): super(key:key);
-  final User user;
+class SideDrawer extends StatefulWidget{
+  @override
+  SideDrawerState createState() => SideDrawerState();
+}
+
+class SideDrawerState extends State<SideDrawer> {
+  @override
+  void initState(){
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context){
+    final User user = Provider.of<User>(context);
     return SizedBox(
       width: MediaQuery.of(context).size.width*0.5,
       child: Drawer(
@@ -62,7 +76,7 @@ class SideDrawer extends StatelessWidget{
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context)=> ChatScreen(user:user)
+                    builder: (context)=> ChatScreen()
                   )
                 );
               },
@@ -95,8 +109,7 @@ class SideDrawer extends StatelessWidget{
               leading: Icon(Icons.exit_to_app),
               title: Text('Logout'),
               onTap: (){
-                Navigator.of(context).pop();
-                Navigator.of(context).popUntil(ModalRoute.withName('/'));
+                Navigator.of(context).pushNamedAndRemoveUntil('/', ModalRoute.withName('/'));
               },
             )
           ]

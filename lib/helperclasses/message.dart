@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 
-abstract class Message extends StatefulWidget{
+class Message extends StatefulWidget{
+  final String username;
   final String message;
-  Message({Key key, this.message}):super(key:key);
-}
-
-class OutgoingMessage extends Message{
   @override
-  OutgoingMessage({Key key, String message}):super(key:key, message:message);
+  Message({Key key, this.message, this.username}):super(key:key);
 
   @override
-  OutgoingMessageState createState() => OutgoingMessageState();
+  MessageState createState() => MessageState();
 }
 
-class OutgoingMessageState extends State<OutgoingMessage>{
+class MessageState extends State<Message>{
   Color color;
   double elevation;
   bool isPressed=false;
@@ -35,7 +32,7 @@ class OutgoingMessageState extends State<OutgoingMessage>{
         if(!isPressed){
           setState(() {
             isPressed=true;
-            color= Colors.blueAccent[100];
+            color= Colors.blueAccent[100].withOpacity(0.5);
             elevation=0.0;
           });
         }
@@ -49,104 +46,29 @@ class OutgoingMessageState extends State<OutgoingMessage>{
           });
         }
       },
-      child: Padding(
-        padding: const EdgeInsets.all(2.0),
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: Material(
-            color: color,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Container(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth:MediaQuery.of(context).size.width*0.5),
-                  child: Card(
-                    color: color,
-                    elevation: elevation,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(widget.message,
-                        style: TextStyle(fontSize: 20),
-                        softWrap: true,
-                      ),
-                    )
-                  ),
+      child: Material(
+        color: Colors.transparent,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth:MediaQuery.of(context).size.width*0.9),
+            child: ListTile(
+              contentPadding: EdgeInsets.only(left: 8),
+              leading: CircleAvatar(child: Icon(Icons.person)),
+              title: Text(
+                widget.username,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16  ,
+                  color: Theme.of(context).primaryColor
                 ),
+                softWrap: true,
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class IncomingMessage extends Message{
-  @override
-  IncomingMessage({Key key, String message}):super(key:key, message:message);
-
-  @override
-  IncomingMessageState createState() => IncomingMessageState();
-}
-
-class IncomingMessageState extends State<IncomingMessage>{
-  Color color;
-  double elevation;
-  bool isPressed=false;
-
-  @override
-  void initState(){
-    super.initState();
-  }
-
-  @override
-  void dispose(){
-    super.dispose();
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: (){
-        if(!isPressed){
-          setState(() {
-            isPressed=true;
-            color= Colors.blueAccent[100];
-            elevation=0.0;
-          });
-        }
-      },
-      onTap: (){
-        if(isPressed){
-          setState(() {
-            isPressed =false;
-            color=Theme.of(context).scaffoldBackgroundColor;
-            elevation=1.0;
-          });
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(2.0),
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: Material(
-            color: color,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth:MediaQuery.of(context).size.width*0.5),
-                  child: Card(
-                    color: color,
-                    elevation: elevation, 
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(widget.message,
-                        style: TextStyle(fontSize: 20),
-                        softWrap: true,
-                      ),
-                    )
-                  ),
+              subtitle: Text(
+                widget.message,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black
                 ),
               ),
             ),

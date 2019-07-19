@@ -79,64 +79,64 @@ class EventListState extends State<EventList> {
     return "Success!";
   }
 
-  //final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+  // final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
 
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     Widget lst(Icon ico, List data) {
-      return 
-      ///RefreshIndicator(
-        //key: _refreshIndicatorKey,
-        //onRefresh: (){getSWData();},
-        //child: 
-        ListView.builder(
-          itemCount: data == null ? 0 : data.length-1,
-          itemBuilder: (BuildContext context, int index) {
-            final item = data[index]["@id"];
-            return Dismissible(
-              direction: DismissDirection.startToEnd,
-              background: Container(color: Colors.red,
-              padding: EdgeInsets.only(right: 0.8 * width),
-              child: Icon(Icons.delete, color: Colors.white)),
-              key: Key(item),
-              onDismissed: (direction) {
-                  // Remove the item from the data source.
-                  setState(() {
-                    data.removeAt(index);
-                    delete(index);
-                  });  
-              },
-              child: Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    ListTile(
-                      contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
-                      onTap: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return TaskList(url: data[index]["@id"]);
-                        }));
-                      },
-                      leading: CircleAvatar(
-                        radius: 28.0,
-                        backgroundImage: NetworkImage(image_links[index]),
-                        backgroundColor: Colors.transparent,
+      return RefreshIndicator(
+        onRefresh: (){
+          return Future.value();
+        },
+        child: ListView.builder(
+            itemCount: data == null ? 0 : data.length-1,
+            itemBuilder: (BuildContext context, int index) {
+              final item = data[index]["@id"];
+              return Dismissible(
+                direction: DismissDirection.startToEnd,
+                background: Container(color: Colors.red,
+                padding: EdgeInsets.only(right: 0.8 * width),
+                child: Icon(Icons.delete, color: Colors.white)),
+                key: Key(item),
+                onDismissed: (direction) {
+                    // Remove the item from the data source.
+                    setState(() {
+                      data.removeAt(index);
+                      delete(index);
+                    });  
+                },
+                child: Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      ListTile(
+                        contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return TaskList(url: data[index]["@id"]);
+                          }));
+                        },
+                        leading: CircleAvatar(
+                          radius: 28.0,
+                          backgroundImage: NetworkImage(image_links[index]),
+                          backgroundColor: Colors.transparent,
+                        ),
+                        title: Text("Event Name: ${event_names[index]} "),
+                        subtitle: Text("Event type: ${data[index]["@type"]}",
+                            style:
+                                TextStyle(fontSize: 10.0, color: Colors.black54)),
                       ),
-                      title: Text("Event Name: ${event_names[index]} "),
-                      subtitle: Text("Event type: ${data[index]["@type"]}",
-                          style:
-                              TextStyle(fontSize: 10.0, color: Colors.black54)),
-                    ),
-                    Divider(
-                      height: 1.0,
-                    ),
-                  ],
+                      Divider(
+                        height: 1.0,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          });
+              );
+            }),
+      );
         //);
     }
 
