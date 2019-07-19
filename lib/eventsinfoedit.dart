@@ -25,6 +25,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   List setval = List();
   var photo = null;
   Map data = Map();
+  File croppedFile;
 
 
   @override
@@ -116,15 +117,11 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     print(resp.statusCode);
     data = json.decode(resp.body);
 
-    // for (String i in data.keys) {
-    //   if (data[i] == null) {
-    //     data[i] = false;
-    //   }
 
       setState(() {
-        photo = data['image']['download'] == null ? null : Image.network(data['image']['download']);
+        photo = data['image'] == null ? null : Image.network(data['image']['download']);
       });
-    //}
+
     return "Success!";
   }
 
@@ -137,7 +134,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   }
 
   Future cropImage(File imageFile) async {
-    File croppedFile = await ImageCropper.cropImage(
+    croppedFile = await ImageCropper.cropImage(
       toolbarColor: Color(0xff7e1946),
       //check this color
       statusBarColor: Colors.blueGrey,
@@ -155,8 +152,12 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   }
 
   Future<String> uploadImg() async {
+    String imgstring = croppedFile == null ? "" : base64Encode(croppedFile.readAsBytesSync());
+    jsonstr["image"]["data"] = data["image"] != null ? File.fromUri(data['image']['download']) :
+     imgstring ;
     var bytes = utf8.encode("admin:admin");
     var credentials = base64.encode(bytes);
+    
     var resp = await http.patch(url,
         headers: {
           "Accept": "application/json",
