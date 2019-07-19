@@ -76,7 +76,7 @@ class SideDrawerState extends State<SideDrawer> {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context)=> ChatScreen()
+                    builder: (context)=> ChatScreen(user:Provider.of<User>(context))
                   )
                 );
               },

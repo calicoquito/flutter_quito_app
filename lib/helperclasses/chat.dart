@@ -60,7 +60,6 @@ class ChatState extends State<Chat> {
         leading: CircleAvatar(child:Icon(Icons.person)),
         title: Text(widget.title),
         trailing: trailing,
-        subtitle: Text('Hey'),
       ),
     );
   }

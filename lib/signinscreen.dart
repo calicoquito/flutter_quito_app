@@ -147,94 +147,113 @@ class SignInScreenState extends State<SignInScreen> with SingleTickerProviderSta
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     Center(
-                      child: RaisedButton(
-                        elevation: 10.0 ,
-                        color: Theme.of(context).primaryColor,
-                        child: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Text('Login',style: TextStyle(color: Colors.white),),
-                              SizedBox(width: 5,),
-                              !isLoading ? Icon(Icons.arrow_forward, color: Colors.white,)
-                              :Container(
-                                width: 20.0,
-                                height: 20.0,
-                                child: CircularProgressIndicator(
-                                  backgroundColor: Colors.white, 
-                                  strokeWidth: 2.0,
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        onPressed: () async {
-                          if(usernameController.text.isEmpty){
-                            setState(() {
-                             usernameErrorString ="Must not be empty"; 
-                            });
-                            return;
-                          }
-
-                          setState(() {
-                            isLoading=true;
-                          });
-
-                          http.post('http://calico.palisadoes.org/@login', 
-                            headers: {"Accept":"application/json",  "Content-Type":"application/json"}, 
-                            body: jsonEncode({"login":usernameController.text.trim(), "password":passwordController.text.trim()}))
-                          .then((resp){
-                            if(resp.statusCode==200){
-                              user.username =  usernameController.text.trim();
-                              user.password = passwordController.text.trim();
-                              user.ploneToken = jsonDecode(resp.body)['token'];
-                            
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context)=> SplashScreen()
+                      child: Builder(
+                        builder: (context)=> RaisedButton(
+                          elevation: 10.0 ,
+                          color: Theme.of(context).primaryColor,
+                          child: Padding(
+                            padding: const EdgeInsets.all(6.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Text('Login',style: TextStyle(color: Colors.white),),
+                                SizedBox(width: 5,),
+                                !isLoading ? Icon(Icons.arrow_forward, color: Colors.white,)
+                                :Container(
+                                  width: 20.0,
+                                  height: 20.0,
+                                  child: CircularProgressIndicator(
+                                    backgroundColor: Colors.white, 
+                                    strokeWidth: 2.0,
+                                  ),
                                 )
-                              );
+                              ],
+                            ),
+                          ),
+                          onPressed: () async {
+                            if(usernameController.text.isEmpty){
+                              setState(() {
+                               usernameErrorString ="Must not be empty"; 
+                              });
+                              return;
+                            }
+
+                            setState(() {
+                              isLoading=true;
+                            });
+
+                            try {
+                              final responses = await Future.wait([
+                                http.post('http://calico.palisadoes.org/@login', 
+                                  headers: {"Accept":"application/json",  "Content-Type":"application/json"}, 
+                                  body: jsonEncode({"login":usernameController.text.trim(), 
+                                  "password":passwordController.text.trim()})),
+                                http.post('http://mattermost.alteroo.com/api/v4/users/login',
+                                  headers: {'Accept':'application/json', 'Content-Type':'application/json'},
+                                  body: jsonEncode({'login_id':usernameController.text.trim(), 
+                                  'password':passwordController.text.trim()}))
+                              ]);
+                              print( responses[0].statusCode);
+                              print( responses[1].statusCode);
+
+                              if(responses[0].statusCode==200 && responses[1].statusCode==200){
+                                
+                                final ploneJson = jsonDecode(responses[0].body);
+                                final mattermostJson = jsonDecode(responses[1].body);
+
+                                user.username =  usernameController.text.trim();
+                                user.password = passwordController.text.trim();
+                                user.ploneToken = ploneJson['token'];
+                                user.userId = mattermostJson['id'];
+                                user.mattermostToken = responses[1].headers['token'];
+                                
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context)=> SplashScreen()
+                                  )
+                                );
+
+                                setState((){
+                                  usernameController.clear();
+                                  passwordController.clear();
+                                  isLoading = false;
+                                });    
+                              }
+                              else {
+                                setState((){
+                                    isLoading = false;
+                                });
+                                print('Username or password incorrect');
+                                Scaffold.of(context).showSnackBar(
+                                  SnackBar(
+                                    backgroundColor:Theme.of(context).backgroundColor,
+                                    content: Text(
+                                      'Username or password incorrect',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  )
+                                );
+                              }
+                            }
+                            catch(err){
                               setState((){
-                                usernameController.clear();
-                                passwordController.clear();
                                 isLoading = false;
                               });
+                              Scaffold.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor:Theme.of(context).backgroundColor,
+                                  content: Text(
+                                    'Check internet connection',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                )
+                              );
                             }
-                            else {
-                              setState((){
-                                 isLoading = false;
-                              });
-                              print('Username or password incorrect');
-                              // Scaffold.of(context).showSnackBar(
-                              //   SnackBar(
-                              //     backgroundColor:Theme.of(context).backgroundColor,
-                              //     content: Text(
-                              //       'Username or password incorrect',
-                              //       textAlign: TextAlign.center,
-                              //       style: TextStyle(color: Colors.red),
-                              //     ),
-                              //   )
-                              // );
-                            }
-                          })
-                          .catchError((err){
-                            setState((){
-                                 isLoading = false;
-                            });
-                            // Scaffold.of(context).showSnackBar(
-                            //   SnackBar(
-                            //     backgroundColor:Theme.of(context).backgroundColor,
-                            //     content: Text(
-                            //       'Check internet connection',
-                            //       textAlign: TextAlign.center,
-                            //       style: TextStyle(color: Colors.red),
-                            //     ),
-                            //   )
-                            // );
-                          });
-                        }
+                          } 
+                        ),
                       ),
                     ),
                     SizedBox(width: 20),

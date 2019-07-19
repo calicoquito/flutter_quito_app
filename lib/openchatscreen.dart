@@ -31,13 +31,16 @@ class OpenChatScreen extends StatefulWidget{
 class OpenChatScreenState extends State<OpenChatScreen>{
   TextEditingController controller = TextEditingController();
   ScrollController scrollController = ScrollController();
+  final refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
   WebSocket socket;
   String message; //used to store the message after the controller is cleared so it can still be used
+  
+  bool isLoading = true;
 
   List<Widget> messages =[
   ];
 
-  void connect() async{
+  Future<void> connect() async{
      socket = await WebSocket.connect(
       'ws://mattermost.alteroo.com/api/v4/websocket',
       headers: {'Authorization': 'Bearer ${widget.user.mattermostToken}'}
@@ -76,7 +79,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
     });
   }
 
-  void getMessages() async{
+  Future<void> getMessages() async{
     try {
       final resp = await http.get(
         'http://mattermost.alteroo.com/api/v4/channels/${widget.channelId}/posts?page=0&per_page=30',
@@ -146,8 +149,11 @@ class OpenChatScreenState extends State<OpenChatScreen>{
   @override
   void initState(){
     super.initState();
-    connect();
-    getMessages();
+    connect().then((_){
+      getMessages().then((__){
+        isLoading = false;
+      });
+    });
   }
 
   @override
@@ -198,59 +204,66 @@ class OpenChatScreenState extends State<OpenChatScreen>{
       ),
 
       //Contents of the page
-      body: Container(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            //This is the area where the chat messages will be displayed
-            Flexible(
-              child: messages.length==0 
-              ?Center(child: Text('No messages'))
-              :ListView.builder(
-                controller: scrollController,
-                itemCount: messages.length,
-                itemBuilder: (context, index){
-                  return messages[index];
-                },
+      body: RefreshIndicator(
+        onRefresh: () async{
+          messages.clear();
+          return getMessages();
+        },
+        child: Container(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              //This is the area where the chat messages will be displayed
+              Flexible(
+                child: isLoading ? Center(child: CircularProgressIndicator(),):
+                messages.length==0 
+                ?Center(child: Text('No messages'))
+                :ListView.builder(
+                  controller: scrollController,
+                  itemCount: messages.length,
+                  itemBuilder: (context, index){
+                    return messages[index];
+                  },
+                ),
               ),
-            ),
 
-            //This is the bar at the bottom of the page where text is written to be sent
-            Container(
-              width: MediaQuery.of(context).size.width,
-              height: 50,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Expanded( 
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        controller: controller,
-                        expands: true,
-                        maxLines: null,
-                        autocorrect: true,
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(horizontal:10),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
-                          filled: true,
-                          fillColor: Color(0xffffffff),
-                          hasFloatingPlaceholder: false,
-                          labelText: "Type..."
+              //This is the bar at the bottom of the page where text is written to be sent
+              Container(
+                width: MediaQuery.of(context).size.width,
+                height: 50,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Expanded( 
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextField(
+                          controller: controller,
+                          expands: true,
+                          maxLines: null,
+                          autocorrect: true,
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(horizontal:10),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
+                            filled: true,
+                            fillColor: Color(0xffffffff),
+                            hasFloatingPlaceholder: false,
+                            labelText: "Type..."
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  //This button sends the message
-                  IconButton(
-                    color: Theme.of(context).primaryColor,
-                    icon: Icon(Icons.send),
-                    onPressed: handleSend
-                  )
-                ],
+                    //This button sends the message
+                    IconButton(
+                      color: Theme.of(context).primaryColor,
+                      icon: Icon(Icons.send),
+                      onPressed: handleSend
+                    )
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

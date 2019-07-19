@@ -13,101 +13,106 @@ import 'helperclasses/user.dart';
 */
 
 class ChatScreen extends StatefulWidget{
+  final User user;
+
+  @override
+  ChatScreen({Key key, @required this.user}):super(key:key);
+
   @override
   ChatScreenState createState()=> ChatScreenState();
 }
 
 class ChatScreenState extends State<ChatScreen>{
   List<Chat> chats = List();
-  User currentUser = User();
   String mattermostToken;
   List<Map<String, String>> teams = List();
   Map<String, String> members  = Map();
+  bool isLoading = true;
   final refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
 
-  Future<void> mattermostLogin() async {
-    final resp = await http.post(
-      'http://mattermost.alteroo.com/api/v4/users/login',
-      headers: {'Accept':'application/json', 'Content-Type':'application/json'},
-      body: jsonEncode({'login_id':'user1', 'password':'user1'})
-    );
-    final json = jsonDecode(resp.body);
-    currentUser.userId = json['id'];
-    currentUser.mattermostToken = resp.headers['token'];
-  }
-
-  Future<void> getUserTeams()async{
+  Future<void> getTeams() async {
     final resp = await http.get(
-      'http://mattermost.alteroo.com/api/v4/users/${currentUser.userId}/teams',
-      headers: {'Authorization':'Bearer ${currentUser.mattermostToken}'}
+      'http://mattermost.alteroo.com/api/v4/users/${widget.user.userId}/teams',
+      headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
     );
     final json = jsonDecode(resp.body);
     json.forEach((team){
       teams.add({team['id']:team['name']});
     });
-  }
-
-  void getTeamMemebers() {
-    try{
-      teams.forEach((team) async{
-        final resp = await http.get(
+    for (var team in teams){
+      final resp = await http.get(
         'http://mattermost.alteroo.com/api/v4/users?team=${team.keys.toList()[0]}',
-        headers: {'Authorization':'Bearer ${currentUser.mattermostToken}'}
-        );
-        final jsonData = jsonDecode(resp.body);
-
-        jsonData.forEach((member){
-          members.addAll({member['id']: member['username']});
-        });
-        currentUser.members=members;
+        headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
+      );
+      final jsonData = jsonDecode(resp.body);
+      jsonData.forEach((member){
+        members.addAll({member['id']: member['username']});
       });
     }
-    catch(err){
-      print(err);
-    }
   }
 
-  Future<void> getUsersChannels() async{
+
+  Future<void> getChannels() async{
     List<String> teamEndpoints = teams.map((team){
-      return 'http://mattermost.alteroo.com/api/v4/users/${currentUser.userId}/teams/${team.keys.toList()[0]}/channels';
+      return 'http://mattermost.alteroo.com/api/v4/users/${widget.user.userId}/teams/${team.keys.toList()[0]}/channels';
     }).toList();
 
     List<Future> requests = teamEndpoints.map((endpoint){
       return http.get(
         endpoint,
-        headers: {'Authorization':'Bearer ${currentUser.mattermostToken}'}
+        headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
       );
     }).toList();
-    final responses = await Future.wait(requests).catchError((err){print('Error awaiting all responses');});
     
+    final responses = await Future.wait(requests).catchError((err){print('Error awaiting all responses');});
     responses.forEach((resp){
       final json = jsonDecode(resp.body);
       json.forEach((channel){
-        setState(() {
-          chats.add(Chat(title: channel['display_name'], channelId: channel['id'],));
-        });
-      });
+        if(channel['display_name']==""){
+          final titleIds = channel['name'].split('_');
+          if(titleIds[0]==widget.user.userId && titleIds.length ==3){
+            setState(() {
+              chats.add(Chat(title: members[titleIds[2]], channelId: channel['id'],));
+            });
+          }
+          else{
+            setState(() {
+              chats.add(Chat(title: members[titleIds[0]], channelId: channel['id'],));
+            });
+          }
+        }
+        else{
+          setState(() {
+            chats.add(Chat(title: channel['display_name'], channelId: channel['id'],));
+          });
+        }
+      }); 
     });
   }
 
   @override
   void initState(){
     super.initState();
-    mattermostLogin()
+    getTeams()
     .then((_){
-      getUserTeams()
+      getChannels()
       .then((__){
-        getUsersChannels();
-        getTeamMemebers();
+        setState(() {
+          isLoading =false;
+        });
       });
-    })
-    .catchError((err){print(err);});
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final User user = Provider.of<User>(context);
-    user.mattermostToken = currentUser.mattermostToken;
+    user.members = members;
     return Scaffold(
       backgroundColor: Color(0xffefefef),
       appBar: AppBar(
@@ -142,15 +147,15 @@ class ChatScreenState extends State<ChatScreen>{
       body: RefreshIndicator(
         key: refreshIndicatorKey,
         onRefresh: () async {
-          print('Refreshing...');
-          return;
+          chats.clear();
+          return getChannels();
         },
-        child: ListView.builder(
-          itemCount: chats.length==0? 1: chats.length,
+        child: isLoading ? Center(child: CircularProgressIndicator(),): 
+         chats.length==0
+        ? Center(child: Text('No Chats'),)
+        :ListView.builder(
+          itemCount: chats.length,
           itemBuilder: (context, index){
-            if(chats.length==0){
-              return Center(child: Text('No Chats'),);
-            }
           return chats[index];
           },
         ),
