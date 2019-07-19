@@ -1,296 +1,190 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'sidedrawer.dart';
-import 'helperclasses/user.dart';
 
-//MonaConnect IP Address 172.16.236.24
-//Owner IP Address 192.168.137.137
-
-/*
- * This widget describes how the page which will allow an admin
- * to add a specific person or specific group of persons  to a new
- * project will look. 
- */
-class AddMembersPage extends StatelessWidget{
-  @override
-  Widget build(BuildContext context){
-    return Scaffold(
-      drawer: Hero(
-        tag: 'navdrawer',
-        child: SideDrawer(),
-      ),
-      appBar: AppBar(
-        title: Text(
-          'Add Members',
-          style: TextStyle(
-            fontSize: 20.0
-          )
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.check),
-            onPressed: (){
-              Navigator.of(context).popUntil(ModalRoute.withName('/home'));
-            },
-          )
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('Search')
-            ),
-            Padding (
-              padding: EdgeInsets.symmetric(horizontal: 10.0),
-              child:TextField(
-                autocorrect: false,
-                decoration: InputDecoration(
-                  labelText: "Enter a group or member name",
-                  contentPadding: EdgeInsets.all(10.0),
-                  border: OutlineInputBorder()
-                ),
-              )
-            ),
-            Padding(
-              padding: EdgeInsets.all(20.0)
-            ),
-            Container(
-              constraints: BoxConstraints(
-                maxHeight: 400.0,
-                maxWidth: MediaQuery.of(context).size.width
-              ),
-              child: MembersTabView(),
-            )
-          ],
-        ),
-      ),
-    );
-  }
+class AddMembersPage extends StatefulWidget {
+  AddMembersPageState createState() => AddMembersPageState();
 }
 
-
-class MembersTabView extends StatefulWidget {
-  MembersTabViewState createState() => MembersTabViewState();
-}
-
-class MembersTabViewState extends State<MembersTabView> with SingleTickerProviderStateMixin{
-  List<ListView> views = List<ListView>();
-  List contacts;
-  List groups;
-  
+class AddMembersPageState extends State<AddMembersPage>
+    with SingleTickerProviderStateMixin {
   TabController controller;
 
-  void fetchContacts() async {
-    try {
-      var resp = await http.get("http://192.168.137.1:8080/contacts", headers:{"Accept":"application/json"});
-      setState(() {
-        contacts = jsonDecode(resp.body);
-      }); 
-    }
-    catch(err){
-      print('Error fetching contacts');
-    }
-  }
-
-  void fetchGroups() async {
-    try{
-      var resp = await http.get('http://192.168.137.1:8080/groups', headers: {"Accept":"application/json"});
-      setState(() {
-        groups = jsonDecode(resp.body);
-      });
-    }
-    catch(err){
-      print('Error fetching groups');
-    }
-  }
+  final String url = "http://192.168.100.68:8080/Plone/@users";
+  List data;
+  List<bool> setval = List();
+  List select_users = List();
+  List select_gorups;
+  List newdata = [List()];
 
   @override
   void initState() {
     super.initState();
-    controller = TabController(vsync: this, initialIndex: 0, length: 2);
-    fetchContacts();
-    fetchGroups();
+    controller = TabController(vsync: this, length: 2);
+    getSWData();
   }
 
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 
- @override
- void dispose() {
-   controller.dispose();
-   super.dispose();
- }
+  int count = 1;
+  List holder = List();
+  void setsearchdata() {
+    if (count == 1){
+      holder = data;
+    }
+    setState(() {
+      data = newdata;
+    });
+    count+=1;
+  }
+
+  void addtolist() {
+    for (int i = 0; i < setval.length; i++) {
+      if (setval[i] == true) {
+        Map user = data[i];
+        select_users.add(user);
+      }
+    }
+    Navigator.pop(context, select_users);
+  }
+
+  Future<String> getSWData() async {
+    var bytes = utf8.encode("admin:admin");
+    var credentials = base64.encode(bytes);
+    var response = await http.get(url, headers: {
+      "Accept": "application/json",
+      "Authorization": "Basic $credentials"
+    });
+
+    setState(() {
+      var resBody = json.decode(response.body);
+      data = resBody;
+      for (var i in data) {
+        setval.add(false);
+      }
+    });
+
+    return "Success!";
+  }
+
+  Widget lst(List data) {
+    return ListView.builder(
+        itemCount: data == null ? 0 : data.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Container(
+            child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  ListTile(
+                    contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
+                    onTap: () {},
+                    trailing: Checkbox(
+                      value: setval[index],
+                      onChanged: (bool value) {
+                        if (data.length < holder.length){
+                          data = holder;
+                        }
+                        setState(() {
+                          setval[index] = value;
+                        });
+                      },
+                    ),
+                    leading: CircleAvatar(
+                      radius: 28.0,
+                      backgroundImage: NetworkImage(data[index]["portrait"]),
+                      backgroundColor: Colors.transparent,
+                    ),
+                    title: Text("${data[index]["fullname"]}"),
+                    subtitle: Text("Email: ${data[index]["email"]}",
+                        style:
+                            TextStyle(fontSize: 10.0, color: Colors.black54)),
+                  ),
+                  Divider(
+                    height: 1.0,
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
-      //backgroundColor: Color(0xff00306f),
-      backgroundColor: Colors.white,
-      appBar: TabBar(
-        controller: controller,
-        indicator: BoxDecoration(color: Colors.amber),
-        labelPadding: EdgeInsets.all(0.0),
-        indicatorPadding: EdgeInsets.all(0.0),
-        unselectedLabelColor: Colors.black54,
-          tabs: <Widget>[
-            Tab(icon: Icon(Icons.person_add)),
-            Tab(icon: Icon(Icons.group_add))
-          ],
-        ),
-      body: TabBarView(
-        controller: controller,
+      appBar: AppBar(
+        title: Text('Add team'),
+      ),
+      body: ListView(
         children: <Widget>[
-          contacts==null ? 
-          Scaffold(body:Center(child: CircularProgressIndicator())) :
-          ContactPage(contacts: contacts),
-          groups==null ? 
-          Scaffold(body:Center(child: CircularProgressIndicator())):
-          GroupPage(groups: groups)
-        ]
+          Padding(
+              padding: EdgeInsets.only(
+                  left: 10.0, right: 10.0, top: 20.0, bottom: 40.0),
+              child: TextField(
+                autocorrect: false,
+                decoration: InputDecoration(
+                    suffixIcon: Icon(Icons.search),
+                    labelText: "Search a group or member name",
+                    contentPadding: EdgeInsets.all(10.0),
+                    border: OutlineInputBorder()),
+                onChanged: (text) {
+                  if (data.length<holder.length){
+                    data = holder;
+                  }
+                  text = text.toLowerCase();
+                  setState(() {
+                    newdata = data.where((user) {
+                      var name = user["fullname"].toLowerCase();
+                      return name.contains(text);
+                    }).toList();
+                  });
+                  setsearchdata();
+                },
+              )),
+          Container(
+            height: 70.0,
+            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+            child: TabBar(
+              controller: controller,
+              tabs: [
+                Tab(
+                  icon: const Icon(Icons.person_add),
+                  text: 'People',
+                ),
+                Tab(
+                  icon: const Icon(Icons.group_add),
+                  text: 'Groups',
+                ),
+              ],
+            ),
+          ),
+          Container(
+            height: 320.0,
+            child: TabBarView(
+              controller: controller,
+              children: <Widget>[
+                Container(child: lst(data)), 
+                Container()],
+            ),
+          ),
+        ],
       ),
-    );
-  }
-}
-
-
-// Custom class designed to manage each individual contact
-class ContactItem extends StatefulWidget{
-  ContactItem({Key key, this.title, this.image:const Icon(Icons.person)}) : super(key:key);
-
-  final String title;
-  final Widget image;
-
-  @override
-  ContactItemState createState() => ContactItemState();
-}
-
-class ContactItemState extends State<ContactItem>{
-  bool state=false; 
-  void change(bool newValue){
-    setState(() {
-      state = !state;
-    });
-  }
-  void onchange(){
-    setState(() {
-      state = !state;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context){
-    return ListTile(
-      onTap: onchange,
-      leading: CircleAvatar(
-        backgroundColor: Colors.black.withOpacity(0),
-        child: widget.image,
-        //backgroundImage: ,   To be figured out 
+      floatingActionButton: FloatingActionButton(
+        child: Icon(
+          Icons.check,
+          color: Colors.white,
+        ),
+        onPressed: () {
+          addtolist();
+        },
       ),
-      title: Text(widget.title),
-      trailing: Checkbox(
-        value: state,
-        onChanged: change,
-      )
-    );
-  }
-}
-
-class GroupItem extends StatefulWidget{
-  GroupItem({Key key, this.title});
-
-  final String title;
-
-  @override
-  GroupItemState createState() => GroupItemState();
-}
-
-class GroupItemState extends State<GroupItem>{
-
-  bool state=false; 
-
-  void change(bool newValue){
-    setState(() {
-      state = !state;
-    });
-  }
-  void onchange(){
-    setState(() {
-      state = !state;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context){
-    return ListTile(
-      onTap: onchange,
-      leading: Icon(Icons.group),
-      title: Text(widget.title),
-      trailing: Checkbox(
-        value: state,
-        onChanged: change,
-      ),
-    );
-  }
-}
-
-class ContactPage extends StatefulWidget {
-  ContactPage({this.contacts});
-
-  final List contacts;
-  @override
-  ContactPageState createState() => ContactPageState();
-}
-
-class ContactPageState extends State<ContactPage> with AutomaticKeepAliveClientMixin<ContactPage>{
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  void initState(){
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context){
-    super.build(context);
-    return ListView.builder(
-      itemCount: widget.contacts.length,
-      itemBuilder: (BuildContext context, int index) {
-        return ContactItem(title: widget.contacts[index]["name"]??'Loading...');
-      }
-    );
-  }
-}
-
-
-class GroupPage extends StatefulWidget {
-  GroupPage({this.groups});
-
-  final List groups;
-  @override
-  GroupPageState createState() => GroupPageState();
-}
-
-class GroupPageState extends State<GroupPage> with AutomaticKeepAliveClientMixin<GroupPage>{
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  void initState(){
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context){
-    super.build(context);
-    return ListView.builder(
-      itemCount: widget.groups.length,
-      itemBuilder: (BuildContext context, int index) {
-        return GroupItem(title: widget.groups[index]["groupName"]??'Loading...');
-      }
     );
   }
 }

@@ -1,64 +1,80 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:async/async.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'addmembers.dart';
 
-class EventsInfo extends StatefulWidget {
+class EventsInfoEdit extends StatefulWidget {
   final String url;
-  EventsInfo({@required this.url});
-  EventsInfoState createState() => EventsInfoState(url: url);
+  EventsInfoEdit({@required this.url});
+  EventsInfoEditState createState() => EventsInfoEditState(url: url);
 }
 
-class EventsInfoState extends State<EventsInfo> {
+class EventsInfoEditState extends State<EventsInfoEdit> {
   final String url;
-  EventsInfoState({@required this.url});
+  EventsInfoEditState({@required this.url});
+  //final String url = "http://192.168.100.67:8080/Plone/projects";
+  //TextEditingController controller = TextEditingController();
   String textString = "";
   bool isSwitched = false;
-  List setval;
+  List setval = List();
   var photo = null;
+  Map data = Map();
+  File croppedFile;
+
+
+  @override
+  void initState() {
+    super.initState();
+    print(url);
+    getdata();
+
+  }
 
   Map jsonstr = {
-    "@type": "project",
-    "title": "Project by api 3",
-    "description": "Project for tessting purposes",
-    "attendees": [],
-    "start": "2019-06-12T17:20:00+00:00",
-    "end": "2020-06-17T19:00:00+00:00",
-    "whole_day": false,
-    "open_end": false,
-    "sync_uid": null,
-    "contact_name": "",
-    "contact_email": "",
-    "contact_phone": "",
-    "event_url": null,
-    "location": "Office Quito",
-    "recurrence": null,
-    "image": {
-      "filename": "test.jpg",
-      "content-type": "image/jpeg",
-      "data": "",
-      "encoding": "base64"
-    },
-    "image_caption": "Image captions",
-    "text": {
-      "content-type": "text/html",
-      "data":
-          "<h1><em><strong>This event is just for test that starts at 12 today and goes on until I feel like it should stop</strong></em></h1>",
-      "encoding": "utf-8"
-    },
-    "changeNote": null
-  };
+      "@type": "project",
+      "title": "Project by api 4",
+      "description": "Project for tessting purposes",
+      "attendees": [],
+      "start": "2019-06-12T17:20:00+00:00",
+      "end": "2020-06-17T19:00:00+00:00",
+      "whole_day": false,
+      "open_end": false,
+      "sync_uid": null,
+      "contact_name": "",
+      "contact_email": "",
+      "contact_phone": "",
+      "event_url": null,
+      "location": "Office Quito",
+      "recurrence": null,
+      "image": {
+        "filename": "test.jpg",
+        "content-type": "image/jpeg",
+        "data": "",
+        "encoding": "base64"
+      },
+      "image_caption": "Image captions",
+      "text": {
+        "content-type": "text/html",
+        "data":
+            "<h1><em><strong>This event is just for test that starts at 12 today and goes on until I feel like it should stop</strong></em></h1>",
+        "encoding": "utf-8"
+      },
+      "changeNote": null
+    };
 
   Future<void> _optionsDialogBox() {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            content: SingleChildScrollView(
-              child: ListBody(
+            content: new SingleChildScrollView(
+              child: new ListBody(
                 children: <Widget>[
                   GestureDetector(
                     child: Row(
@@ -94,20 +110,55 @@ class EventsInfoState extends State<EventsInfo> {
         });
   }
 
+  Future<String> getdata() async {
+    var resp = await http.get(url, headers: {
+      "Accept": "application/json",
+    });
+    print(resp.statusCode);
+    data = json.decode(resp.body);
+
+
+      setState(() {
+        photo = data['image'] == null ? null : Image.network(data['image']['download']);
+      });
+
+    return "Success!";
+  }
+
   Future openimg(ImageSource source) async {
     var file = await ImagePicker.pickImage(source: source);
+    cropImage(file);
+    file = photo;
     var base64Image = file != null ? base64Encode(file.readAsBytesSync()) : "";
     jsonstr["image"]["data"] = base64Image;
+  }
+
+  Future cropImage(File imageFile) async {
+    croppedFile = await ImageCropper.cropImage(
+      toolbarColor: Color(0xff7e1946),
+      //check this color
+      statusBarColor: Colors.blueGrey,
+      toolbarWidgetColor: Colors.white,
+      sourcePath: imageFile.path,
+      ratioX: 1.0,
+      ratioY: 1.0,
+      maxWidth: 512,
+      maxHeight: 512,
+    );
     setState(() {
-      photo = file;
+      photo = Image.file(croppedFile);
     });
     Navigator.of(context, rootNavigator: true).pop(context);
   }
 
   Future<String> uploadImg() async {
+    String imgstring = croppedFile == null ? "" : base64Encode(croppedFile.readAsBytesSync());
+    jsonstr["image"]["data"] = data["image"] != null ? File.fromUri(data['image']['download']) :
+     imgstring ;
     var bytes = utf8.encode("admin:admin");
     var credentials = base64.encode(bytes);
-    var resp = await http.post(url,
+    
+    var resp = await http.patch(url,
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
@@ -115,19 +166,25 @@ class EventsInfoState extends State<EventsInfo> {
         },
         body: jsonEncode(jsonstr));
     print(resp.statusCode);
+    print(resp.body);
     return "Success!";
   }
 
   Widget inputWidget(
       {icon: Icon, use_switch = "", txt: Text, drop: DropdownButton}) {
-    String diplaytxt = txt.replaceAll(RegExp(r'_'), ' ');
+    setState(() {
+      jsonstr[txt] = data[txt];
+    });
+
+    String diplaytxt = txt.replaceAll(new RegExp(r'_'), ' ');
     diplaytxt = '${diplaytxt[0].toUpperCase()}${diplaytxt.substring(1)}';
     double width = MediaQuery.of(context).size.width;
     var padtext = Text(
       diplaytxt,
       style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
     );
-    var text = TextField(
+    var text = TextFormField(
+      initialValue: jsonstr[txt].runtimeType == String ? jsonstr[txt] : '',
       autocorrect: true,
       //controller: controller,
       textAlign: TextAlign.justify,
@@ -135,10 +192,10 @@ class EventsInfoState extends State<EventsInfo> {
         labelText: diplaytxt,
         contentPadding: EdgeInsets.all(14.0),
       ),
-      onSubmitted: (string) {
+      onFieldSubmitted: (string) {
         setState(() {
           jsonstr[txt] = string;
-          print(jsonstr);
+          //print(jsonstr);
         });
       },
       onEditingComplete: () {
@@ -146,7 +203,7 @@ class EventsInfoState extends State<EventsInfo> {
       },
     );
     var switch_true = Switch(
-        value: jsonstr[use_switch],
+        value: jsonstr[use_switch] == true ? true : false,
         onChanged: (value) {
           setState(() {
             jsonstr[use_switch] = value;
@@ -187,7 +244,7 @@ class EventsInfoState extends State<EventsInfo> {
     return Scaffold(
       appBar: AppBar(
           title: Text(
-        'Add Project',
+        'Edit Project',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
       body: ListView(children: <Widget>[
@@ -203,7 +260,7 @@ class EventsInfoState extends State<EventsInfo> {
                     size: 80.0,
                     color: Colors.white,
                   )
-                : Image.file(photo),
+                : photo,
             onPressed: () {
               _optionsDialogBox();
             },
@@ -215,12 +272,12 @@ class EventsInfoState extends State<EventsInfo> {
               height: 60,
               child: RaisedButton(
                 onPressed: () async {
-                  var addedPersons = await Navigator.push(context,
+                  List addedPersons = await Navigator.push(context,
                       MaterialPageRoute(builder: (context) {
                     return AddMembersPage();
                   }));
                   setState(() {
-                    jsonstr["attendees"] = addedPersons;
+                    jsonstr["attendees"] = json.encode(addedPersons);
                   });
                 },
                 child: Icon(

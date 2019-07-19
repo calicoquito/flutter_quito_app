@@ -194,8 +194,6 @@ class SignInScreenState extends State<SignInScreen> with SingleTickerProviderSta
                                   body: jsonEncode({'login_id':usernameController.text.trim(), 
                                   'password':passwordController.text.trim()}))
                               ]);
-                              print( responses[0].statusCode);
-                              print( responses[1].statusCode);
 
                               if(responses[0].statusCode==200 && responses[1].statusCode==200){
                                 
