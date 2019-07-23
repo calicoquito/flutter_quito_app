@@ -55,8 +55,9 @@ class OpenChatScreenState extends State<OpenChatScreen>{
           final post = jsonDecode(postData['post']);
           
           if(post['user_id']!=widget.user.userId && post['channel_id']==widget.channelId){
+            print(post['message']);
             setState(() {
-              messages.add(Message(message: post['message'], username: widget.user.members[post['user_id']],)); 
+              messages.add(Message(message: post['message'], username: widget.user.members[post['user_id']],type: 'incoming',)); 
             });
             Timer(
               Duration(milliseconds: 100),
@@ -94,15 +95,16 @@ class OpenChatScreenState extends State<OpenChatScreen>{
         final message = posts[postId]['message'];
         final senderId = posts[postId]['user_id'];
         final channelId = posts[postId]['channel_id'];
+        print(message);
         if(channelId==widget.channelId && type ==""){
           if(senderId==widget.user.userId){
             setState(() {
-              messages.add(Message(message: message, username: "Me",));
+              messages.add(Message(message: message, username: "Me", type: 'outgoing',));
             });
           }
           else{
             setState(() {
-              messages.add(Message(message: message, username: widget.user.members[senderId],));
+              messages.add(Message(message: message, username: widget.user.members[senderId], type: 'incoming',));
             });
           }  
         }
@@ -128,7 +130,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
     final User user = Provider.of<User>(context);
     if(controller.text.isNotEmpty){
       setState(() {
-        messages.add(Message(message: controller.text.trim(), username: "Me",));
+        messages.add(Message(message: controller.text.trim(), username: "Me", type: 'outgoing',));
         message = controller.text.trim();
         controller.clear();
       });

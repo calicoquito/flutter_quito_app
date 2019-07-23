@@ -12,9 +12,10 @@ import 'user.dart';
 class Chat extends StatefulWidget{
   final String title;
   final String channelId;
+  final String type;
 
   @override
-  Chat({Key key, this.title, @required this.channelId,}): super(key:key);
+  Chat({Key key, this.title, @required this.channelId, this.type}): super(key:key);
 
   @override
   ChatState createState() => ChatState();
@@ -57,7 +58,7 @@ class ChatState extends State<Chat> {
         selected: isSelected,
         onLongPress: handleLongPress,
         onTap: handleTap,
-        leading: CircleAvatar(child:Icon(Icons.person)),
+        leading: CircleAvatar(child: widget.type =='direct' ?Icon(Icons.person) : Icon(Icons.group)),
         title: Text(widget.title),
         trailing: trailing,
       ),

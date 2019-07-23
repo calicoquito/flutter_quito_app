@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 class Message extends StatefulWidget{
   final String username;
   final String message;
+  final String type;
   @override
-  Message({Key key, this.message, this.username}):super(key:key);
+  Message({Key key, this.message, this.username, this.type}):super(key:key);
 
   @override
   MessageState createState() => MessageState();
@@ -49,7 +50,7 @@ class MessageState extends State<Message>{
       child: Material(
         color: Colors.transparent,
         child: Align(
-          alignment: Alignment.centerLeft,
+          alignment: widget.type == 'incoming' ? Alignment.centerLeft : Alignment.centerRight,
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth:MediaQuery.of(context).size.width*0.9),
             child: ListTile(

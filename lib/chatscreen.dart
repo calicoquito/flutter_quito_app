@@ -72,18 +72,18 @@ class ChatScreenState extends State<ChatScreen>{
           final titleIds = channel['name'].split('_');
           if(titleIds[0]==widget.user.userId && titleIds.length ==3){
             setState(() {
-              chats.add(Chat(title: members[titleIds[2]], channelId: channel['id'],));
+              chats.add(Chat(title: members[titleIds[2]], channelId: channel['id'], type: 'direct',));
             });
           }
           else{
             setState(() {
-              chats.add(Chat(title: members[titleIds[0]], channelId: channel['id'],));
+              chats.add(Chat(title: members[titleIds[0]], channelId: channel['id'], type: 'direct',));
             });
           }
         }
         else{
           setState(() {
-            chats.add(Chat(title: channel['display_name'], channelId: channel['id'],));
+            chats.add(Chat(title: channel['display_name'], channelId: channel['id'], type: 'group',));
           });
         }
       }); 

@@ -27,8 +27,8 @@ class SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-              height: 600,
-              width: 400,
+              height: MediaQuery.of(context).size.height*0.2,
+              width: MediaQuery.of(context).size.width*0.2 ,
               child: Hero(tag:'logo', child: SvgPicture.asset('images/quitologo.svg')),
             ),
             SizedBox(height: 30,),
