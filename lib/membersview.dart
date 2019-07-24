@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'user.dart';
+
 class Members extends StatefulWidget {
   final String url;
   Members({@required this.url});
@@ -14,8 +16,6 @@ class MembersState extends State<Members> {
   final String url;
   MembersState({@required this.url});
   List data = List();
-  List select_users = List();
-  List select_gorups;
   List newdata = List();
 
   @override
@@ -34,15 +34,17 @@ class MembersState extends State<Members> {
 
     setState(() {
       var resBody = json.decode(response.body);
-      data = json.decode(resBody["attendees"][0]);
-      print(data[0]);
+      List members = json.decode(resBody["attendees"][0]);
+      print(members);
+      if (members != null && members != []){
+        data = members;
+      }else{data = [];}
     });
-
     return "Success!";
   }
 
 
-    Widget lst( List data) {
+    Widget inputWidget(List data) {
       return ListView.builder(
           itemCount: data == null ? 0 : data.length,
           itemBuilder: (BuildContext context, int index) {
@@ -53,7 +55,10 @@ class MembersState extends State<Members> {
                   children: <Widget>[
                     ListTile(
                       contentPadding: EdgeInsets.only(top: 4.0,left: 4.0),
-                      onTap: () {},
+                      onTap: ()=> Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return User(user: data[index]);
+                      })),
                       leading: CircleAvatar(
                         radius:20.0,
                         backgroundImage: data[index]["portrait"] == null ? 
@@ -86,7 +91,7 @@ class MembersState extends State<Members> {
         'Assigned Members',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
-      body: Container(child: lst(data)),
+      body: Container(child: inputWidget(data)),
 
     );
   }

@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'user.dart';
+
 class AddMembersPage extends StatefulWidget {
   AddMembersPageState createState() => AddMembersPageState();
 }
@@ -17,7 +19,7 @@ class AddMembersPageState extends State<AddMembersPage>
   List<bool> setval = List();
   List select_users = List();
   List select_gorups;
-  List newdata = [List()];
+  List newdata = List();
 
   @override
   void initState() {
@@ -84,7 +86,10 @@ class AddMembersPageState extends State<AddMembersPage>
                 children: <Widget>[
                   ListTile(
                     contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
-                    onTap: () {},
+                    onTap: ()=> Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return User(user: data[index]);
+                      })),
                     trailing: Checkbox(
                       value: setval[index],
                       onChanged: (bool value) {
