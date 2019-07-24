@@ -1,5 +1,6 @@
- import 'dart:io';
-
+import 'dart:io';
+import 'package:connectivity/connectivity.dart';
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
@@ -41,43 +42,52 @@ class OpenChatScreenState extends State<OpenChatScreen>{
   ];
 
   Future<void> connect() async{
-     socket = await WebSocket.connect(
-      'ws://mattermost.alteroo.com/api/v4/websocket',
-      headers: {'Authorization': 'Bearer ${widget.user.mattermostToken}'}
-    );
-    int seq = -1; // used to keep track of each data packet
-    socket.listen((data){
-      final jsonData = jsonDecode(data);
-      int newSeq = jsonData['seq'];
-      if(seq!=newSeq){
-        if (jsonData['event']=='posted'){
-          final postData = jsonData['data'];
-          final post = jsonDecode(postData['post']);
-          
-          if(post['user_id']!=widget.user.userId && post['channel_id']==widget.channelId){
-            print(post['message']);
-            setState(() {
-              messages.add(Message(message: post['message'], username: widget.user.members[post['user_id']],type: 'incoming',)); 
-            });
-            Timer(
-              Duration(milliseconds: 100),
-              (){
-                scrollController.jumpTo(scrollController.position.maxScrollExtent);
-              }
-            );
+    try{
+      socket = await WebSocket.connect(
+        'ws://mattermost.alteroo.com/api/v4/websocket',
+        headers: {'Authorization': 'Bearer ${widget.user.mattermostToken}'}
+      );
+      int seq = -1; // used to keep track of each data packet
+      socket.listen((data){
+        final jsonData = jsonDecode(data);
+        int newSeq = jsonData['seq'];
+        if(seq!=newSeq){
+          if (jsonData['event']=='posted'){
+            final postData = jsonData['data'];
+            final post = jsonDecode(postData['post']);
+            
+            if(post['user_id']!=widget.user.userId && post['channel_id']==widget.channelId){
+              print(post['message']);
+              setState(() {
+                messages.add(Message(message: post['message'], username: widget.user.members[post['user_id']],type: 'incoming',)); 
+              });
+              Timer(
+                Duration(milliseconds: 100),
+                (){
+                  scrollController.jumpTo(scrollController.position.maxScrollExtent);
+                }
+              );
+            }
           }
         }
-      }
-      else{
-        seq = newSeq;
-      }
-    },
-    onError: (err){
-      print(err);
-    },
-    onDone: (){
-      print('done');
-    });
+        else{
+          seq = newSeq;
+        }
+      },
+      onError: (err){
+        print(err);
+      },
+      onDone: (){
+        print('done');
+      });
+    }
+    catch(err){
+      Flushbar(
+        flushbarPosition: FlushbarPosition.BOTTOM,
+        message: 'No Internet',
+        duration: Duration(seconds: 3),
+      )..show(context);
+    }
   }
 
   Future<void> getMessages() async{
@@ -87,15 +97,16 @@ class OpenChatScreenState extends State<OpenChatScreen>{
         headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
       );
       final jsonData = jsonDecode(resp.body);
+      
       final order = jsonData['order'].reversed.toList();
       final posts = jsonData['posts'];
+      print(posts);
      
       order.forEach((postId){
         final type = posts[postId]['type'];
         final message = posts[postId]['message'];
         final senderId = posts[postId]['user_id'];
         final channelId = posts[postId]['channel_id'];
-        print(message);
         if(channelId==widget.channelId && type ==""){
           if(senderId==widget.user.userId){
             setState(() {
@@ -108,26 +119,34 @@ class OpenChatScreenState extends State<OpenChatScreen>{
             });
           }  
         }
-        Timer(
-          Duration(milliseconds: 100),
-          (){
-            scrollController.jumpTo(scrollController.position.maxScrollExtent);
-          }
-        );
       });
     }
     catch(err){
-      print(err);
+      Flushbar(
+        flushbarPosition: FlushbarPosition.BOTTOM,
+        message: 'No Internet',
+        duration: Duration(seconds: 3),
+      )..show(context);
     }
-    
   }
 
   void closeConnection() async{
-    await socket.close();
+    if(socket!=null){
+      await socket.close();
+    }
   }
 
   void handleSend() async {
     final User user = Provider.of<User>(context);
+    final connection = await Connectivity().checkConnectivity();
+    if(connection == ConnectivityResult.none){
+      Flushbar(
+        flushbarPosition: FlushbarPosition.BOTTOM,
+        message: "No Internet Connection",
+        duration: Duration(seconds: 5),
+      )..show(context);
+      return;
+    }
     if(controller.text.isNotEmpty){
       setState(() {
         messages.add(Message(message: controller.text.trim(), username: "Me", type: 'outgoing',));
@@ -148,14 +167,25 @@ class OpenChatScreenState extends State<OpenChatScreen>{
     }
   }
 
+  void initialize() async{
+    try{
+      await getMessages();
+      await connect();
+    }
+    catch(err){
+      print(err);
+    }
+    finally{
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   void initState(){
     super.initState();
-    connect().then((_){
-      getMessages().then((__){
-        isLoading = false;
-      });
-    });
+    initialize();
   }
 
   @override
