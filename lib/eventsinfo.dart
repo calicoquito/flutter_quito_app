@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'addmembers.dart';
+import 'user.dart';
 
 class EventsInfo extends StatefulWidget {
   final String url;
@@ -18,6 +19,7 @@ class EventsInfoState extends State<EventsInfo> {
   String textString = "";
   bool isSwitched = false;
   List setval;
+  List assignedMembers = [];
   var photo = null;
 
   Map jsonstr = {
@@ -96,11 +98,13 @@ class EventsInfoState extends State<EventsInfo> {
 
   Future openimg(ImageSource source) async {
     var file = await ImagePicker.pickImage(source: source);
-    var base64Image = file != null ? base64Encode(file.readAsBytesSync()) : "";
-    jsonstr["image"]["data"] = base64Image;
-    setState(() {
-      photo = file;
-    });
+    if (file != null){
+      var base64Image = file != null ? base64Encode(file.readAsBytesSync()) : "";
+      jsonstr["image"]["data"] = base64Image;
+      setState(() {
+        photo = file;
+      });
+      }
     Navigator.of(context, rootNavigator: true).pop(context);
   }
 
@@ -215,12 +219,12 @@ class EventsInfoState extends State<EventsInfo> {
               height: 60,
               child: RaisedButton(
                 onPressed: () async {
-                  var addedPersons = await Navigator.push(context,
+                  assignedMembers = await Navigator.push(context,
                       MaterialPageRoute(builder: (context) {
                     return AddMembersPage();
                   }));
                   setState(() {
-                    jsonstr["attendees"] = addedPersons;
+                    jsonstr["attendees"] = assignedMembers;
                   });
                 },
                 child: Icon(
@@ -230,14 +234,39 @@ class EventsInfoState extends State<EventsInfo> {
               )),
         ),
         Container(
-            padding: EdgeInsets.symmetric(vertical: 30.0),
-            child: Text(
-              jsonstr["attendees"] == null
-                  ? "No one assigned yet"
-                  : '${jsonstr["attendees"].length} person(s) added to this project',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black54),
-            )),
+          height: 100.0,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: assignedMembers == null ? 0 : assignedMembers.length,
+            itemBuilder: (context, index) {
+              return Container(
+                  child: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Column(
+                        children: <Widget>[
+                          FlatButton(
+                            child: CircleAvatar(
+                              radius: 20.0,
+                              backgroundImage: NetworkImage(
+                                  assignedMembers[index]["portrait"]),
+                              backgroundColor: Colors.transparent,
+                            ),
+                            onPressed: () => Navigator.push(context,
+                                    MaterialPageRoute(builder: (context) {
+                                  return User(user: assignedMembers[index]);
+                                })),
+                          ),
+                          Text(
+                            "${assignedMembers[index]["fullname"]}",
+                            textAlign: TextAlign.center,
+                            softWrap: true,
+                            maxLines: 2,
+                          ),
+                        ],
+                      )));
+            },
+          ),
+        ),
         inputWidget(icon: Icon(Icons.title), txt: jsonstr.keys.elementAt(1)),
         inputWidget(
             icon: Icon(Icons.import_contacts), txt: jsonstr.keys.elementAt(2)),
