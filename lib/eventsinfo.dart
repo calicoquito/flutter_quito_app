@@ -3,9 +3,12 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'addmembers.dart';
+
 import 'userinfo.dart';
+
 
 class EventsInfo extends StatefulWidget {
   final String url;
@@ -19,9 +22,10 @@ class EventsInfoState extends State<EventsInfo> {
   String textString = "";
   bool isSwitched = false;
   List setval;
-  List assignedMembers = [];
-  var photo = null;
+  var photo;
 
+  List assignedMembers = [];
+  
   Map jsonstr = {
     "@type": "project",
     "title": "Project by api 3",
@@ -188,6 +192,7 @@ class EventsInfoState extends State<EventsInfo> {
 
   @override
   Widget build(BuildContext context) {
+    final User  user = Provider.of<User>(context);
     return Scaffold(
       appBar: AppBar(
           title: Text(
@@ -285,8 +290,42 @@ class EventsInfoState extends State<EventsInfo> {
             icon: Icon(Icons.add_location), txt: jsonstr.keys.elementAt(13)),
       ]),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        onPressed: () async {
           uploadImg();
+          
+          // Javier 
+          // I am adding this block of code to facilitate 
+          // create of channel for when a project is created
+          try{
+            final resp = await http.post(
+              'http://mattermost.alteroo.com/api/v4/channels',
+              headers: {'Authorization':'Bearer ${user.mattermostToken}'},
+              body: jsonEncode({
+                  "team_id": "fqi8t55eatr6tytz1yxosntfhe",
+                  "type": "O",
+                  "display_name": jsonstr['title'],
+                  "name": jsonstr['title'],
+                  "header": "",
+                  "purpose": jsonstr['description'],
+                  "creator_id": "${user.userId}",
+              })
+            );
+            if(resp.statusCode==200){
+              final jsonData = jsonDecode(resp.body);
+              await http.post(
+                'http://mattermost.alteroo.com/api/v4/channels/${jsonData['id']}/members',
+                headers: {'Authorization':'Bearer ${user.mattermostToken}'},
+                body: jsonEncode({
+                  "user_id": "p57uijbcu7rk8c391ycwcrifao",
+                  "channel_id": "${jsonData['id']}",
+                })
+              ); 
+            }
+            print('created');
+          }
+          catch(err){
+            print(err);
+          }
           Navigator.of(context, rootNavigator: true).pop(context);
         },
         tooltip: 'Create Project',

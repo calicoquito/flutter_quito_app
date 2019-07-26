@@ -1,26 +1,75 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
+import 'helperclasses/user.dart';
 
 class SplashScreen extends StatefulWidget{
+  final User user;
+
+  const SplashScreen({Key key, this.user}) : super(key: key);
+  
+
   @override
   SplashScreenState createState() => SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen> {
+class SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+
+  // Animation<Color> animation = Tween<Color>(
+  //   begin: Colors.blue,
+  //   end: Colors.purple
+  // ).animate();
+
+  
+  List<Map<String, String>> teams = List();
+  Map<String, String> members  = Map();
+
+
+  Future<void> getTeams() async {
+    final resp = await http.get(
+      'http://mattermost.alteroo.com/api/v4/users/${widget.user.userId}/teams',
+      headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
+    );
+    final json = jsonDecode(resp.body);
+    json.forEach((team){
+      teams.add({
+        'id': team['id'],
+        'name':team['name']
+      });
+    });
+    for (var team in teams){
+      final resp = await http.get(
+        'http://mattermost.alteroo.com/api/v4/users?team=${team.keys.toList()[0]}',
+        headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
+      );
+      final jsonData = jsonDecode(resp.body);
+      jsonData.forEach((member){
+        members.addAll({
+          'id': member['id'], 
+          'username': member['username'],
+          member['id']: member['username'],
+          'team_id':team['id']});
+      });
+    }
+  }
+
   @override
   void initState(){
     super.initState();
-    Timer(
-      Duration(seconds: 2),
-      (){
-        Navigator.of(context).pushReplacementNamed('/home');
-      }
-    );
+    getTeams()
+    .whenComplete((){
+      Navigator.of(context).pushReplacementNamed('/home');
+    });
   }
 
   @override
   Widget build(BuildContext context){
+    final User user = Provider.of<User>(context);
+    user.members = members;
+    user.teams = teams;
     return Material(
       child: Center(
         child: Column(

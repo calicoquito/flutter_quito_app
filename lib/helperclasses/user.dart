@@ -11,6 +11,7 @@ class User{
   String mattermostToken;
   String userId;
   Map<String, String> members;
+  List<Map<String, String>> teams;
 
   static final User _user = User._internal();
 
@@ -23,5 +24,6 @@ class User{
     mattermostToken = 'null';
     userId = 'null';
     members = Map();
+    teams = List();
   }
 }

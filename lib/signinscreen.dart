@@ -208,7 +208,7 @@ class SignInScreenState extends State<SignInScreen> with SingleTickerProviderSta
                                 
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
-                                    builder: (context)=> SplashScreen()
+                                    builder: (context)=> SplashScreen(user:user)
                                   )
                                 );
 

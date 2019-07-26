@@ -23,7 +23,7 @@ class MessageState extends State<Message>{
 
   @override
   void dispose(){
-    super.dispose();
+    super.dispose();  
   }
 
   @override
@@ -42,34 +42,41 @@ class MessageState extends State<Message>{
         if(isPressed){
           setState(() {
             isPressed =false;
-            color=Theme.of(context).scaffoldBackgroundColor;
+            color=Colors.transparent;
             elevation=1.0;
           });
         }
       },
       child: Material(
-        color: Colors.transparent,
+        color: color,
         child: Align(
           alignment: widget.type == 'incoming' ? Alignment.centerLeft : Alignment.centerRight,
           child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth:MediaQuery.of(context).size.width*0.9),
-            child: ListTile(
-              contentPadding: EdgeInsets.only(left: 8),
-              leading: CircleAvatar(child: Icon(Icons.person)),
-              title: Text(
-                widget.username,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16  ,
-                  color: Theme.of(context).primaryColor
-                ),
-                softWrap: true,
-              ),
-              subtitle: Text(
-                widget.message,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black
+            constraints: BoxConstraints(maxWidth:MediaQuery.of(context).size.width*0.5),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Card(
+                color: color,
+                child: ListTile(
+                  leading: CircleAvatar(child: Icon(Icons.person),),
+                  title:  widget.type == 'incoming' ?
+                   Text(
+                    widget.username,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16  ,
+                      color: Theme.of(context).primaryColor
+                    ),
+                    softWrap: true,
+                  ) : null,
+                  subtitle: Text(
+                    widget.message,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                    softWrap: true,
+                  ),
                 ),
               ),
             ),

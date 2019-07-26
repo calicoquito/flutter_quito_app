@@ -54,7 +54,7 @@ class OpenScreenState extends State<OpenScreen> {
   @override
   void initState() {
     super.initState();
-    getSWData();
+    //getSWData();
   }
 
   Future getSWData() async {
