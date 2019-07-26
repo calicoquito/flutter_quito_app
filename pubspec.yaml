@@ -30,6 +30,7 @@ dependencies:
   image_cropper:
   connectivity:
   flushbar:
+  flutter_cache_manager:
 
 
 dev_dependencies:
