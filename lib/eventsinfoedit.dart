@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 import 'addmembers.dart';
-import 'user.dart';
+import 'userinfo.dart';
 
 class EventsInfoEdit extends StatefulWidget {
   final String url;

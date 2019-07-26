@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'addmembers.dart';
-import 'user.dart';
+import 'userinfo.dart';
 
 class Task extends StatefulWidget {
   String url;
@@ -143,15 +143,6 @@ class TaskState extends State<Task> {
                   ),
                 )),
           ),
-          // Container(
-          //     padding: EdgeInsets.symmetric(vertical: 30.0),
-          //     child: Text(
-          //       assignedMembers == null
-          //           ? "No one assigned yet"
-          //           : '${assignedMembers.length} person(s) added to this task',
-          //       textAlign: TextAlign.center,
-          //       style: TextStyle(color: Colors.black54),
-          //     )),
           Container(
             height: 100.0,
             child: ListView.builder(
