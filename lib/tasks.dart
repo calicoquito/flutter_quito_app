@@ -68,36 +68,43 @@ class TaskListState extends State<TaskList> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      ListTile(
-                          contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
-                          onTap: () {
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (context) {
-                              return TaskData(url: url);
-                            }));
-                          },
-                          leading: CircleAvatar(
-                            child: Text("${data[index]["title"].split('')[0]}",
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 20)),
-                            radius: 48.0,
-                            backgroundColor:
-                                Colors.primaries[Random().nextInt(15)],
-                          ),
-                          title: Text("Task Name: ${data[index]["title"]}"),
-                          subtitle: Text(
-                              "Task Data: To do ${data[index]["description"]} ",
-                              style: TextStyle(
-                                  fontSize: 10.0, color: Colors.black54)),
-                          trailing: Checkbox(
-                              value: setval[index],
-                              onChanged: (bool value) {
-                                setState(() {
-                                  setval[index] = value;
-                                });
-                              })),
                       Divider(
-                        height: 1.0,
+                        height: 5.0,
+                      ),
+                      Card(
+                        child: ListTile(
+                            contentPadding:
+                                EdgeInsets.only(top: 4.0, left: 4.0),
+                            onTap: () {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) {
+                                return TaskData(url: url);
+                              }));
+                            },
+                            leading: CircleAvatar(
+                              child: Text(
+                                  "${data[index]["title"].split('')[0]}",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 20)),
+                              radius: 48.0,
+                              backgroundColor:
+                                  Colors.primaries[Random().nextInt(15)],
+                            ),
+                            title: Text("Task Name: ${data[index]["title"]}"),
+                            subtitle: Text(
+                                "Task Data: To do ${data[index]["description"]} ",
+                                style: TextStyle(
+                                    fontSize: 10.0, color: Colors.black54)),
+                            trailing: Checkbox(
+                                value: setval[index],
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    setval[index] = value;
+                                  });
+                                })),
+                      ),
+                      Divider(
+                        height: 5.0,
                       ),
                     ],
                   ),

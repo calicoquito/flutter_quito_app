@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'addmembers.dart';
-import 'user.dart';
+import 'userinfo.dart';
 
 class EventsInfo extends StatefulWidget {
   final String url;
