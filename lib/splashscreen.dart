@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:quito_1/openscreen.dart';
 import 'dart:async';
 import 'helperclasses/user.dart';
 
@@ -17,11 +18,9 @@ class SplashScreen extends StatefulWidget{
 }
 
 class SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  // static AnimationController controller;
 
-  // Animation<Color> animation = Tween<Color>(
-  //   begin: Colors.blue,
-  //   end: Colors.purple
-  // ).animate();
+  // Animation<Color> animation;
 
   
   List<Map<String, String>> teams = List();
@@ -59,10 +58,31 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
   @override
   void initState(){
     super.initState();
+  //   controller = AnimationController(vsync: this);
+  //   animation = Tween<Color>(
+  //     begin: Colors.blue,
+  //     end: Colors.purple
+  //   ).animate(
+  //     CurvedAnimation(
+  //       parent: controller,
+  //       curve: Curves.linear
+  //     )
+  // );
+    
     getTeams()
     .whenComplete((){
-      Navigator.of(context).pushReplacementNamed('/home');
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context)=>OpenScreen(user: widget.user,)
+        )
+      );
     });
+  }
+
+  @override
+  void dispose() {
+    // controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -76,8 +96,8 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-              height: MediaQuery.of(context).size.height*0.2,
-              width: MediaQuery.of(context).size.width*0.2 ,
+              height: MediaQuery.of(context).size.height*0.3,
+              width: MediaQuery.of(context).size.width*0.3 ,
               child: Hero(tag:'logo', child: SvgPicture.asset('images/quitologo.svg')),
             ),
             SizedBox(height: 30,),

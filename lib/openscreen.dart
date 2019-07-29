@@ -1,9 +1,13 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flushbar/flushbar.dart';
+import 'package:flushbar/flushbar_route.dart' as prefix0;
 import 'package:flutter/material.dart';
-import 'package:quito_1/sidedrawer.dart';
+import 'helperclasses/user.dart';
+import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:quito_1/membersview.dart';
+import 'membersview.dart';
 import 'dart:convert';
 import 'eventsinfo.dart';
 import 'eventsinfoedit.dart';
@@ -28,18 +32,22 @@ import 'dart:async';
 */
 
 class OpenScreen extends StatefulWidget {
+  final User user;
+
+  const OpenScreen({Key key, this.user}) : super(key: key);
   @override
   OpenScreenState createState() => OpenScreenState();
 }
 
 class OpenScreenState extends State<OpenScreen> {
-  final String url = "http://192.168.100.68:8080/Plone/projects";
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  final String url = "http://calico.palisadoes.org/projects";
   List data;
   Widget appBarTitle = Text('Projects');
   Icon actionIcon = Icon(Icons.search);
   List newdata = List();
 
- int count = 1;
+  int count = 1;
   List holder = List();
   void setsearchdata() {
     if (count == 1) {
@@ -51,59 +59,108 @@ class OpenScreenState extends State<OpenScreen> {
     count += 1;
   }
 
+  //Configures the actions taken by the app on notification received
+  void firebaseMessagingInit() async{
+    firebaseMessaging.configure(
+      onLaunch: (notification) async{
+        print(notification);
+      },
+      onMessage: (notification) async{
+        print(notification);
+        Flushbar(
+          flushbarPosition: FlushbarPosition.BOTTOM,
+          backgroundColor: Theme.of(context).primaryColor,
+          duration: Duration(seconds: 3),
+          messageText: Text(
+            notification['notification']['body'],
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        )..show(context);
+      },
+      onResume: (notification) async{
+        print(notification);
+      }
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-    //getSWData();
+    //Gets Firebase Cloud Messaging device token for push notifications
+    firebaseMessaging.getToken().then(
+      (token){
+        print(token);
+      }
+    );
+    firebaseMessagingInit();
+    getSWData();
   }
 
   Future getSWData() async {
-    var response = await http.get(url, headers: {"Accept": "application/json"});
-    var resBody = json.decode(response.body);
-    data = resBody["items"];
-    for (var i in data) {
-      i = i as Map;
-    }
-
-    Future<String> getimglink(int i) async {
-      try {
-        var resp = await http
-            .get(data[i]["@id"], headers: {"Accept": "application/json"});
-        print(resp.statusCode);
-        var respBody = json.decode(resp.body);
-        if (respBody != null) {
-          return respBody["image"]["scales"]["thumb"]["download"];
-        }
-      } catch (e) {}
-    }
-
-    for (var i = 1; i <= data.length; i++) {
-      var imgs = await getimglink(i);
-      if (imgs != null) {
-        data[i] = data[i];
-        data[i]['image'] = imgs;
+    try{
+      var response = await http.get(
+        url, 
+        headers: {"Accept": "application/json", "Authentication":'Bearer ${widget.user.ploneToken}'}
+      );
+      var resBody = json.decode(response.body);
+      data = resBody["items"];
+      for (var i in data) {
+        i = i as Map;
       }
+
+      Future<String> getimglink(int i) async {
+        try {
+          var resp = await http.get(
+            data[i]["@id"], 
+            headers: {"Accept": "application/json", "Authentication":'Bearer ${widget.user.ploneToken}'}
+          );
+          print(resp.statusCode);
+          var respBody = json.decode(resp.body);
+          if (respBody != null) {
+            return respBody["image"]["scales"]["thumb"]["download"];
+          }
+        } catch (e) {}
+      }
+
+      for (var i = 1; i <= data.length; i++) {
+        var imgs = await getimglink(i);
+        if (imgs != null) {
+          data[i] = data[i];
+          data[i]['image'] = imgs;
+        }
+      }
+      setState(() {
+        data = data;
+      });
+      return "Success!";
     }
-    setState(() {
-      data = data;
-    });
-    return "Success!";
+    catch(err){
+      print(err);
+    }
   }
 
   Future delete(int index) async {
     String url = data[index]["@id"];
     var bytes = utf8.encode("admin:admin");
     var credentials = base64.encode(bytes);
-    var resp = await http.delete(
-      url,
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "Authorization": "Basic $credentials"
-      },
-    );
-    print(resp.statusCode);
-    return "Success!";
+    try{
+      var resp = await http.delete(
+        url,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Authorization": 'Bearer ${widget.user.ploneToken}'
+        },
+      );
+      print(resp.statusCode);
+      return "Success!";
+    }
+    catch(err){
+      print(err);
+    }
   }
 
 

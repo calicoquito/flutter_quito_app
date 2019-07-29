@@ -56,7 +56,6 @@ class MyApp extends StatelessWidget {
           initialRoute: '/',
           routes: <String, WidgetBuilder>{
             '/':(context)=>SignInScreen(),
-            '/home':(context)=>OpenScreen()
           },
         ),
       ),
