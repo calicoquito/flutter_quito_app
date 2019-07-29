@@ -71,6 +71,7 @@ class MessageState extends State<Message>{
                   ) : null,
                   subtitle: Text(
                     widget.message,
+                    overflow: TextOverflow.fade,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.black,
