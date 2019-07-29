@@ -57,7 +57,6 @@ class OpenChatScreenState extends State<OpenChatScreen>{
             final post = jsonDecode(postData['post']);
             
             if(post['user_id']!=widget.user.userId && post['channel_id']==widget.channelId){
-              print(post['message']);
               setState(() {
                 messages.add(Message(message: post['message'], username: widget.user.members[post['user_id']],type: 'incoming',)); 
               });
@@ -94,13 +93,13 @@ class OpenChatScreenState extends State<OpenChatScreen>{
     try {
       final resp = await http.get(
         'http://mattermost.alteroo.com/api/v4/channels/${widget.channelId}/posts?page=0&per_page=30',
-        headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
+        headers: {'Authorization':'Bearer ${widget.user.mattermostToken}', 'Accept':'application/json'}
       );
       final jsonData = jsonDecode(resp.body);
+      print(resp.body.substring(500));
       
       final order = jsonData['order'].reversed.toList();
       final posts = jsonData['posts'];
-      print(posts);
      
       order.forEach((postId){
         final type = posts[postId]['type'];
@@ -205,11 +204,14 @@ class OpenChatScreenState extends State<OpenChatScreen>{
         title: Row(
           children: <Widget>[
             CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor,
-              child: Icon(Icons.person),
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              child: Icon(Icons.person, color: Theme.of(context).primaryColor,),
             ),
             SizedBox(width: 5.0,),
-            Text(widget.title)
+            Text(
+              widget.title,
+              overflow: TextOverflow.fade,
+            )
           ],
         ),
         actions: <Widget>[
@@ -243,7 +245,6 @@ class OpenChatScreenState extends State<OpenChatScreen>{
         },
         child: Container(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               //This is the area where the chat messages will be displayed
               Flexible(
@@ -256,7 +257,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
                   itemBuilder: (context, index){
                     return messages[index];
                   },
-                ),
+                )
               ),
 
               //This is the bar at the bottom of the page where text is written to be sent

@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
-import 'package:quito_1/helperclasses/projectsbloc.dart';
-import 'package:quito_1/sidedrawer.dart';
+import 'helperclasses/projectsbloc.dart';
+import 'sidedrawer.dart';
 import 'addmembers.dart';
 import 'helperclasses/user.dart';
 

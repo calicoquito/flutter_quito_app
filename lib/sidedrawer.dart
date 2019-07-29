@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:provider/provider.dart';
+import 'package:quito_1/profile_dialog.dart';
 import 'chatscreen.dart';
 import 'helperclasses/user.dart';
 import 'projectscreen.dart';
@@ -33,31 +34,9 @@ class SideDrawerState extends State<SideDrawer> {
           children:<Widget>[
             GestureDetector(
               onTap: (){
-                showDialog(context: context, 
-                  builder: (context)=>Dialog(
-                    backgroundColor: Color(0xff003366),
-                    child:Container(
-                      height: MediaQuery.of(context).size.height*0.2,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Icon(
-                            Icons.person,
-                            color:Colors.white,
-                            size: 50.0
-                          ),
-                          Text(
-                            user.username,
-                            style: TextStyle(
-                              fontSize: 30.0,
-                              color: Colors.blue
-                            ),
-                          )
-                        ],
-                      ),
-                    )
-                  )
+                showDialog(
+                  context: context, 
+                  builder: (context)=>ProfileDialog()
                 );
               },
               child: UserAccountsDrawerHeader(
