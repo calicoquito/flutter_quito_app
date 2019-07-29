@@ -313,7 +313,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                             ),
                             onPressed: () => Navigator.push(context,
                                     MaterialPageRoute(builder: (context) {
-                                  return User(user: assignedMembers[index]);
+                                  return UserInfo(user: assignedMembers[index]);
                                 })),
                           ),
                           Text(

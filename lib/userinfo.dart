@@ -2,15 +2,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 
-class User extends StatefulWidget {
+class UserInfo extends StatefulWidget {
   final Map user;
-  User({@required this.user});
-  UserState createState() => UserState(user: user);
+  UserInfo({@required this.user});
+  UserInfoState createState() => UserInfoState(user: user);
 }
 
-class UserState extends State<User> {
+class UserInfoState extends State<UserInfo> {
   final Map user;
-  UserState({@required this.user});
+  UserInfoState({@required this.user});
 
 
   @override

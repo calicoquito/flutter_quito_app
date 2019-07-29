@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'addmembers.dart';
-
+import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
 
@@ -258,7 +258,7 @@ class EventsInfoState extends State<EventsInfo> {
                             ),
                             onPressed: () => Navigator.push(context,
                                     MaterialPageRoute(builder: (context) {
-                                  return User(user: assignedMembers[index]);
+                                  return UserInfo(user: assignedMembers[index]);
                                 })),
                           ),
                           Text(

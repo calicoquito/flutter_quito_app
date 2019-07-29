@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:connectivity/connectivity.dart';
-import 'package:flushbar/flushbar.dart';
+// import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
@@ -82,11 +82,11 @@ class OpenChatScreenState extends State<OpenChatScreen>{
       });
     }
     catch(err){
-      Flushbar(
-        flushbarPosition: FlushbarPosition.BOTTOM,
-        message: 'No Internet',
-        duration: Duration(seconds: 3),
-      )..show(context);
+      // Flushbar(
+      //   flushbarPosition: FlushbarPosition.BOTTOM,
+      //   message: 'No Internet',
+      //   duration: Duration(seconds: 3),
+      // )..show(context);
     }
   }
 
@@ -122,11 +122,11 @@ class OpenChatScreenState extends State<OpenChatScreen>{
       });
     }
     catch(err){
-      Flushbar(
-        flushbarPosition: FlushbarPosition.BOTTOM,
-        message: 'No Internet',
-        duration: Duration(seconds: 3),
-      )..show(context);
+      // Flushbar(
+      //   flushbarPosition: FlushbarPosition.BOTTOM,
+      //   message: 'No Internet',
+      //   duration: Duration(seconds: 3),
+      // )..show(context);
     }
   }
 
@@ -140,11 +140,11 @@ class OpenChatScreenState extends State<OpenChatScreen>{
     final User user = Provider.of<User>(context);
     final connection = await Connectivity().checkConnectivity();
     if(connection == ConnectivityResult.none){
-      Flushbar(
-        flushbarPosition: FlushbarPosition.BOTTOM,
-        message: "No Internet Connection",
-        duration: Duration(seconds: 5),
-      )..show(context);
+      // Flushbar(
+      //   flushbarPosition: FlushbarPosition.BOTTOM,
+      //   message: "No Internet Connection",
+      //   duration: Duration(seconds: 5),
+      // )..show(context);
       return;
     }
     if(controller.text.isNotEmpty){

@@ -57,7 +57,7 @@ class MembersState extends State<Members> {
                       contentPadding: EdgeInsets.only(top: 4.0,left: 4.0),
                       onTap: ()=> Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return User(user: data[index]);
+                        return UserInfo(user: data[index]);
                       })),
                       leading: CircleAvatar(
                         radius:20.0,
