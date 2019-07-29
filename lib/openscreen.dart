@@ -1,6 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flushbar/flushbar.dart';
-import 'package:flushbar/flushbar_route.dart' as prefix0;
 import 'package:flutter/material.dart';
 import 'helperclasses/user.dart';
 import 'sidedrawer.dart';

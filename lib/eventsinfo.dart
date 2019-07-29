@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'addmembers.dart';
+
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
@@ -192,7 +193,7 @@ class EventsInfoState extends State<EventsInfo> {
 
   @override
   Widget build(BuildContext context) {
-    final User  user = Provider.of<User>(context);
+    final User user = Provider.of<User>(context);
     return Scaffold(
       appBar: AppBar(
           title: Text(
