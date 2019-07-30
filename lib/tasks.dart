@@ -3,13 +3,17 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'dart:convert';
+import 'helperclasses/user.dart';
 import 'task.dart';
 import 'taskdata.dart';
 import 'dart:math';
 
+
 class TaskList extends StatefulWidget {
   final String url;
-  TaskList({@required this.url});
+  final User user;
+  const TaskList({@required this.url,  Key key, this.user}): super(key: key);
+  @override
   TaskListState createState() => TaskListState(url: url);
 }
 
@@ -42,11 +46,18 @@ class TaskListState extends State<TaskList> {
   }
 
   Future<String> getSWData() async {
-    var response = await http.get(url, headers: {"Accept": "application/json"});
+    print(url);
+    var response = await http.get(url,
+      headers: {
+        "Accept": "application/json",
+        "Authentication": 'Bearer ${widget.user.ploneToken}'
+      });
     var resBody = json.decode(response.body);
-
+    print(response.body);
+    print(url);
     setState(() {
       data = resBody["items"];
+      print(data);
       for (var i in data) {
         setval.add(false);
       }

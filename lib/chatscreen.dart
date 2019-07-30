@@ -1,7 +1,7 @@
 import 'dart:convert';
-// import 'package:flushbar/flushbar.dart';
+//import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:provider/provider.dart';
 import 'helperclasses/chat.dart';
 import 'package:http/http.dart' as http;
 import 'helperclasses/user.dart';
@@ -109,18 +109,7 @@ class ChatScreenState extends State<ChatScreen>{
           IconButton(
             icon: Icon(Icons.message),
             onPressed: (){
-              Flushbar(
-                duration: Duration(seconds: 2),
-                flushbarPosition: FlushbarPosition.TOP,
-                icon: Icon(Icons.chat_bubble),
-                message: 'Wanna create a chat?',
-                mainButton: FlatButton( 
-                  child: Text('Yes'),
-                  onPressed: (){
-                    print('...');
-                  },
-                ),
-              )..show(context);
+              print('Chat Created');
             }
           )
         ],
@@ -137,21 +126,7 @@ class ChatScreenState extends State<ChatScreen>{
         :ListView.builder(
           itemCount: chats.length,
           itemBuilder: (context, index){
-            return Slidable(
-              actionExtentRatio: 0.2,
-              child: chats[index],
-              delegate: SlidableDrawerDelegate(),
-              actions: <Widget>[
-                IconSlideAction(
-                  caption: 'Delete',
-                  icon: Icons.delete_sweep,
-                  color: Theme.of(context).primaryColor,
-                  onTap: (){
-                    print('deleted');
-                  },
-                )
-              ],
-            );
+          return chats[index];
           },
         ),
       ),

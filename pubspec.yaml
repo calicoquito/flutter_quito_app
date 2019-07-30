@@ -29,8 +29,10 @@ dependencies:
   flutter_slidable: "^0.4.9"
   image_cropper:
   connectivity:
-  #flushbar:
-  flutter_cache_manager:
+  # flushbar:
+  shared_preferences:
+  cached_network_image:
+
 
 
 dev_dependencies:
