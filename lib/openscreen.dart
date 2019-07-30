@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 //import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:quito_1/urls.dart';
 import 'helperclasses/user.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
@@ -44,7 +45,7 @@ class OpenScreen extends StatefulWidget {
 
 class OpenScreenState extends State<OpenScreen> {
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
-  final String url = "http://calico.palisadoes.org/projects";
+  final String url = Urls.projects;
   List data = List();
   Widget appBarTitle = Text('Projects');
   Icon actionIcon = Icon(Icons.search);
@@ -122,7 +123,7 @@ class OpenScreenState extends State<OpenScreen> {
     try {
       var response = await http.get(url, headers: {
         "Accept": "application/json",
-        "Authentication": 'Bearer ${widget.user.ploneToken}'
+        "Authorization": 'Bearer ${widget.user.ploneToken}'
       });
       print(response);
       var resBody = json.decode(response.body);
@@ -135,7 +136,7 @@ class OpenScreenState extends State<OpenScreen> {
         try {
           var resp = await http.get(data[i]["@id"], headers: {
             "Accept": "application/json",
-            "Authentication": 'Bearer ${widget.user.ploneToken}'
+            "Authorization": 'Bearer ${widget.user.ploneToken}'
           });
           print(resp.statusCode);
           respBody = json.decode(resp.body);
@@ -170,8 +171,8 @@ class OpenScreenState extends State<OpenScreen> {
 
   Future delete(int index) async {
     String url = data[index]["@id"];
-    var bytes = utf8.encode("admin:admin");
-    var credentials = base64.encode(bytes);
+    //var bytes = utf8.encode("admin:admin");
+    //var credentials = base64.encode(bytes);
     try {
       var resp = await http.delete(
         url,
@@ -206,15 +207,14 @@ class OpenScreenState extends State<OpenScreen> {
                       onTap: () {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                          return TaskList(url: data[index]["@id"]);
+                          return TaskList(url: data[index]["@id"], user: widget.user);
                         }));
                       },
                       leading: CircleAvatar(
                         radius: 28.0,
                         backgroundImage: data[index]["image"] == null
                             ? AssetImage('assets/images/default-image.jpg')
-                            : NetworkImage(
-                                data[index]["image"],
+                            : NetworkImage(data[index]["image"],
                               ),
                         backgroundColor: Colors.transparent,
                       ),

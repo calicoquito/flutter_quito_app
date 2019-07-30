@@ -12,14 +12,15 @@ import 'dart:math';
 class TaskList extends StatefulWidget {
   final String url;
   final User user;
-  const TaskList({@required this.url,  Key key, this.user}): super(key: key);
+  const TaskList({@required this.url, this.user});
   @override
-  TaskListState createState() => TaskListState(url: url);
+  TaskListState createState() => TaskListState(url: url, user: user);
 }
 
 class TaskListState extends State<TaskList> {
   final String url;
-  TaskListState({@required this.url});
+  final User user;
+  TaskListState({@required this.url, this.user});
   List data = List();
   List<bool> setval = List();
   Widget appBarTitle = Text('Tasks');
@@ -50,13 +51,13 @@ class TaskListState extends State<TaskList> {
     var response = await http.get(url,
       headers: {
         "Accept": "application/json",
-        "Authentication": 'Bearer ${widget.user.ploneToken}'
+        "Authorization": "Bearer ${widget.user.ploneToken}",
       });
     var resBody = json.decode(response.body);
-    print(response.body);
-    print(url);
+    print(widget.user.ploneToken);
     setState(() {
       data = resBody["items"];
+      print(response.body);
       print(data);
       for (var i in data) {
         setval.add(false);
@@ -89,7 +90,7 @@ class TaskListState extends State<TaskList> {
                             onTap: () {
                               Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {
-                                return TaskData(url: url);
+                                return TaskData(url: url, user: widget.user);
                               }));
                             },
                             leading: CircleAvatar(
@@ -191,7 +192,7 @@ class TaskListState extends State<TaskList> {
         child: Icon(Icons.add, color: Colors.white),
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return Task(url: url);
+            return Task(url: url, user: widget.user);
           }));
         },
       ),

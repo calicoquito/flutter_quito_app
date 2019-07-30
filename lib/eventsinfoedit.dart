@@ -118,7 +118,8 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     });
     print(resp.statusCode);
     data = json.decode(resp.body);
-    assignedMembers = json.decode(data["attendees"][0]);
+    if (data["attendees"] != null){
+    assignedMembers = json.decode(data["attendees"][0]);}
     setState(() {
       photo = data['image'] == null ? null
           : Image.network(data['image']['download']);
@@ -307,13 +308,14 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                           FlatButton(
                             child: CircleAvatar(
                               radius: 20.0,
-                              backgroundImage: NetworkImage(
-                                  assignedMembers[index]["portrait"]),
+                              backgroundImage:  assignedMembers[index]["portrait"] == null ? 
+                                AssetImage('assets/images/default-image.jpg') :
+                                NetworkImage(assignedMembers[index]["portrait"]),
                               backgroundColor: Colors.transparent,
                             ),
                             onPressed: () => Navigator.push(context,
                                     MaterialPageRoute(builder: (context) {
-                                  return UserInfo(user: assignedMembers[index]);
+                                  return UserInfo(userinfo: assignedMembers[index]);
                                 })),
                           ),
                           Text(

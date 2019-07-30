@@ -252,13 +252,14 @@ class EventsInfoState extends State<EventsInfo> {
                           FlatButton(
                             child: CircleAvatar(
                               radius: 20.0,
-                              backgroundImage: NetworkImage(
-                                  assignedMembers[index]["portrait"]),
+                              backgroundImage:  assignedMembers[index]["portrait"] == null ? 
+                                AssetImage('assets/images/default-image.jpg') :
+                                NetworkImage(assignedMembers[index]["portrait"]),
                               backgroundColor: Colors.transparent,
                             ),
                             onPressed: () => Navigator.push(context,
                                     MaterialPageRoute(builder: (context) {
-                                  return UserInfo(user: assignedMembers[index]);
+                                  return UserInfo(userinfo: assignedMembers[index]);
                                 })),
                           ),
                           Text(

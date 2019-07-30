@@ -3,19 +3,18 @@ import 'package:flutter/material.dart';
 
 
 class UserInfo extends StatefulWidget {
-  final Map user;
-  UserInfo({@required this.user});
-  UserInfoState createState() => UserInfoState(user: user);
+  final Map userinfo;
+  UserInfo({@required this.userinfo});
+ UserInfoState createState() => UserInfoState(userinfo: userinfo);
 }
 
 class UserInfoState extends State<UserInfo> {
-  final Map user;
-  UserInfoState({@required this.user});
+  final Map userinfo;
+  UserInfoState({@required this.userinfo});
 
 
   @override
   Widget build(BuildContext context) {
-    print(user);
     return Scaffold(
       appBar: AppBar(
           title: Text(
@@ -29,20 +28,20 @@ class UserInfoState extends State<UserInfo> {
             child: Center(
               child: CircleAvatar(
                 radius: 60.0,
-                backgroundImage: NetworkImage(user["portrait"]),
+                backgroundImage: NetworkImage(userinfo["portrait"]),
                 backgroundColor: Colors.transparent,
               ),
             ),
           ),
           Divider(),
           ListTile(
-            leading:  Text('Email: ${user["email"]}' == null ? "" : '${user["email"]}',
+            leading:  Text('Email: ${userinfo["email"]}' == null ? "" : '${userinfo["email"]}',
             textAlign: TextAlign.left,
             ),
           ),
           Divider(),
           ListTile(
-            leading: Text('Phone: ${ user["phone_number"]}' == null ? "" : '${user["phone_number"]}',
+            leading: Text('Phone: ${ userinfo["phone_number"]}' == null ? "" : '${userinfo["phone_number"]}',
             textAlign: TextAlign.left
                 ),
           ),

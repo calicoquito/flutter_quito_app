@@ -4,17 +4,20 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
 class Members extends StatefulWidget {
+  final User user;
   final String url;
-  Members({@required this.url});
-  MembersState createState() => MembersState(url: url);
+  Members({@required this.url, this.user});
+  MembersState createState() => MembersState(url: url, user: user);
 } 
 
 class MembersState extends State<Members> {
+  final User user;
   final String url;
-  MembersState({@required this.url});
+  MembersState({@required this.url, this.user});
   List data = List();
   List newdata = List();
 
@@ -25,11 +28,11 @@ class MembersState extends State<Members> {
   }
 
   Future<String> getData() async {
-    var bytes = utf8.encode("admin:admin");
-    var credentials = base64.encode(bytes);
+    // var bytes = utf8.encode("admin:admin");
+    // var credentials = base64.encode(bytes);
     var response = await http.get(url, headers: {
-      "Accept": "application/json",
-      "Authorization": "Basic $credentials"
+        "Accept": "application/json",
+        "Authorization": "Bearer ${widget.user.ploneToken}",
     });
 
     setState(() {
@@ -57,7 +60,7 @@ class MembersState extends State<Members> {
                       contentPadding: EdgeInsets.only(top: 4.0,left: 4.0),
                       onTap: ()=> Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return UserInfo(user: data[index]);
+                        return UserInfo(userinfo: data[index]);
                       })),
                       leading: CircleAvatar(
                         radius:20.0,
