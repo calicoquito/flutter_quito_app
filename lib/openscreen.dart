@@ -40,11 +40,13 @@ class OpenScreen extends StatefulWidget {
 
   const OpenScreen({Key key, this.user}) : super(key: key);
   @override
-  OpenScreenState createState() => OpenScreenState();
+  OpenScreenState createState() => OpenScreenState(user: user);
 }
 
 class OpenScreenState extends State<OpenScreen> {
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  final User user;
+  OpenScreenState({this.user});
   final String url = Urls.projects;
   List data = List();
   Widget appBarTitle = Text('Projects');
@@ -207,14 +209,16 @@ class OpenScreenState extends State<OpenScreen> {
                       onTap: () {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                          return TaskList(url: data[index]["@id"], user: widget.user);
+                          return TaskList(
+                              url: data[index]["@id"], user: widget.user);
                         }));
                       },
                       leading: CircleAvatar(
                         radius: 28.0,
                         backgroundImage: data[index]["image"] == null
                             ? AssetImage('assets/images/default-image.jpg')
-                            : NetworkImage(data[index]["image"],
+                            : NetworkImage(
+                                data[index]["image"],
                               ),
                         backgroundColor: Colors.transparent,
                       ),
@@ -227,7 +231,7 @@ class OpenScreenState extends State<OpenScreen> {
                                   onPressed: () {
                                     Navigator.push(context,
                                         MaterialPageRoute(builder: (context) {
-                                      return Members(url: data[index]["@id"]);
+                                      return Members(url: data[index]["@id"], user: user);
                                     }));
                                   },
                                 ),
@@ -259,7 +263,8 @@ class OpenScreenState extends State<OpenScreen> {
                   icon: Icons.edit,
                   onTap: () => Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return EventsInfoEdit(url: data[index]["@id"]);
+                        return EventsInfoEdit(
+                            url: data[index]["@id"], user: user);
                       })),
                 ),
               ],
@@ -333,9 +338,7 @@ class OpenScreenState extends State<OpenScreen> {
           ),
           onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return EventsInfo(
-                url: url,
-              );
+              return EventsInfo(url: url, user: user);
             }));
           },
         ),

@@ -37,8 +37,10 @@ class MembersState extends State<Members> {
 
     setState(() {
       var resBody = json.decode(response.body);
-      List members = resBody["attendees"] == null ? null : json.decode(resBody["attendees"]);
-
+      print(resBody);
+      List members = resBody["contributors"].isEmpty ? null 
+      : json.decode(resBody["contributors"][0]);
+    print(resBody);
       if (members != null && members != []){
         data = members;
       }else{data = [];}

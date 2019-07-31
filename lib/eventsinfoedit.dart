@@ -8,18 +8,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 import 'addmembers.dart';
+import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
 class EventsInfoEdit extends StatefulWidget {
   final String url;
-  EventsInfoEdit({@required this.url});
-  EventsInfoEditState createState() => EventsInfoEditState(url: url);
+  final User user;
+  EventsInfoEdit({@required this.url, this.user});
+  EventsInfoEditState createState() => EventsInfoEditState(url: url, user: user);
 }
 
 class EventsInfoEditState extends State<EventsInfoEdit> {
   final String url;
-  EventsInfoEditState({@required this.url});
-  //final String url = "http://192.168.100.67:8080/Plone/projects";
+  final User user;
+  EventsInfoEditState({@required this.url, this.user});
   //TextEditingController controller = TextEditingController();
   String textString = "";
   bool isSwitched = false;
@@ -42,7 +44,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     "@type": "project",
     "title": "Project by api 4",
     "description": "Project for tessting purposes",
-    "attendees": [],
+    "contributors": [],
     "start": "2019-06-12T17:20:00+00:00",
     "end": "2020-06-17T19:00:00+00:00",
     "whole_day": false,
@@ -115,6 +117,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   Future<String> getdata() async {
     var resp = await http.get(url, headers: {
       "Accept": "application/json",
+      "Authorization": "Bearer ${widget.user.ploneToken}",
     });
     print(resp.statusCode);
     data = json.decode(resp.body);
@@ -162,17 +165,16 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
         croppedFile == null ? "" : base64Encode(croppedFile.readAsBytesSync());
     jsonstr["image"]["data"] = data["image"] != null
         ? base64Encode(file.readAsBytesSync()) : imgstring;
-    var bytes = utf8.encode("admin:admin");
-    var credentials = base64.encode(bytes);
+    // var bytes = utf8.encode("admin:admin");
+    // var credentials = base64.encode(bytes);
     var resp = await http.patch(url,
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
-          "Authorization": "Basic $credentials"
+          "Authorization": "Bearer ${widget.user.ploneToken}",
         },
         body: jsonEncode(jsonstr));
     print(resp.statusCode);
-    print(resp.body);
     return "Success!";
   }
 
@@ -280,12 +282,12 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                 onPressed: () async {
                   assignedMembers = await Navigator.push(context,
                       MaterialPageRoute(builder: (context) {
-                    return AddMembersPage();
+                    return AddMembersPage(user: user);
                   }));
                   setState(() {
-                    jsonstr["attendees"] = json.encode(assignedMembers);
+                    jsonstr["contributors"] = json.encode(assignedMembers);
 
-                    print(jsonstr["attendees"]);
+                    print(jsonstr["contributors"]);
                   });
                 },
                 child: Icon(
