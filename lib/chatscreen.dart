@@ -43,9 +43,15 @@ class ChatScreenState extends State<ChatScreen>{
       }).toList();
       
       final responses = await Future.wait(requests).catchError((err){print('Error awaiting all responses');});
+
       responses.forEach((resp){
         final json = jsonDecode(resp.body);
-        json.forEach((channel){
+
+        final channels = json.where((channel){
+          return widget.user.projects.keys.toList().contains(channel['name']);
+        });
+
+        channels.forEach((channel){
           if(channel['display_name']==""){
             final titleIds = channel['name'].split('_');
             if(titleIds[0]==widget.user.userId && titleIds.length ==3){
@@ -61,13 +67,14 @@ class ChatScreenState extends State<ChatScreen>{
           }
           else{
             setState(() {
-              chats.add(Chat(title: channel['display_name'], channelId: channel['id'], type: 'group',));
+              chats.add(Chat(title: channel['display_name'], channelId: channel['id'], type: 'group', project: widget.user.projects[channel['name']],));
             });
           }
         }); 
       });
     }
     catch(err){
+      print(err);
       Flushbar(
         flushbarPosition: FlushbarPosition.BOTTOM,
         message: 'No Internet',

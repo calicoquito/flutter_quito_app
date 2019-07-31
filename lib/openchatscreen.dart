@@ -21,9 +21,10 @@ class OpenChatScreen extends StatefulWidget{
   final String title;
   final String channelId;
   final User user;
+  final project;
 
   @override
-  OpenChatScreen({Key key, this.title, @required this.channelId, this.user}) : super(key:key);
+  OpenChatScreen({Key key, this.title, @required this.channelId, this.user, this.project}) : super(key:key);
 
   @override
   OpenChatScreenState createState() => OpenChatScreenState(); 
@@ -205,7 +206,8 @@ class OpenChatScreenState extends State<OpenChatScreen>{
           children: <Widget>[
             CircleAvatar(
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              child: Icon(Icons.person, color: Theme.of(context).primaryColor,),
+              child: widget.project['thumbnail'] ==null ? Icon(Icons.person, color: Theme.of(context).primaryColor,):null,
+              backgroundImage: widget.project['thumbnail'] =!null ? NetworkImage(widget.project['thumbnail']):null,
             ),
             SizedBox(width: 5.0,),
             Text(

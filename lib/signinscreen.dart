@@ -204,6 +204,7 @@ class SignInScreenState extends State<SignInScreen> with SingleTickerProviderSta
                                 user.password = passwordController.text.trim();
                                 user.ploneToken = ploneJson['token'];
                                 user.userId = mattermostJson['id'];
+                                user.email = mattermostJson['email'];
                                 user.mattermostToken = responses[1].headers['token'];
                                 
                                 Navigator.of(context).push(

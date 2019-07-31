@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flushbar/flushbar.dart';
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; 
 import 'helperclasses/user.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
@@ -46,6 +47,7 @@ class OpenScreenState extends State<OpenScreen> {
   Widget appBarTitle = Text('Projects');
   Icon actionIcon = Icon(Icons.search);
   List newdata = List();
+  Map projects = Map();
 
   int count = 1;
   List holder = List();
@@ -125,6 +127,7 @@ class OpenScreenState extends State<OpenScreen> {
       }
 
       List filterProjects = List();
+      Map projectsData = Map();
       Future<String> getimglink(int i) async {
         try {
           var resp = await http.get(
@@ -133,12 +136,17 @@ class OpenScreenState extends State<OpenScreen> {
           );
           var respBody = json.decode(resp.body);
           if (respBody != null) {
+            String imageLink=respBody["image"]["scales"]["thumb"]["download"];
             if(respBody['members'].contains(widget.user.username)){
+              data[i].putIfAbsent('id', ()=> respBody['id']);
+              data[i].putIfAbsent('thumbnail', ()=>imageLink);
               filterProjects.add(data[i]);
+              projectsData.putIfAbsent(respBody['id'], ()=>data[i]);
             }
-            return respBody["image"]["scales"]["thumb"]["download"];
+            return imageLink;
           }
         } catch (err) {
+          print(err);
           Flushbar(
             duration: Duration(seconds: 3),
             message: "Error Fetching project data",
@@ -154,6 +162,7 @@ class OpenScreenState extends State<OpenScreen> {
       }
       setState(() {
         data = filterProjects;
+        projects=projectsData;
       });
       return "Success!";
     }
@@ -185,6 +194,8 @@ class OpenScreenState extends State<OpenScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final User user = Provider.of<User>(context);
+    user.projects = projects;
     Widget lst(Icon ico, List data) {
       return ListView.builder(
           itemCount: data == null ? 0 : data.length,
