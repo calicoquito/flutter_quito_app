@@ -53,10 +53,7 @@ class MyApp extends StatelessWidget {
               height: 30
             )
           ),
-          initialRoute: '/',
-          routes: <String, WidgetBuilder>{
-            '/':(context)=>SignInScreen(),
-          },
+          home: SignInScreen()
         ),
       ),
     );

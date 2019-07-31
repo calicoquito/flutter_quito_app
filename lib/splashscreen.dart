@@ -22,7 +22,6 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
 
   // Animation<Color> animation;
 
-  
   List<Map<String, String>> teams = List();
   Map<String, String> members  = Map();
 
