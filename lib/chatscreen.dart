@@ -118,7 +118,7 @@ class ChatScreenState extends State<ChatScreen>{
             onPressed: (){
               Flushbar(
                 duration: Duration(seconds: 2),
-                flushbarPosition: FlushbarPosition.TOP,
+                flushbarPosition: FlushbarPosition.BOTTOM,
                 icon: Icon(Icons.chat_bubble),
                 message: 'Wanna create a chat?',
                 mainButton: FlatButton( 

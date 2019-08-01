@@ -97,7 +97,6 @@ class OpenChatScreenState extends State<OpenChatScreen>{
         headers: {'Authorization':'Bearer ${widget.user.mattermostToken}', 'Accept':'application/json'}
       );
       final jsonData = jsonDecode(resp.body);
-      print(resp.body.substring(500));
       
       final order = jsonData['order'].reversed.toList();
       final posts = jsonData['posts'];
@@ -207,7 +206,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
             CircleAvatar(
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               child: widget.project['thumbnail'] ==null ? Icon(Icons.person, color: Theme.of(context).primaryColor,):null,
-              backgroundImage: widget.project['thumbnail'] =!null ? NetworkImage(widget.project['thumbnail']):null,
+              backgroundImage: widget.project['thumbnail'] !=null ? NetworkImage(widget.project['thumbnail']):null,
             ),
             SizedBox(width: 5.0,),
             Text(

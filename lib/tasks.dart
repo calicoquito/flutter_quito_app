@@ -47,13 +47,14 @@ class TaskListState extends State<TaskList> {
     print(url);
     var response = await http.get(url, headers: {"Accept": "application/json", 'Authorization':'Bearer ${widget.user.ploneToken}'});
     var resBody = json.decode(response.body);
-
+    print(resBody['items']);
     setState(() {
       data = resBody["items"];
       for (var i in data) {
         setval.add(false);
       }
     });
+    print(data);
     return "Success!";
   }
 
