@@ -13,7 +13,7 @@ import 'userinfo.dart';
 
 class EventsInfo extends StatefulWidget {
   final String url;
-  EventsInfo({@required this.url});
+  EventsInfo({this.url});
   EventsInfoState createState() => EventsInfoState(url: url);
 }
 
