@@ -97,6 +97,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
         headers: {'Authorization':'Bearer ${widget.user.mattermostToken}', 'Accept':'application/json'}
       );
       final jsonData = jsonDecode(resp.body);
+      print(resp.body.substring(500));
       
       final order = jsonData['order'].reversed.toList();
       final posts = jsonData['posts'];

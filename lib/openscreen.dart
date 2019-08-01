@@ -131,7 +131,6 @@ class OpenScreenState extends State<OpenScreen> {
       Future<String> getimglink(int i) async {
         try {
           var resp = await http.get(
-            data[i]["@id"], 
             headers: {"Accept": "application/json", "Authorization":'Bearer ${widget.user.ploneToken}'}
           );
           var respBody = json.decode(resp.body);
