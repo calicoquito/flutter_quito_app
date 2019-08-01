@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:quito_1/urls.dart';
 
+import 'helperclasses/urls.dart';
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
@@ -64,8 +64,6 @@ class AddMembersPageState extends State<AddMembersPage>
   }
 
   Future<String> getSWData() async {
-    // var bytes = utf8.encode("admin:admin");
-    // var credentials = base64.encode(bytes);
     var response = await http.get(url, headers: {
         "Accept": "application/json",
         "Authorization": 'Bearer ${widget.user.ploneToken}'

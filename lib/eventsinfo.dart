@@ -6,20 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'addmembers.dart';
+import 'helperclasses/urls.dart';
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
 class EventsInfo extends StatefulWidget {
-  final String url;
   final User user;
-  EventsInfo({@required this.url, this.user});
-  EventsInfoState createState() => EventsInfoState(url: url, user: user);
+  EventsInfo({this.user});
+  EventsInfoState createState() => EventsInfoState(user: user);
 }
 
 class EventsInfoState extends State<EventsInfo> {
-  final String url;
+  final String url = Urls.main;
   final User user;
-  EventsInfoState({@required this.url, this.user});
+  EventsInfoState({this.user});
   String textString = "";
   bool isSwitched = false;
   List setval;
@@ -115,8 +115,6 @@ class EventsInfoState extends State<EventsInfo> {
   }
 
   Future<String> uploadImg() async {
-    var bytes = utf8.encode("admin:admin");
-    var credentials = base64.encode(bytes);
     var resp = await http.post(url,
         headers: {
           "Accept": "application/json",
@@ -124,6 +122,7 @@ class EventsInfoState extends State<EventsInfo> {
           "Authorization": "Bearer ${widget.user.ploneToken}",
         },
         body: jsonEncode(jsonstr));
+    print(resp.statusCode);
     print(resp.body);
     return "Success!";
   }

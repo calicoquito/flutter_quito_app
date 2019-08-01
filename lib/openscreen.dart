@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 //import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
-import 'package:quito_1/urls.dart';
+import 'helperclasses/saver.dart';
+import 'helperclasses/urls.dart';
 import 'helperclasses/user.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
@@ -53,6 +56,8 @@ class OpenScreenState extends State<OpenScreen> {
   Icon actionIcon = Icon(Icons.search);
   List newdata = List();
   var respBody;
+  bool internet = true;
+  List saveimage = List();
 
   int count = 1;
   List holder = List();
@@ -102,32 +107,13 @@ class OpenScreenState extends State<OpenScreen> {
     getSWData();
   }
 
-  Future getSaveData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      //print(prefs.getString('stringdata'));
-      data = prefs.getString('stringdata') == null
-          ? null
-          : json.decode(prefs.getString('stringdata'));
-    });
-    return "Success!";
-  }
-
-  Future setSaveData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      String stringdata = json.encode(data);
-      prefs.setString('stringdata', stringdata);
-    });
-  }
-
   Future getSWData() async {
     try {
       var response = await http.get(url, headers: {
         "Accept": "application/json",
         "Authorization": 'Bearer ${widget.user.ploneToken}'
       });
-      print(response);
+      //print(response.body);
       var resBody = json.decode(response.body);
       data = resBody["items"];
       for (var i in data) {
@@ -148,7 +134,7 @@ class OpenScreenState extends State<OpenScreen> {
         } catch (e) {}
       }
 
-      for (var i = 1; i <= data.length; i++) {
+      for (var i = 0; i <= data.length; i++) {
         var imgs = await getimglink(i);
         if (imgs != null) {
           data[i] = data[i];
@@ -156,25 +142,32 @@ class OpenScreenState extends State<OpenScreen> {
         }
       }
 
-      if (data.isEmpty) {
-        getSaveData();
-      } else {
-        setState(() {
-          data = data;
-          setSaveData();
-        });
-      }
+      // set data state and save json for online use
+      setState(() {
+        data = data;
+        Saver.setData(data: data, name: "projectsdata");
+      });
 
       return "Success!";
     } catch (err) {
       print(err);
     }
+    //data is empty so get saved data
+    data = await Saver.getData(name: "projectsdata");
+    setState(() {
+      data = data;
+    });
+
+    for (var i = 0; i <= data.length; i++) {
+      var img = await Saver.getImage(name: "projectsimage$i");
+      if (img != null) {
+        saveimage[i] = img;
+      }
+    }
   }
 
   Future delete(int index) async {
     String url = data[index]["@id"];
-    //var bytes = utf8.encode("admin:admin");
-    //var credentials = base64.encode(bytes);
     try {
       var resp = await http.delete(
         url,
@@ -187,9 +180,12 @@ class OpenScreenState extends State<OpenScreen> {
       print(resp.statusCode);
       return "Success!";
     } catch (err) {
+      // internet is not conected if this block fails
+      internet = false;
       print(err);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -197,6 +193,8 @@ class OpenScreenState extends State<OpenScreen> {
       return ListView.builder(
           itemCount: data == null ? 0 : data.length,
           itemBuilder: (BuildContext context, int index) {
+            if (internet == true){
+            Saver.setImage(name: "projectsimage$index", url: data[index]["image"]);}
             return Slidable(
               delegate: SlidableDrawerDelegate(),
               actionExtentRatio: 0.25,
@@ -217,9 +215,9 @@ class OpenScreenState extends State<OpenScreen> {
                         radius: 28.0,
                         backgroundImage: data[index]["image"] == null
                             ? AssetImage('assets/images/default-image.jpg')
-                            : NetworkImage(
-                                data[index]["image"],
-                              ),
+                            : internet == true
+                                ? NetworkImage(data[index]["image"])
+                                : saveimage[index],
                         backgroundColor: Colors.transparent,
                       ),
                       trailing: PopupMenuButton<int>(
@@ -231,7 +229,8 @@ class OpenScreenState extends State<OpenScreen> {
                                   onPressed: () {
                                     Navigator.push(context,
                                         MaterialPageRoute(builder: (context) {
-                                      return Members(url: data[index]["@id"], user: user);
+                                      return Members(
+                                          url: data[index]["@id"], user: user);
                                     }));
                                   },
                                 ),
@@ -263,8 +262,7 @@ class OpenScreenState extends State<OpenScreen> {
                   icon: Icons.edit,
                   onTap: () => Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return EventsInfoEdit(
-                            url: data[index]["@id"], user: user);
+                        return EventsInfoEdit(user: user);
                       })),
                 ),
               ],
@@ -338,7 +336,7 @@ class OpenScreenState extends State<OpenScreen> {
           ),
           onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return EventsInfo(url: url, user: user);
+              return EventsInfo(user: user);
             }));
           },
         ),

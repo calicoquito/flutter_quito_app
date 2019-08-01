@@ -8,20 +8,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 import 'addmembers.dart';
+import 'helperclasses/urls.dart';
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
 class EventsInfoEdit extends StatefulWidget {
-  final String url;
   final User user;
-  EventsInfoEdit({@required this.url, this.user});
-  EventsInfoEditState createState() => EventsInfoEditState(url: url, user: user);
+  EventsInfoEdit({this.user});
+  EventsInfoEditState createState() => EventsInfoEditState( user: user);
 }
 
 class EventsInfoEditState extends State<EventsInfoEdit> {
-  final String url;
+  final String url = Urls.main;
   final User user;
-  EventsInfoEditState({@required this.url, this.user});
+  EventsInfoEditState({ this.user});
   //TextEditingController controller = TextEditingController();
   String textString = "";
   bool isSwitched = false;
