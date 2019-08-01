@@ -111,6 +111,7 @@ class OpenScreenState extends State<OpenScreen> {
         print('onResume');
         print(notification);
       }
+    );
   }
 
   @override

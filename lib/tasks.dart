@@ -12,7 +12,6 @@ import 'dart:math';
 class TaskList extends StatefulWidget {
   final User user;
   final String url;
-  final User user;
   const TaskList({@required this.url, this.user});
   @override
   TaskListState createState() => TaskListState(url: url, user: user);
