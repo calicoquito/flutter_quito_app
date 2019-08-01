@@ -10,6 +10,7 @@ import 'dart:math';
 
 
 class TaskList extends StatefulWidget {
+  final User user;
   final String url;
   final User user;
   const TaskList({@required this.url, this.user});
@@ -55,6 +56,7 @@ class TaskListState extends State<TaskList> {
       });
     var resBody = json.decode(response.body);
     print(widget.user.ploneToken);
+    print(resBody['items']);
     setState(() {
       data = resBody["items"];
       print(response.body);
@@ -63,6 +65,7 @@ class TaskListState extends State<TaskList> {
         setval.add(false);
       }
     });
+    print(data);
     return "Success!";
   }
 

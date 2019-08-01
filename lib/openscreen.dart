@@ -1,10 +1,11 @@
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-//import 'package:flushbar/flushbar.dart';
-import 'package:flutter/material.dart';
 import 'helperclasses/saver.dart';
 import 'helperclasses/urls.dart';
+import 'package:flushbar/flushbar.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; 
 import 'helperclasses/user.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
@@ -19,7 +20,6 @@ import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-
 /*
   The OpenScreen Widget defines the screen a user see immediately after
   logging in to the application. 
@@ -58,6 +58,7 @@ class OpenScreenState extends State<OpenScreen> {
   var respBody;
   bool internet = true;
   List saveimage = List();
+  Map projects = Map();
 
   int count = 1;
   List holder = List();
@@ -74,26 +75,42 @@ class OpenScreenState extends State<OpenScreen> {
   }
 
   //Configures the actions taken by the app on notification received
-  void firebaseMessagingInit() async {
-    firebaseMessaging.configure(onLaunch: (notification) async {
-      //print(notification);
-    }, onMessage: (notification) async {
-      //print(notification);
-      // Flushbar(
-      //   flushbarPosition: FlushbarPosition.BOTTOM,
-      //   backgroundColor: Theme.of(context).primaryColor,
-      //   duration: Duration(seconds: 3),
-      //   messageText: Text(
-      //     notification['notification']['body'],
-      //     overflow: TextOverflow.ellipsis,
-      //     style: TextStyle(
-      //       color: Colors.white,
-      //     ),
-      //   ),
-      // )..show(context);
-    }, onResume: (notification) async {
-      //print(notification);
-    });
+  void firebaseMessagingInit() async{
+    firebaseMessaging.configure(
+      onLaunch: (notification) async{
+        print('onLaunch');
+        print(notification);
+      },
+      onMessage: (notification) async{
+        print('onMessage');
+        print(notification);
+        Flushbar(
+          flushbarPosition: FlushbarPosition.TOP,
+          backgroundColor: Theme.of(context).primaryColor,
+          duration: Duration(seconds: 3),
+          messageText: ListTile(
+            leading: CircleAvatar(child: Icon(Icons.group),),
+            title: Text(
+              notification['notification']['title'],
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            subtitle: Text(
+              notification['notification']['body'],
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white
+              ),
+            ),
+          ),
+        )..show(context);
+      },
+      onResume: (notification) async{
+        print('onResume');
+        print(notification);
+      }
   }
 
   @override
@@ -108,18 +125,19 @@ class OpenScreenState extends State<OpenScreen> {
   }
 
   Future getSWData() async {
-    try {
-      var response = await http.get(url, headers: {
-        "Accept": "application/json",
-        "Authorization": 'Bearer ${widget.user.ploneToken}'
-      });
-      //print(response.body);
+    try{
+      var response = await http.get(
+        url, 
+        headers: {"Accept": "application/json", "Authorization":'Bearer ${widget.user.ploneToken}'}
+      );
       var resBody = json.decode(response.body);
       data = resBody["items"];
       for (var i in data) {
         i = i as Map;
       }
 
+      List filterProjects = List();
+      Map projectsData = Map();
       Future<String> getimglink(int i) async {
         try {
           var resp = await http.get(data[i]["@id"], headers: {
@@ -129,12 +147,25 @@ class OpenScreenState extends State<OpenScreen> {
           print(resp.statusCode);
           respBody = json.decode(resp.body);
           if (respBody != null) {
-            return respBody["image"]["scales"]["thumb"]["download"];
+            String imageLink=respBody["image"]["scales"]["thumb"]["download"];
+            if(respBody['members'].contains(widget.user.username)){
+              data[i].putIfAbsent('id', ()=> respBody['id']);
+              data[i].putIfAbsent('thumbnail', ()=>imageLink);
+              filterProjects.add(data[i]);
+              projectsData.putIfAbsent(respBody['id'], ()=>data[i]);
+            }
+            return imageLink;
           }
-        } catch (e) {}
+        } catch (err) {
+          print(err);
+          Flushbar(
+            duration: Duration(seconds: 3),
+            message: "Error Fetching project data",
+          )..show(context);
+        }
       }
-
-      for (var i = 0; i <= data.length; i++) {
+      
+      for (var i = 0; i < data.length; i++) {
         var imgs = await getimglink(i);
         if (imgs != null) {
           data[i] = data[i];
@@ -144,8 +175,9 @@ class OpenScreenState extends State<OpenScreen> {
 
       // set data state and save json for online use when this try block works
       setState(() {
-        data = data;
+        data = filterProjects;
         Saver.setData(data: data, name: "projectsdata");
+        projects=projectsData;
       });
 
       return "Success!";
@@ -171,9 +203,9 @@ class OpenScreenState extends State<OpenScreen> {
           "Authorization": 'Bearer ${widget.user.ploneToken}'
         },
       );
-      print(resp.statusCode);
       return "Success!";
-    } catch (err) {
+    } 
+    catch (err) {
       // internet is not conected if this block fails
       internet = false;
       print(err);
@@ -183,6 +215,8 @@ class OpenScreenState extends State<OpenScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final User user = Provider.of<User>(context);
+    user.projects = projects;
     Widget lst(Icon ico, List data) {
       return ListView.builder(
           itemCount: data == null ? 0 : data.length,
@@ -199,8 +233,7 @@ class OpenScreenState extends State<OpenScreen> {
                       onTap: () {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                          return TaskList(
-                              url: data[index]["@id"], user: widget.user);
+                          return TaskList(url: data[index]["@id"], user: widget.user,);
                         }));
                       },
                       leading:

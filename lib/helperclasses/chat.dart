@@ -12,10 +12,11 @@ import 'user.dart';
 class Chat extends StatefulWidget{
   final String title;
   final String channelId;
+  final project;
   final String type;
 
   @override
-  Chat({Key key, this.title, @required this.channelId, this.type}): super(key:key);
+  Chat({Key key, this.title, @required this.channelId, this.type, this.project}): super(key:key);
 
   @override
   ChatState createState() => ChatState();
@@ -45,7 +46,7 @@ class ChatState extends State<Chat> {
     else{
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context)=>OpenChatScreen(title:widget.title, channelId: widget.channelId, user: user,)
+          builder: (context)=>OpenChatScreen(title:widget.title, channelId: widget.channelId, user: user, project:widget.project)
         )
       );
     }
@@ -58,7 +59,16 @@ class ChatState extends State<Chat> {
         selected: isSelected,
         onLongPress: handleLongPress,
         onTap: handleTap,
-        leading: CircleAvatar(child: widget.type =='direct' ?Icon(Icons.person) : Icon(Icons.group)),
+        leading: CircleAvatar(
+          child: (widget.project['thumbnail']==null) 
+          ? (widget.type =='direct' ? Icon(Icons.person) : Icon(Icons.group))
+          : null,
+          backgroundImage: widget.project['thumbnail']==null
+          ? null
+          : NetworkImage(
+            widget.project['thumbnail']
+          ),
+        ),
         title: Text(widget.title),
         trailing: trailing,
       ),

@@ -3,9 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'helperclasses/projectsbloc.dart';
 import 'helperclasses/user.dart';
-import 'openscreen.dart';
 import 'signinscreen.dart';
-//import 'signupscreen.dart';
 
 
 /* 
@@ -53,10 +51,7 @@ class MyApp extends StatelessWidget {
               height: 30
             )
           ),
-          initialRoute: '/',
-          routes: <String, WidgetBuilder>{
-            '/':(context)=>SignInScreen(),
-          },
+          home: SignInScreen()
         ),
       ),
     );
