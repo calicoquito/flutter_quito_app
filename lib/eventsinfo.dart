@@ -6,32 +6,32 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'addmembers.dart';
-
+import 'helperclasses/urls.dart';
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
-
 class EventsInfo extends StatefulWidget {
-  final String url;
-  EventsInfo({this.url});
-  EventsInfoState createState() => EventsInfoState(url: url);
+  final User user;
+  EventsInfo({this.user});
+  EventsInfoState createState() => EventsInfoState(user: user);
 }
 
 class EventsInfoState extends State<EventsInfo> {
-  final String url;
-  EventsInfoState({@required this.url});
+  final String url = Urls.main;
+  final User user;
+  EventsInfoState({this.user});
   String textString = "";
   bool isSwitched = false;
   List setval;
   var photo;
 
   List assignedMembers = [];
-  
+
   Map jsonstr = {
     "@type": "project",
     "title": "Project by api 3",
     "description": "Project for tessting purposes",
-    "attendees": [],
+    "contributors": [],
     "start": "2019-06-12T17:20:00+00:00",
     "end": "2020-06-17T19:00:00+00:00",
     "whole_day": false,
@@ -103,27 +103,27 @@ class EventsInfoState extends State<EventsInfo> {
 
   Future openimg(ImageSource source) async {
     var file = await ImagePicker.pickImage(source: source);
-    if (file != null){
-      var base64Image = file != null ? base64Encode(file.readAsBytesSync()) : "";
+    if (file != null) {
+      var base64Image =
+          file != null ? base64Encode(file.readAsBytesSync()) : "";
       jsonstr["image"]["data"] = base64Image;
       setState(() {
         photo = file;
       });
-      }
+    }
     Navigator.of(context, rootNavigator: true).pop(context);
   }
 
   Future<String> uploadImg() async {
-    var bytes = utf8.encode("admin:admin");
-    var credentials = base64.encode(bytes);
     var resp = await http.post(url,
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
-          "Authorization": "Basic $credentials"
+          "Authorization": "Bearer ${widget.user.ploneToken}",
         },
         body: jsonEncode(jsonstr));
     print(resp.statusCode);
+    print(resp.body);
     return "Success!";
   }
 
@@ -227,10 +227,10 @@ class EventsInfoState extends State<EventsInfo> {
                 onPressed: () async {
                   assignedMembers = await Navigator.push(context,
                       MaterialPageRoute(builder: (context) {
-                    return AddMembersPage();
+                    return AddMembersPage(user: user);
                   }));
                   setState(() {
-                    jsonstr["attendees"] = assignedMembers;
+                    jsonstr["contributors"] = assignedMembers;
                   });
                 },
                 child: Icon(
@@ -253,13 +253,18 @@ class EventsInfoState extends State<EventsInfo> {
                           FlatButton(
                             child: CircleAvatar(
                               radius: 20.0,
-                              backgroundImage: NetworkImage(
-                                  assignedMembers[index]["portrait"]),
+                              backgroundImage:
+                                  assignedMembers[index]["portrait"] == null
+                                      ? AssetImage(
+                                          'assets/images/default-image.jpg')
+                                      : NetworkImage(
+                                          assignedMembers[index]["portrait"]),
                               backgroundColor: Colors.transparent,
                             ),
                             onPressed: () => Navigator.push(context,
                                     MaterialPageRoute(builder: (context) {
-                                  return UserInfo(user: assignedMembers[index]);
+                                  return UserInfo(
+                                      userinfo: assignedMembers[index]);
                                 })),
                           ),
                           Text(
@@ -293,15 +298,15 @@ class EventsInfoState extends State<EventsInfo> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           uploadImg();
-          
-          // Javier 
-          // I am adding this block of code to facilitate 
+
+          // Javier
+          // I am adding this block of code to facilitate
           // create of channel for when a project is created
-          try{
+          try {
             final resp = await http.post(
-              'http://mattermost.alteroo.com/api/v4/channels',
-              headers: {'Authorization':'Bearer ${user.mattermostToken}'},
-              body: jsonEncode({
+                'http://mattermost.alteroo.com/api/v4/channels',
+                headers: {'Authorization': 'Bearer ${user.mattermostToken}'},
+                body: jsonEncode({
                   "team_id": "fqi8t55eatr6tytz1yxosntfhe",
                   "type": "O",
                   "display_name": jsonstr['title'],
@@ -309,22 +314,19 @@ class EventsInfoState extends State<EventsInfo> {
                   "header": "",
                   "purpose": jsonstr['description'],
                   "creator_id": "${user.userId}",
-              })
-            );
-            if(resp.statusCode==200){
+                }));
+            if (resp.statusCode == 200) {
               final jsonData = jsonDecode(resp.body);
               await http.post(
-                'http://mattermost.alteroo.com/api/v4/channels/${jsonData['id']}/members',
-                headers: {'Authorization':'Bearer ${user.mattermostToken}'},
-                body: jsonEncode({
-                  "user_id": "p57uijbcu7rk8c391ycwcrifao",
-                  "channel_id": "${jsonData['id']}",
-                })
-              ); 
+                  'http://mattermost.alteroo.com/api/v4/channels/${jsonData['id']}/members',
+                  headers: {'Authorization': 'Bearer ${user.mattermostToken}'},
+                  body: jsonEncode({
+                    "user_id": "p57uijbcu7rk8c391ycwcrifao",
+                    "channel_id": "${jsonData['id']}",
+                  }));
             }
             print('created');
-          }
-          catch(err){
+          } catch (err) {
             print(err);
           }
           Navigator.of(context, rootNavigator: true).pop(context);

@@ -4,15 +4,19 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'helperclasses/user.dart';
+
 class TaskData extends StatefulWidget {
   final String url;
-  TaskData({@required this.url});
-  TaskDataState createState() => TaskDataState(url: url);
+  final User user;
+  TaskData({@required this.url, this.user});
+  TaskDataState createState() => TaskDataState(url: url, user: user);
 }
 
 class TaskDataState extends State<TaskData> {
   final String url;
-  TaskDataState({@required this.url});
+  final User user;
+  TaskDataState({@required this.url, this.user});
   Map data;
   String textString = "";
   bool isSwitched = false;
@@ -28,7 +32,10 @@ class TaskDataState extends State<TaskData> {
   }
 
   Future<String> getSWData() async {
-    var response = await http.get(url + "/need-to-do", headers: {"Accept": "application/json"});
+    var response = await http.get(url, headers: {
+        "Accept": "application/json",
+        "Authorization": "Bearer ${widget.user.ploneToken}",
+      });
     var resBody = json.decode(response.body);
     print(resBody);
     setState(() {

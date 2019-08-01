@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'helperclasses/saver.dart';
+import 'helperclasses/urls.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; 
@@ -14,6 +18,8 @@ import 'eventsinfoedit.dart';
 import 'tasks.dart';
 import 'dart:async';
 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 /*
   The OpenScreen Widget defines the screen a user see immediately after
   logging in to the application. 
@@ -37,20 +43,27 @@ class OpenScreen extends StatefulWidget {
 
   const OpenScreen({Key key, this.user}) : super(key: key);
   @override
-  OpenScreenState createState() => OpenScreenState();
+  OpenScreenState createState() => OpenScreenState(user: user);
 }
 
 class OpenScreenState extends State<OpenScreen> {
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
-  final String url = "http://calico.palisadoes.org/projects";
-  List data;
+  final User user;
+  OpenScreenState({this.user});
+  final String url = Urls.projects;
+  List data = List();
   Widget appBarTitle = Text('Projects');
   Icon actionIcon = Icon(Icons.search);
   List newdata = List();
+  var respBody;
+  bool internet = true;
+  List saveimage = List();
   Map projects = Map();
 
   int count = 1;
   List holder = List();
+
+  get stringdata => null;
   void setsearchdata() {
     if (count == 1) {
       holder = data;
@@ -98,18 +111,15 @@ class OpenScreenState extends State<OpenScreen> {
         print('onResume');
         print(notification);
       }
-    );
   }
 
   @override
   void initState() {
     super.initState();
     //Gets Firebase Cloud Messaging device token for push notifications
-    firebaseMessaging.getToken().then(
-      (token){
-        print(token);
-      }
-    );
+    firebaseMessaging.getToken().then((token) {
+      //print(token);
+    });
     firebaseMessagingInit();
     getSWData();
   }
@@ -130,10 +140,12 @@ class OpenScreenState extends State<OpenScreen> {
       Map projectsData = Map();
       Future<String> getimglink(int i) async {
         try {
-          var resp = await http.get(
-            headers: {"Accept": "application/json", "Authorization":'Bearer ${widget.user.ploneToken}'}
-          );
-          var respBody = json.decode(resp.body);
+          var resp = await http.get(data[i]["@id"], headers: {
+            "Accept": "application/json",
+            "Authorization": 'Bearer ${widget.user.ploneToken}'
+          });
+          print(resp.statusCode);
+          respBody = json.decode(resp.body);
           if (respBody != null) {
             String imageLink=respBody["image"]["scales"]["thumb"]["download"];
             if(respBody['members'].contains(widget.user.username)){
@@ -152,6 +164,7 @@ class OpenScreenState extends State<OpenScreen> {
           )..show(context);
         }
       }
+      
       for (var i = 0; i < data.length; i++) {
         var imgs = await getimglink(i);
         if (imgs != null) {
@@ -159,22 +172,29 @@ class OpenScreenState extends State<OpenScreen> {
           data[i]['image'] = imgs;
         }
       }
+
+      // set data state and save json for online use when this try block works
       setState(() {
         data = filterProjects;
+        Saver.setData(data: data, name: "projectsdata");
         projects=projectsData;
       });
+
       return "Success!";
-    }
-    catch(err){
+    } catch (err) {
       print(err);
     }
+    //data is empty so get saved data when try block fails
+    data = await Saver.getData(name: "projectsdata");
+    setState(() {
+      data = data;
+    });
+
   }
 
   Future delete(int index) async {
     String url = data[index]["@id"];
-    var bytes = utf8.encode("admin:admin");
-    var credentials = base64.encode(bytes);
-    try{
+    try {
       var resp = await http.delete(
         url,
         headers: {
@@ -184,8 +204,10 @@ class OpenScreenState extends State<OpenScreen> {
         },
       );
       return "Success!";
-    }
-    catch(err) {
+    } 
+    catch (err) {
+      // internet is not conected if this block fails
+      internet = false;
       print(err);
     }
   }
@@ -214,12 +236,16 @@ class OpenScreenState extends State<OpenScreen> {
                           return TaskList(url: data[index]["@id"], user: widget.user,);
                         }));
                       },
-                      leading: CircleAvatar(
+                      leading:
+                      CircleAvatar(child: 
+                        data[index]["image"] == null
+                          ? Image.asset('assets/images/default-image.jpg'): 
+                            CachedNetworkImage(imageUrl: data[index]["image"],
+                            placeholder: (context, url)=> CircularProgressIndicator(),
+                            width: 80.0,
+                            ),                      
+                         backgroundColor: Colors.transparent,
                         radius: 28.0,
-                        backgroundImage: data[index]["image"] == null
-                            ? AssetImage('assets/images/default-image.jpg')
-                            : NetworkImage(data[index]["image"]),
-                        backgroundColor: Colors.transparent,
                       ),
                       trailing: PopupMenuButton<int>(
                         itemBuilder: (context) => [
@@ -229,10 +255,9 @@ class OpenScreenState extends State<OpenScreen> {
                                   child: Text("Team Members"),
                                   onPressed: () {
                                     Navigator.push(context,
-                                        MaterialPageRoute(
-                                            builder: (context) {
+                                        MaterialPageRoute(builder: (context) {
                                       return Members(
-                                          url: data[index]["@id"]);
+                                          url: data[index]["@id"], user: user);
                                     }));
                                   },
                                 ),
@@ -245,9 +270,8 @@ class OpenScreenState extends State<OpenScreen> {
                                 ),
                               ),
                             ],
-                          ),
-                      
-                      title: Text("Event Name: ${data[index]["title"]} "),
+                      ),
+                      title: Text("${data[index]["title"]} "),
                       subtitle: Text("Event type: ${data[index]["@type"]}",
                           style:
                               TextStyle(fontSize: 10.0, color: Colors.black54)),
@@ -265,7 +289,7 @@ class OpenScreenState extends State<OpenScreen> {
                   icon: Icons.edit,
                   onTap: () => Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return EventsInfoEdit(url: data[index]["@id"]);
+                        return EventsInfoEdit(user: user);
                       })),
                 ),
               ],
@@ -289,61 +313,61 @@ class OpenScreenState extends State<OpenScreen> {
       child: Scaffold(
         drawer: SideDrawer(),
         appBar: AppBar(title: appBarTitle, actions: <Widget>[
-        IconButton(
-          icon: actionIcon,
+          IconButton(
+            icon: actionIcon,
+            onPressed: () {
+              setState(() {
+                if (actionIcon.icon == Icons.search) {
+                  actionIcon = Icon(Icons.close);
+                  appBarTitle = TextField(
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                    decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.search, color: Colors.white),
+                        hintText: "Search...",
+                        hintStyle: TextStyle(color: Colors.white)),
+                    onChanged: (text) {
+                      if (data.length < holder.length) {
+                        data = holder;
+                      }
+                      text = text.toLowerCase();
+                      setState(() {
+                        newdata = data.where((project) {
+                          var name = project["title"].toLowerCase();
+                          return name.contains(text);
+                        }).toList();
+                      });
+                      setsearchdata();
+                    },
+                  );
+                } else {
+                  actionIcon = Icon(Icons.search);
+                  appBarTitle = Text('Projects');
+                }
+              });
+            },
+          ),
+        ]),
+        body: Container(
+          child: RefreshIndicator(
+              onRefresh: () async {
+                getSWData();
+              },
+              child: lst(Icon(Icons.person), data)),
+        ),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(
+            Icons.add,
+            color: Colors.white,
+          ),
           onPressed: () {
-            setState(() {
-              if (actionIcon.icon == Icons.search) {
-                actionIcon = Icon(Icons.close);
-                appBarTitle = TextField(
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                  decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.search, color: Colors.white),
-                      hintText: "Search...",
-                      hintStyle: TextStyle(color: Colors.white)),
-                  onChanged: (text) {
-                    if (data.length < holder.length) {
-                      data = holder;
-                    }
-                    text = text.toLowerCase();
-                    setState(() {
-                      newdata = data.where((project) {
-                        var name = project["title"].toLowerCase();
-                        return name.contains(text);
-                      }).toList();
-                    });
-                    setsearchdata();
-                  },
-                );
-              } else {
-                actionIcon = Icon(Icons.search);
-                appBarTitle = Text('Projects');
-              }
-            });
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return EventsInfo(user: user);
+            }));
           },
         ),
-      ]),
-        body: Container(
-        child: RefreshIndicator(
-            onRefresh: () async {
-              getSWData();
-            },
-            child: lst(Icon(Icons.person), data)),
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return EventsInfo(url: url,);
-          }));
-        },
-      ),
       ),
     );
   }
-} 
+}

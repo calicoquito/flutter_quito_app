@@ -5,18 +5,21 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'addmembers.dart';
+import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
 class Task extends StatefulWidget {
+  final User user;
   String url;
-  Task({@required this.url});
+  Task({@required this.url, this.user});
   @override
-  TaskState createState() => TaskState(url: url);
+  TaskState createState() => TaskState(url: url, user: user);
 }
 
 class TaskState extends State<Task> {
+  final User user;
   String url;
-  TaskState({@required this.url});
+  TaskState({@required this.url, this.user});
   //TextEditingController controller = TextEditingController();
   String textString = "";
   bool isSwitched = false;
@@ -37,14 +40,14 @@ class TaskState extends State<Task> {
   };
 
   Future<String> uploadTask() async {
-    print(url);
-    var bytes = utf8.encode("admin:admin");
-    var credentials = base64.encode(bytes);
-    var resp = await http.post(url + "/need-to-do",
+    // print(url);
+    // var bytes = utf8.encode("admin:admin");
+    // var credentials = base64.encode(bytes);
+    var resp = await http.post(url,
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
-          "Authorization": "Basic $credentials"
+          "Authorization": "Bearer ${widget.user.ploneToken}",
         },
         body: jsonEncode(taskjson));
     print(resp.statusCode);
@@ -131,7 +134,7 @@ class TaskState extends State<Task> {
                     setState(() async {
                       assignedMembers = await Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return AddMembersPage();
+                        return AddMembersPage(user: user);
                       }));
                     });
 
@@ -157,13 +160,14 @@ class TaskState extends State<Task> {
                               FlatButton(child: 
                               CircleAvatar(
                                 radius: 20.0,
-                                backgroundImage: NetworkImage(
-                                    assignedMembers[index]["portrait"]),
+                                backgroundImage: assignedMembers[index]["portrait"] == null ? 
+                                AssetImage('assets/images/default-image.jpg') :
+                                NetworkImage(assignedMembers[index]["portrait"]),
                                 backgroundColor: Colors.transparent,
                               ),
                               onPressed: ()=> Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return UserInfo(user: assignedMembers[index]);
+                        return UserInfo(userinfo: assignedMembers[index]);
                       })),
                               ),
                               Text(
