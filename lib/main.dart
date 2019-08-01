@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:quito_1/openscreen.dart';
 import 'helperclasses/projectsbloc.dart';
 import 'helperclasses/user.dart';
 import 'signinscreen.dart';
@@ -27,6 +28,11 @@ class MyApp extends StatelessWidget {
       child: ChangeNotifierProvider<ProjectsBloc>.value(
         value: ProjectsBloc(),
         child: MaterialApp(
+            initialRoute: '/',
+  routes: {
+    // When navigating to the "/second" route, build the SecondScreen widget.
+    '/homescreen': (context) => OpenScreen(),
+  },
           title: 'Quito',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(

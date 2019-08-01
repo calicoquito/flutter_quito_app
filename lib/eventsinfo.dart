@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,25 +13,27 @@ import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
 class EventsInfo extends StatefulWidget {
+  final String url;
   final User user;
-  EventsInfo({this.user});
+  EventsInfo({@required this.url, this.user});
   EventsInfoState createState() => EventsInfoState(user: user);
 }
 
 class EventsInfoState extends State<EventsInfo> {
   final String url = Urls.main;
   final User user;
-  EventsInfoState({this.user});
+  EventsInfoState({ this.user});
   String textString = "";
   bool isSwitched = false;
   List setval;
   var photo;
+  File croppedFile;
 
   List assignedMembers = [];
 
   Map jsonstr = {
     "@type": "project",
-    "title": "Project by api 3",
+    "title": "Project by api 9",
     "description": "Project for tessting purposes",
     "contributors": [],
     "start": "2019-06-12T17:20:00+00:00",
@@ -104,17 +108,13 @@ class EventsInfoState extends State<EventsInfo> {
   Future openimg(ImageSource source) async {
     var file = await ImagePicker.pickImage(source: source);
     if (file != null) {
-      var base64Image =
-          file != null ? base64Encode(file.readAsBytesSync()) : "";
-      jsonstr["image"]["data"] = base64Image;
-      setState(() {
-        photo = file;
-      });
+      cropImage(file);
     }
-    Navigator.of(context, rootNavigator: true).pop(context);
   }
 
   Future<String> uploadImg() async {
+    var base64Image = photo != null ? base64Encode(photo.readAsBytesSync()) : "";
+    jsonstr["image"]["data"] = base64Image;
     var resp = await http.post(url,
         headers: {
           "Accept": "application/json",
@@ -127,6 +127,25 @@ class EventsInfoState extends State<EventsInfo> {
     return "Success!";
   }
 
+
+  Future cropImage(File imageFile) async {
+    croppedFile = await ImageCropper.cropImage(
+      toolbarColor: Color(0xff7e1946),
+      statusBarColor: Colors.blueGrey,
+      toolbarWidgetColor: Colors.white,
+      sourcePath: imageFile.path,
+      ratioX: 1.0,
+      ratioY: 1.0,
+      maxWidth: 512,
+      maxHeight: 512,
+    );
+    setState(() {
+      photo = croppedFile;
+    });
+    Navigator.of(context, rootNavigator: true).pop(context);
+  }
+
+  
   Widget inputWidget(
       {icon: Icon, use_switch = "", txt: Text, drop: DropdownButton}) {
     String diplaytxt = txt.replaceAll(RegExp(r'_'), ' ');
@@ -203,7 +222,6 @@ class EventsInfoState extends State<EventsInfo> {
       body: ListView(children: <Widget>[
         Container(
           color: Colors.transparent,
-          //padding: EdgeInsets.all(20.0),
           child: FlatButton(
             padding: EdgeInsets.only(top: 50.0, bottom: 50.0),
             color: Colors.black54,
@@ -230,7 +248,7 @@ class EventsInfoState extends State<EventsInfo> {
                     return AddMembersPage(user: user);
                   }));
                   setState(() {
-                    jsonstr["contributors"] = assignedMembers;
+                    jsonstr["contributors"] = json.encode(assignedMembers);
                   });
                 },
                 child: Icon(

@@ -5,23 +5,22 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 import 'addmembers.dart';
-import 'helperclasses/urls.dart';
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
 class EventsInfoEdit extends StatefulWidget {
+  final String url;
   final User user;
-  EventsInfoEdit({this.user});
-  EventsInfoEditState createState() => EventsInfoEditState( user: user);
+  EventsInfoEdit({@required this.url, this.user});
+  EventsInfoEditState createState() => EventsInfoEditState(url: url, user: user);
 }
 
 class EventsInfoEditState extends State<EventsInfoEdit> {
-  final String url = Urls.main;
+  final String url;
   final User user;
-  EventsInfoEditState({ this.user});
+  EventsInfoEditState({@required this.url, this.user});
   //TextEditingController controller = TextEditingController();
   String textString = "";
   bool isSwitched = false;
@@ -121,10 +120,11 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     });
     print(resp.statusCode);
     data = json.decode(resp.body);
-    if (data["attendees"] != null){
-    assignedMembers = json.decode(data["attendees"][0]);}
+    if (data["contributors"] != null){
+    assignedMembers = data["contributors"].isEmpty ? null 
+    : json.decode(data["contributors"][0]);}
     setState(() {
-      photo = data['image'] == null ? null
+      photo = data['image'] == null? null
           : Image.network(data['image']['download']);
     });
 
@@ -159,14 +159,12 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     Navigator.of(context, rootNavigator: true).pop(context);
   }
 
-  Future<String> uploadImg() async {
-    var file = await DefaultCacheManager().getSingleFile(data['image']['download']);
-    String imgstring =
-        croppedFile == null ? "" : base64Encode(croppedFile.readAsBytesSync());
+  Future<String> uploadPatch() async {
+    var file = photo == null ? File('assets/images/default-image.jpg'): photo;
+    String imgstring = croppedFile == null ? "" 
+    : base64Encode(croppedFile.readAsBytesSync());
     jsonstr["image"]["data"] = data["image"] != null
         ? base64Encode(file.readAsBytesSync()) : imgstring;
-    // var bytes = utf8.encode("admin:admin");
-    // var credentials = base64.encode(bytes);
     var resp = await http.patch(url,
         headers: {
           "Accept": "application/json",
@@ -350,7 +348,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
       ]),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          uploadImg();
+          uploadPatch();
           Navigator.of(context, rootNavigator: true).pop(context);
         },
         tooltip: 'Create Project',

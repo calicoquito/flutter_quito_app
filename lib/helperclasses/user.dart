@@ -34,7 +34,15 @@ class User {
     teams = List();
   }
 
+  static Future <bool> signedin()async{
+    var username = await Saver.getData(name: 'username');
+    if (username.isNotEmpty){
+    return true;
+    }else{
+      return false;
+    }
 
+  }
 
   static save(){
     Saver.setData(name: 'email', data: User._internal().email);

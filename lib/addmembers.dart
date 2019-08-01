@@ -57,7 +57,6 @@ class AddMembersPageState extends State<AddMembersPage>
       if (setval[i] == true) {
         Map user = data[i];
         select_users.add(user);
-        print(select_users);
       }
     }
     Navigator.pop(context, select_users);
@@ -70,7 +69,6 @@ class AddMembersPageState extends State<AddMembersPage>
       });
 
     print(response.statusCode);
-    print(response.body);
     setState(() {
       var resBody = json.decode(response.body);
       data = resBody;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:provider/provider.dart';
+import 'package:quito_1/openscreen.dart';
 import 'package:quito_1/profile_dialog.dart';
 import 'chatscreen.dart';
 import 'helperclasses/user.dart';
@@ -49,12 +50,9 @@ class SideDrawer extends StatelessWidget{
               leading: Icon(Icons.work),
               title: Text('Projects'),
               onTap: (){
-                Navigator.of(context).pop();
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context)=>Projects()
-                  )
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return OpenScreen();
+                        }));
               },
             ),
             ListTile(
