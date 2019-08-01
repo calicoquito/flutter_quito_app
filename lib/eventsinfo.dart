@@ -202,7 +202,7 @@ class EventsInfoState extends State<EventsInfo> {
       )),
       body: ListView(children: <Widget>[
         Container(
-          color: Colors.black54,
+          color: Colors.transparent,
           //padding: EdgeInsets.all(20.0),
           child: FlatButton(
             padding: EdgeInsets.only(top: 50.0, bottom: 50.0),

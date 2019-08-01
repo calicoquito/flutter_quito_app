@@ -110,7 +110,7 @@ class OpenScreenState extends State<OpenScreen> {
       onResume: (notification) async{
         print('onResume');
         print(notification);
-      }
+      });
   }
 
   @override
@@ -158,10 +158,10 @@ class OpenScreenState extends State<OpenScreen> {
           }
         } catch (err) {
           print(err);
-          Flushbar(
-            duration: Duration(seconds: 3),
-            message: "Error Fetching project data",
-          )..show(context);
+          // Flushbar(
+          //   duration: Duration(seconds: 3),
+          //   message: "Error Fetching project data",
+          // )..show(context);
         }
       }
       
@@ -233,7 +233,7 @@ class OpenScreenState extends State<OpenScreen> {
                       onTap: () {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                          return TaskList(url: data[index]["@id"], user: widget.user,);
+                          return TaskList(url: data[index]["@id"], user: user,);
                         }));
                       },
                       leading:
