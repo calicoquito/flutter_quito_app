@@ -142,7 +142,7 @@ class OpenScreenState extends State<OpenScreen> {
         }
       }
 
-      // set data state and save json for online use
+      // set data state and save json for online use when this try block works
       setState(() {
         data = data;
         Saver.setData(data: data, name: "projectsdata");
@@ -152,18 +152,12 @@ class OpenScreenState extends State<OpenScreen> {
     } catch (err) {
       print(err);
     }
-    //data is empty so get saved data
+    //data is empty so get saved data when try block fails
     data = await Saver.getData(name: "projectsdata");
     setState(() {
       data = data;
     });
 
-    for (var i = 0; i <= data.length; i++) {
-      var img = await Saver.getImage(name: "projectsimage$i");
-      if (img != null) {
-        saveimage[i] = img;
-      }
-    }
   }
 
   Future delete(int index) async {
@@ -193,8 +187,6 @@ class OpenScreenState extends State<OpenScreen> {
       return ListView.builder(
           itemCount: data == null ? 0 : data.length,
           itemBuilder: (BuildContext context, int index) {
-            if (internet == true){
-            Saver.setImage(name: "projectsimage$index", url: data[index]["image"]);}
             return Slidable(
               delegate: SlidableDrawerDelegate(),
               actionExtentRatio: 0.25,
@@ -211,14 +203,16 @@ class OpenScreenState extends State<OpenScreen> {
                               url: data[index]["@id"], user: widget.user);
                         }));
                       },
-                      leading: CircleAvatar(
+                      leading:
+                      CircleAvatar(child: 
+                        data[index]["image"] == null
+                          ? Image.asset('assets/images/default-image.jpg'): 
+                            CachedNetworkImage(imageUrl: data[index]["image"],
+                            placeholder: (context, url)=> CircularProgressIndicator(),
+                            width: 80.0,
+                            ),                      
+                         backgroundColor: Colors.transparent,
                         radius: 28.0,
-                        backgroundImage: data[index]["image"] == null
-                            ? AssetImage('assets/images/default-image.jpg')
-                            : internet == true
-                                ? NetworkImage(data[index]["image"])
-                                : saveimage[index],
-                        backgroundColor: Colors.transparent,
                       ),
                       trailing: PopupMenuButton<int>(
                         itemBuilder: (context) => [
@@ -244,7 +238,7 @@ class OpenScreenState extends State<OpenScreen> {
                               ),
                             ],
                       ),
-                      title: Text("Event Name: ${data[index]["title"]} "),
+                      title: Text("${data[index]["title"]} "),
                       subtitle: Text("Event type: ${data[index]["@type"]}",
                           style:
                               TextStyle(fontSize: 10.0, color: Colors.black54)),
