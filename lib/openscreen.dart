@@ -1,7 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flushbar/flushbar.dart';
-import 'package:flushbar/flushbar_route.dart' as prefix0;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; 
 import 'helperclasses/user.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
@@ -13,6 +13,7 @@ import 'eventsinfo.dart';
 import 'eventsinfoedit.dart';
 import 'tasks.dart';
 import 'dart:async';
+
 /*
   The OpenScreen Widget defines the screen a user see immediately after
   logging in to the application. 
@@ -46,6 +47,7 @@ class OpenScreenState extends State<OpenScreen> {
   Widget appBarTitle = Text('Projects');
   Icon actionIcon = Icon(Icons.search);
   List newdata = List();
+  Map projects = Map();
 
   int count = 1;
   List holder = List();
@@ -63,24 +65,37 @@ class OpenScreenState extends State<OpenScreen> {
   void firebaseMessagingInit() async{
     firebaseMessaging.configure(
       onLaunch: (notification) async{
+        print('onLaunch');
         print(notification);
       },
       onMessage: (notification) async{
+        print('onMessage');
         print(notification);
         Flushbar(
-          flushbarPosition: FlushbarPosition.BOTTOM,
+          flushbarPosition: FlushbarPosition.TOP,
           backgroundColor: Theme.of(context).primaryColor,
           duration: Duration(seconds: 3),
-          messageText: Text(
-            notification['notification']['body'],
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Colors.white,
+          messageText: ListTile(
+            leading: CircleAvatar(child: Icon(Icons.group),),
+            title: Text(
+              notification['notification']['title'],
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            subtitle: Text(
+              notification['notification']['body'],
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white
+              ),
             ),
           ),
         )..show(context);
       },
       onResume: (notification) async{
+        print('onResume');
         print(notification);
       }
     );
@@ -103,7 +118,7 @@ class OpenScreenState extends State<OpenScreen> {
     try{
       var response = await http.get(
         url, 
-        headers: {"Accept": "application/json", "Authentication":'Bearer ${widget.user.ploneToken}'}
+        headers: {"Accept": "application/json", "Authorization":'Bearer ${widget.user.ploneToken}'}
       );
       var resBody = json.decode(response.body);
       data = resBody["items"];
@@ -111,21 +126,33 @@ class OpenScreenState extends State<OpenScreen> {
         i = i as Map;
       }
 
+      List filterProjects = List();
+      Map projectsData = Map();
       Future<String> getimglink(int i) async {
         try {
           var resp = await http.get(
-            data[i]["@id"], 
-            headers: {"Accept": "application/json", "Authentication":'Bearer ${widget.user.ploneToken}'}
+            headers: {"Accept": "application/json", "Authorization":'Bearer ${widget.user.ploneToken}'}
           );
-          print(resp.statusCode);
           var respBody = json.decode(resp.body);
           if (respBody != null) {
-            return respBody["image"]["scales"]["thumb"]["download"];
+            String imageLink=respBody["image"]["scales"]["thumb"]["download"];
+            if(respBody['members'].contains(widget.user.username)){
+              data[i].putIfAbsent('id', ()=> respBody['id']);
+              data[i].putIfAbsent('thumbnail', ()=>imageLink);
+              filterProjects.add(data[i]);
+              projectsData.putIfAbsent(respBody['id'], ()=>data[i]);
+            }
+            return imageLink;
           }
-        } catch (e) {}
+        } catch (err) {
+          print(err);
+          Flushbar(
+            duration: Duration(seconds: 3),
+            message: "Error Fetching project data",
+          )..show(context);
+        }
       }
-
-      for (var i = 1; i <= data.length; i++) {
+      for (var i = 0; i < data.length; i++) {
         var imgs = await getimglink(i);
         if (imgs != null) {
           data[i] = data[i];
@@ -133,7 +160,8 @@ class OpenScreenState extends State<OpenScreen> {
         }
       }
       setState(() {
-        data = data;
+        data = filterProjects;
+        projects=projectsData;
       });
       return "Success!";
     }
@@ -155,10 +183,9 @@ class OpenScreenState extends State<OpenScreen> {
           "Authorization": 'Bearer ${widget.user.ploneToken}'
         },
       );
-      print(resp.statusCode);
       return "Success!";
     }
-    catch(err){
+    catch(err) {
       print(err);
     }
   }
@@ -166,6 +193,8 @@ class OpenScreenState extends State<OpenScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final User user = Provider.of<User>(context);
+    user.projects = projects;
     Widget lst(Icon ico, List data) {
       return ListView.builder(
           itemCount: data == null ? 0 : data.length,
@@ -182,7 +211,7 @@ class OpenScreenState extends State<OpenScreen> {
                       onTap: () {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                          return TaskList(url: data[index]["@id"]);
+                          return TaskList(url: data[index]["@id"], user: widget.user,);
                         }));
                       },
                       leading: CircleAvatar(
@@ -193,29 +222,29 @@ class OpenScreenState extends State<OpenScreen> {
                         backgroundColor: Colors.transparent,
                       ),
                       trailing: PopupMenuButton<int>(
-                            itemBuilder: (context) => [
-                                  PopupMenuItem(
-                                    value: 1,
-                                    child: FlatButton(
-                                      child: Text("Team Members"),
-                                      onPressed: () {
-                                        Navigator.push(context,
-                                            MaterialPageRoute(
-                                                builder: (context) {
-                                          return Members(
-                                              url: data[index]["@id"]);
-                                        }));
-                                      },
-                                    ),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 2,
-                                    child: FlatButton(
-                                      child: Text("Move to Top"),
-                                      onPressed: () {},
-                                    ),
-                                  ),
-                                ],
+                        itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 1,
+                                child: FlatButton(
+                                  child: Text("Team Members"),
+                                  onPressed: () {
+                                    Navigator.push(context,
+                                        MaterialPageRoute(
+                                            builder: (context) {
+                                      return Members(
+                                          url: data[index]["@id"]);
+                                    }));
+                                  },
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 2,
+                                child: FlatButton(
+                                  child: Text("Move to Top"),
+                                  onPressed: () {},
+                                ),
+                              ),
+                            ],
                           ),
                       
                       title: Text("Event Name: ${data[index]["title"]} "),

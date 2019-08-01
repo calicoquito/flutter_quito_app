@@ -10,20 +10,24 @@ class User{
   String ploneToken;
   String mattermostToken;
   String userId;
+  String email;
+  Map projects;
   Map<String, String> members;
   List<Map<String, String>> teams;
 
   static final User _user = User._internal();
 
-  factory User()=> _user; 
+  factory User() => _user; 
 
   User._internal(){
+    email ='null';
     username = 'null';
     password = 'null';
     ploneToken= 'null';
     mattermostToken = 'null';
     userId = 'null';
     members = Map();
+    projects = Map();
     teams = List();
   }
 }

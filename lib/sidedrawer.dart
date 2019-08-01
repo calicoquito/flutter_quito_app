@@ -7,22 +7,7 @@ import 'helperclasses/user.dart';
 import 'projectscreen.dart';
 import 'settings.dart';
 
-class SideDrawer extends StatefulWidget{
-  @override
-  SideDrawerState createState() => SideDrawerState();
-}
-
-class SideDrawerState extends State<SideDrawer> {
-  @override
-  void initState(){
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
+class SideDrawer extends StatelessWidget{
   @override
   Widget build(BuildContext context){
     final User user = Provider.of<User>(context);
@@ -44,7 +29,7 @@ class SideDrawerState extends State<SideDrawer> {
                   child: Icon(Icons.person),
                   foregroundColor: Colors.white,
                 ),
-                accountEmail: Text('test@gmail.com'),
+                accountEmail: Text(user.email),
                 accountName: Text(user.username),
               ),
             ),
@@ -88,7 +73,7 @@ class SideDrawerState extends State<SideDrawer> {
               leading: Icon(Icons.exit_to_app),
               title: Text('Logout'),
               onTap: (){
-                Navigator.of(context).pushNamedAndRemoveUntil('/', ModalRoute.withName('/'));
+                Navigator.of(context).pushNamedAndRemoveUntil('/', (route)=>false);
               },
             )
           ]
