@@ -73,7 +73,7 @@ class SideDrawer extends StatelessWidget{
               leading: Icon(Icons.exit_to_app),
               title: Text('Logout'),
               onTap: (){
-                Navigator.of(context).pushNamedAndRemoveUntil('/', ModalRoute.withName('/'));
+                Navigator.of(context).pushNamedAndRemoveUntil('/', (route)=>false);
               },
             )
           ]
