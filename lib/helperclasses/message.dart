@@ -58,7 +58,6 @@ class MessageState extends State<Message>{
               child: Card(
                 color: color,
                 child: ListTile(
-                  leading: CircleAvatar(child: Icon(Icons.person),),
                   title:  widget.type == 'incoming' ?
                    Text(
                     widget.username,

@@ -46,6 +46,7 @@ class OpenScreen extends StatefulWidget {
 }
 
 class OpenScreenState extends State<OpenScreen> {
+  bool isLoading = true;
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   final User user;
   OpenScreenState({this.user});
@@ -117,7 +118,12 @@ class OpenScreenState extends State<OpenScreen> {
       //print(token);
     });
     firebaseMessagingInit();
-    getSWData();
+    getSWData()
+    .then((_){
+      setState((){
+        isLoading = false;
+      });
+    });
   }
 
   Future getSWData() async {
@@ -154,6 +160,7 @@ class OpenScreenState extends State<OpenScreen> {
         } catch (err) {
           print(err);
           Flushbar(
+            flushbarPosition:FlushbarPosition.BOTTOM,
             duration: Duration(seconds: 3),
             message: "Error Fetching project data",
           )..show(context);
@@ -346,7 +353,11 @@ class OpenScreenState extends State<OpenScreen> {
             onRefresh: () async {
               getSWData();
             },
-            child: lst(Icon(Icons.person), data)),
+            child: isLoading ?
+              Center(child: CircularProgressIndicator(),)
+            : data.length ==0 ?
+              Center(child: Text('Start something new today'),)
+            :lst(Icon(Icons.person), data)),
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(
