@@ -140,11 +140,11 @@ class OpenChatScreenState extends State<OpenChatScreen>{
     final User user = Provider.of<User>(context);
     final connection = await Connectivity().checkConnectivity();
     if(connection == ConnectivityResult.none){
-      // Flushbar(
-      //   flushbarPosition: FlushbarPosition.BOTTOM,
-      //   message: "No Internet Connection",
-      //   duration: Duration(seconds: 5),
-      // )..show(context);
+      Flushbar(
+        flushbarPosition: FlushbarPosition.BOTTOM,
+        message: "No Internet Connection",
+        duration: Duration(seconds: 5),
+      )..show(context);
       return;
     }
     if(controller.text.isNotEmpty){

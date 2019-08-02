@@ -31,8 +31,8 @@ dependencies:
   connectivity:
   shared_preferences:
   cached_network_image:
-  flushbar: 
   flutter_cache_manager:
+  flushbar: '1.6.0'
 
 
 dev_dependencies:

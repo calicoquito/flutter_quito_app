@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
-import 'helperclasses/projectsbloc.dart';
 import 'helperclasses/user.dart';
-import 'signinscreen.dart';
-
+import 'router.dart';
 
 /* 
  * This file houses the entry point to the app
@@ -24,37 +22,37 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Provider(
       builder: (context)=>User(),
-      child: ChangeNotifierProvider<ProjectsBloc>.value(
-        value: ProjectsBloc(),
-        child: MaterialApp(
-          title: 'Quito',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            primaryColor: Color(0xff7e1946),
-            primarySwatch: MaterialColor(
-              0xff7e1946,
-              {
-                50:Color.fromRGBO(112, 25, 70, 0.1),
-                100:Color.fromRGBO(112, 25, 70, 0.2),
-                200:Color.fromRGBO(112, 25, 70, 0.3),
-                300:Color.fromRGBO(112, 25, 70, 0.4),
-                400:Color.fromRGBO(112, 25, 70, 0.5),
-                500:Color.fromRGBO(112, 25, 70, 0.6), // creates a material color from these shades
-                600:Color.fromRGBO(112, 25, 70, 0.7),
-                700:Color.fromRGBO(112, 25, 70, 0.8),
-                800:Color.fromRGBO(112, 25, 70, 0.9),
-                900:Color.fromRGBO(112, 25, 70, 1),
-              }
-            ),
-            buttonTheme: ButtonThemeData(
-              minWidth: 50,
-              height: 30
-            )
+      child: MaterialApp(
+        title: 'Quito',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primaryColor: Color(0xff7e1946),
+          primarySwatch: MaterialColor(
+            0xff7e1946,
+            {
+              50:Color.fromRGBO(112, 25, 70, 0.1),
+              100:Color.fromRGBO(112, 25, 70, 0.2),
+              200:Color.fromRGBO(112, 25, 70, 0.3),
+              300:Color.fromRGBO(112, 25, 70, 0.4),
+              400:Color.fromRGBO(112, 25, 70, 0.5),
+              500:Color.fromRGBO(112, 25, 70, 0.6), // creates a material color from these shades
+              600:Color.fromRGBO(112, 25, 70, 0.7),
+              700:Color.fromRGBO(112, 25, 70, 0.8),
+              800:Color.fromRGBO(112, 25, 70, 0.9),
+              900:Color.fromRGBO(112, 25, 70, 1),
+            }
           ),
-          home: SignInScreen()
+          buttonTheme: ButtonThemeData(
+            minWidth: 50,
+            height: 30
+          )
         ),
+        home: Router()
       ),
     );
   }
 }
 
+// Not Used
+// child: ChangeNotifierProvider<ProjectsBloc>.value(
+//         value: ProjectsBloc(),

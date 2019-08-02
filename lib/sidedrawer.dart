@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:quito_1/profile_dialog.dart';
 import 'chatscreen.dart';
 import 'helperclasses/user.dart';
-import 'projectscreen.dart';
+// import 'projectscreen.dart';
 import 'settings.dart';
 
 class SideDrawer extends StatelessWidget{
@@ -45,18 +45,18 @@ class SideDrawer extends StatelessWidget{
                 );
               },
             ),
-            ListTile(
-              leading: Icon(Icons.work),
-              title: Text('Projects'),
-              onTap: (){
-                Navigator.of(context).pop();
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context)=>Projects()
-                  )
-                );
-              },
-            ),
+            // ListTile(
+            //   leading: Icon(Icons.work),
+            //   title: Text('Projects'),
+            //   onTap: (){
+            //     Navigator.of(context).pop();
+            //     Navigator.of(context).push(
+            //       MaterialPageRoute(
+            //         builder: (context)=>Projects()
+            //       )
+            //     );
+            //   },
+            // ),
             ListTile(
               leading: Icon(Icons.settings),
               title: Text('Settings'),
@@ -72,7 +72,8 @@ class SideDrawer extends StatelessWidget{
             ListTile(
               leading: Icon(Icons.exit_to_app),
               title: Text('Logout'),
-              onTap: (){
+              onTap: ()async{
+                await user.logout();
                 Navigator.of(context).pushNamedAndRemoveUntil('/', (route)=>false);
               },
             )

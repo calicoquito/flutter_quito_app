@@ -1,3 +1,4 @@
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -206,6 +207,8 @@ class SignInScreenState extends State<SignInScreen> with SingleTickerProviderSta
                                 user.userId = mattermostJson['id'];
                                 user.email = mattermostJson['email'];
                                 user.mattermostToken = responses[1].headers['token'];
+
+                                await user.login();
                                 
                                 Navigator.of(context).push(
                                   MaterialPageRoute(

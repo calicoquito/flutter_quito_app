@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'package:flushbar/flushbar.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import 'package:quito_1/openscreen.dart';
+import 'openscreen.dart';
 import 'dart:async';
 import 'helperclasses/user.dart';
 
@@ -27,30 +28,40 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
 
 
   Future<void> getTeams() async {
-    final resp = await http.get(
-      'http://mattermost.alteroo.com/api/v4/users/${widget.user.userId}/teams',
-      headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
-    );
-    final json = jsonDecode(resp.body);
-    json.forEach((team){
-      teams.add({
-        'id': team['id'],
-        'name':team['name']
-      });
-    });
-    for (var team in teams){
+    try{
       final resp = await http.get(
-        'http://mattermost.alteroo.com/api/v4/users?team=${team.keys.toList()[0]}',
+        'http://mattermost.alteroo.com/api/v4/users/${widget.user.userId}/teams',
         headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
       );
-      final jsonData = jsonDecode(resp.body);
-      jsonData.forEach((member){
-        members.addAll({
-          'id': member['id'], 
-          'username': member['username'],
-          member['id']: member['username'],
-          'team_id':team['id']});
+      final json = jsonDecode(resp.body);
+      
+      json.forEach((team){
+        teams.add({
+          'id': team['id'],
+          'name':team['name']
+        });
       });
+      for (var team in teams){
+        final resp = await http.get(
+          'http://mattermost.alteroo.com/api/v4/users?team=${team.keys.toList()[0]}',
+          headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
+        );
+        final jsonData = jsonDecode(resp.body);
+        jsonData.forEach((member){
+          members.addAll({
+            'id': member['id'], 
+            'username': member['username'],
+            member['id']: member['username'],
+            'team_id':team['id']});
+        });
+      }
+    }
+    catch(err){
+      Flushbar(
+        flushbarPosition: FlushbarPosition.BOTTOM,
+        duration: Duration(seconds: 5),
+        message: "An error has occured",
+      )..show(context);
     }
   }
 
@@ -70,10 +81,11 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
     
     getTeams()
     .whenComplete((){
-      Navigator.of(context).push(
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context)=>OpenScreen(user: widget.user,)
-        )
+        ),
+        (route)=>false
       );
     });
   }

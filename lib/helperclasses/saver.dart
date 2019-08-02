@@ -11,8 +11,6 @@ class Saver {
     var data = prefs.getString(name) == null
         ? null
         : json.decode(prefs.getString(name));
-    print("hey hey hey");
-    print(data);
     return data;
   }
 
@@ -20,10 +18,19 @@ class Saver {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String stringdata = json.encode(data);
     prefs.setString(name, stringdata);
-    print(data);
+    //print(data);
     return "Success!";
   }
 
+  static Future<bool> getSignInState() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isSignedIn');
+  }
+
+  static Future setSignInState(bool state)async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isSignedIn', state);
+  }
 
   static Future<File> getImage({name: String}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
