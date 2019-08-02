@@ -29,6 +29,8 @@ class _RouterState extends State<Router> {
       });
     });
   }
+
+  
   @override
   Widget build(BuildContext context) {
     final User user = Provider.of<User>(context);

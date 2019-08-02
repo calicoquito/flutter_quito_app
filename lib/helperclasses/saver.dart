@@ -43,7 +43,7 @@ class Saver {
   static Future setImage({url: String, name: String}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    var file = await DefaultCacheManager().getSingleFile(url);
+    var file = File.fromUri(url);
     if (file != null) {
       var base64Image = base64Encode(file.readAsBytesSync());
       String data = base64Image;

@@ -165,6 +165,7 @@ class EventsInfoState extends State<EventsInfo> {
       ),
       onSubmitted: (string) {
         setState(() {
+          
           jsonstr[txt] = string;
           print(jsonstr);
         });
