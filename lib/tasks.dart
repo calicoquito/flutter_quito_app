@@ -10,7 +10,6 @@ import 'dart:math';
 
 
 class TaskList extends StatefulWidget {
-  final User user;
   final String url;
   final User user;
   const TaskList({@required this.url, this.user});
@@ -84,7 +83,7 @@ class TaskListState extends State<TaskList> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Divider(
-                        height: 5.0,
+                        height: 10.0,
                       ),
                       Card(
                         child: ListTile(
@@ -117,9 +116,6 @@ class TaskListState extends State<TaskList> {
                                     setval[index] = value;
                                   });
                                 })),
-                      ),
-                      Divider(
-                        height: 5.0,
                       ),
                     ],
                   ),
