@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -28,9 +30,10 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   List assignedMembers;
   List members = [];
 
-  var photo = null;
+  File photo;
   Map data = Map();
   File croppedFile;
+  bool uploaded;
 
   @override
   void initState() {
@@ -123,9 +126,10 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     if (data["contributors"] != null){
     assignedMembers = data["contributors"].isEmpty ? null 
     : json.decode(data["contributors"][0]);}
+    var file = await DefaultCacheManager().getSingleFile(data['image']['download']);
     setState(() {
       photo = data['image'] == null? null
-          : Image.network(data['image']['download']);
+          : file;
     });
 
     return "Success!";
@@ -154,7 +158,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
       maxHeight: 512,
     );
     setState(() {
-      photo = Image.file(croppedFile);
+      photo = croppedFile;
     });
     Navigator.of(context, rootNavigator: true).pop(context);
   }
@@ -173,15 +177,12 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
         },
         body: jsonEncode(jsonstr));
     print(resp.statusCode);
+    if (resp.statusCode == 204){uploaded = true;} 
     return "Success!";
   }
 
   Widget inputWidget(
-      {icon: Icon, use_switch = "", txt: Text, drop: DropdownButton}) {
-    setState(() {
-      jsonstr[txt] = data[txt];
-    });
-
+      {icon: Icon, useswitch = "", txt: Text, drop: DropdownButton}) {
     String diplaytxt = txt.replaceAll(new RegExp(r'_'), ' ');
     diplaytxt = '${diplaytxt[0].toUpperCase()}${diplaytxt.substring(1)}';
     double width = MediaQuery.of(context).size.width;
@@ -189,30 +190,26 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
       diplaytxt,
       style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
     );
-    var text = TextFormField(
-      initialValue: jsonstr[txt].runtimeType == String ? jsonstr[txt] : '',
+var text = TextField(
       autocorrect: true,
-      //controller: controller,
       textAlign: TextAlign.justify,
       decoration: InputDecoration(
-        labelText: diplaytxt,
+        helperText: diplaytxt,
+        hintText: data[txt].runtimeType == String? data[txt] : "",
         contentPadding: EdgeInsets.all(14.0),
       ),
-      onFieldSubmitted: (string) {
+      onChanged: (string) {
         setState(() {
+          print(jsonstr[txt]);
           jsonstr[txt] = string;
-          //print(jsonstr);
         });
       },
-      onEditingComplete: () {
-        //controller.clear();
-      },
     );
-    var switch_true = Switch(
-        value: jsonstr[use_switch] == true ? true : false,
+    var switchtrue = Switch(
+        value: jsonstr[useswitch] == true ? true : false,
         onChanged: (value) {
           setState(() {
-            jsonstr[use_switch] = value;
+            jsonstr[useswitch] = value;
           });
         });
     return Container(
@@ -228,7 +225,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                   Padding(
                       padding: EdgeInsets.only(left: 4.0, right: 8.0),
                       child: icon),
-                  use_switch == ""
+                  useswitch == ""
                       ? Container(
                           width: width * .7,
                           child: text,
@@ -237,7 +234,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                           width: width * .7,
                           child: padtext,
                         ),
-                  use_switch == "" ? Text("") : switch_true
+                  useswitch == "" ? Text("") : switchtrue
                 ],
               ),
             ],
@@ -266,7 +263,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                     size: 80.0,
                     color: Colors.white,
                   )
-                : photo,
+                : Image.file(photo),
             onPressed: () {
               _optionsDialogBox();
             },
@@ -335,11 +332,11 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
         inputWidget(
             icon: Icon(Icons.access_time),
             txt: jsonstr.keys.elementAt(6),
-            use_switch: jsonstr.keys.elementAt(6)),
+            useswitch: jsonstr.keys.elementAt(6)),
         inputWidget(
             icon: Icon(Icons.timer_off),
             txt: jsonstr.keys.elementAt(7),
-            use_switch: jsonstr.keys.elementAt(7)),
+            useswitch: jsonstr.keys.elementAt(7)),
         inputWidget(icon: Icon(Icons.contacts), txt: jsonstr.keys.elementAt(9)),
         inputWidget(icon: Icon(Icons.email), txt: jsonstr.keys.elementAt(10)),
         inputWidget(icon: Icon(Icons.phone), txt: jsonstr.keys.elementAt(11)),
@@ -349,7 +346,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           uploadPatch();
-          Navigator.of(context, rootNavigator: true).pop(context);
+          Navigator.pop(context, uploaded);
         },
         tooltip: 'Create Project',
         child: Icon(Icons.check),

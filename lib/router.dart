@@ -30,15 +30,14 @@ class _RouterState extends State<Router> {
     });
   }
 
-  
   @override
   Widget build(BuildContext context) {
-    final User user = Provider.of<User>(context);
-    if(isSignedIn){
+     final User user = Provider.of<User>(context);
+    if(isSignedIn == true){
       return OpenScreen(user: user,);
     }
     else{
-      return SignInScreen();
-    }
+       return SignInScreen();
+     }
   }
 }

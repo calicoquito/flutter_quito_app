@@ -1,3 +1,4 @@
+
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -43,7 +44,7 @@ class Saver {
   static Future setImage({url: String, name: String}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    var file = File.fromUri(url);
+    var file = await DefaultCacheManager().getSingleFile(url);
     if (file != null) {
       var base64Image = base64Encode(file.readAsBytesSync());
       String data = base64Image;

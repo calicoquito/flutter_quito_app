@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'helperclasses/saver.dart';
 import 'helperclasses/urls.dart';
@@ -184,11 +182,6 @@ class OpenScreenState extends State<OpenScreen> {
         data = data;
       });
     }
-    //data is empty so get saved data when try block fails
-    data = await Saver.getData(name: "projectsdata");
-    // setState(() {
-    //   data = data;
-    // });
   }
 
   Future delete(int index) async {
@@ -284,11 +277,16 @@ class OpenScreenState extends State<OpenScreen> {
                   caption: 'Edit',
                   color: Colors.blue,
                   icon: Icons.edit,
-                  onTap: () => Navigator.push(context,
+                  onTap: () async {
+                    bool uploaded = await Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
                         return EventsInfoEdit(
                             url: data[index]["@id"], user: user);
-                      })),
+                      }));
+                      if (uploaded == true){getSWData();}
+                      
+                  }
+                      ,
                 ),
               ],
               secondaryActions: <Widget>[

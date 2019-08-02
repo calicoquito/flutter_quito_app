@@ -23,8 +23,8 @@ class AddMembersPageState extends State<AddMembersPage>
   final String url = Urls.users;
   List data;
   List<bool> setval = List();
-  List select_users = List();
-  List select_gorups;
+  List selectusers = List();
+  List selectgorups;
   List newdata = List();
 
   @override
@@ -56,10 +56,10 @@ class AddMembersPageState extends State<AddMembersPage>
     for (int i = 0; i < setval.length; i++) {
       if (setval[i] == true) {
         Map user = data[i];
-        select_users.add(user);
+        selectusers.add(user);
       }
     }
-    Navigator.pop(context, select_users);
+    Navigator.pop(context, selectusers);
   }
 
   Future<String> getSWData() async {

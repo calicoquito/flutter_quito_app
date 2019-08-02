@@ -9,7 +9,7 @@ class UserInputState extends State<UserInput> {
   Widget build(BuildContext context) {
     // TODO: implement build
   Widget inputWidget(Map jsonstr,
-      {icon: Icon, use_switch = "", txt: Text, drop: DropdownButton}) {
+      {icon: Icon, useswitch = "", txt: Text, drop: DropdownButton}) {
     String diplaytxt = txt.replaceAll(new RegExp(r'_'), ' ');
       diplaytxt = '${diplaytxt[0].toUpperCase()}${diplaytxt.substring(1)}';
     double width = MediaQuery.of(context).size.width;
@@ -36,10 +36,10 @@ class UserInputState extends State<UserInput> {
       },
     );
     var switch_true = Switch(
-        value: jsonstr[use_switch],
+        value: jsonstr[useswitch],
         onChanged: (value) {
           setState(() {
-            jsonstr[use_switch] = value;
+            jsonstr[useswitch] = value;
           });
         });
     return Container(
@@ -55,7 +55,7 @@ class UserInputState extends State<UserInput> {
                   Padding(
                       padding: EdgeInsets.only(left: 4.0, right: 8.0),
                       child: icon),
-                  use_switch == ""
+                  useswitch == ""
                       ? Container(
                           width: width * .7,
                           child: text,
@@ -64,7 +64,7 @@ class UserInputState extends State<UserInput> {
                           width: width * .7,
                           child: padtext,
                         ),
-                  use_switch == "" ? Text("") : switch_true
+                  useswitch == "" ? Text("") : switch_true
                 ],
               ),
             ],

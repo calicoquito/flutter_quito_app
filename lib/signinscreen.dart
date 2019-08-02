@@ -65,11 +65,6 @@ class SignInScreenState extends State<SignInScreen>
     usernameErrorString = null;
     isLoading = false;
     isTyping = false;
-    // if (User.signedin == true) {
-    //     final User user = User.retrieve();
-    //   Navigator.of(context).push(
-    //       MaterialPageRoute(builder: (context) => SplashScreen(user: user)));
-    // }
   }
 
   @override

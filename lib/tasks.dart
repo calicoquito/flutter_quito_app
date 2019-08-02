@@ -3,11 +3,11 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'dart:convert';
+import 'helperclasses/saver.dart';
 import 'helperclasses/user.dart';
 import 'task.dart';
 import 'taskdata.dart';
 import 'dart:math';
-
 
 class TaskList extends StatefulWidget {
   final String url;
@@ -47,25 +47,40 @@ class TaskListState extends State<TaskList> {
   }
 
   Future<String> getSWData() async {
-    print(url);
-    var response = await http.get(url,
-      headers: {
+    try {
+      var response = await http.get(url, headers: {
         "Accept": "application/json",
         "Authorization": "Bearer ${widget.user.ploneToken}",
       });
-    var resBody = json.decode(response.body);
-    print(widget.user.ploneToken);
-    print(resBody['items']);
-    setState(() {
-      data = resBody["items"];
-      print(response.body);
+      var resBody = json.decode(response.body);
+      print(widget.user.ploneToken);
+      print(resBody['items']);
+      setState(() {
+        data = resBody["items"];
+        Saver.setData(data: data, name: "tasksdata");
+        print(data);
+        for (var i in data) {
+          setval.add(false);
+          // if (data[i]['additiional_files'] == null) {
+          //   data[i]['additiional_files'] = Random().nextInt(15);
+          // }
+        }
+      });
+    } catch (err) {
+      print(err);
+      //data is empty so get saved data when try block fails
+      
+      setState(() async {
+        data = await Saver.getData(name: "tasksdata");
+      });
       print(data);
-      for (var i in data) {
-        setval.add(false);
-      }
+      return "Success!";
+    }
+    //data is empty so get saved data when try block fails
+    data = await Saver.getData(name: "tasksdata");
+    setState(() {
+      data = data;
     });
-    print(data);
-    return "Success!";
   }
 
   @override
@@ -102,6 +117,8 @@ class TaskListState extends State<TaskList> {
                                       color: Colors.white, fontSize: 20)),
                               radius: 48.0,
                               backgroundColor:
+                                  // data[index]['additiional_files'] == null ?
+                                  // Colors.primaries[data[index]['additiional_files']]  :
                                   Colors.primaries[Random().nextInt(15)],
                             ),
                             title: Text("Task Name: ${data[index]["title"]}"),

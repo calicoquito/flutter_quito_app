@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -43,6 +45,7 @@ class TaskState extends State<Task> {
     // print(url);
     // var bytes = utf8.encode("admin:admin");
     // var credentials = base64.encode(bytes);
+    taskjson['additional_files']  = Random().nextInt(15);
     var resp = await http.post(url,
         headers: {
           "Accept": "application/json",
@@ -56,7 +59,6 @@ class TaskState extends State<Task> {
 
   @override
   Widget build(BuildContext context) {
-    final List<int> items = [1, 2, 3, 4, 5, 6];
     return Scaffold(
       appBar: AppBar(
           title: Text(

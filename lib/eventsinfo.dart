@@ -28,6 +28,7 @@ class EventsInfoState extends State<EventsInfo> {
   List setval;
   var photo;
   File croppedFile;
+  bool uploaded;
 
   List assignedMembers = [];
 
@@ -124,6 +125,7 @@ class EventsInfoState extends State<EventsInfo> {
         body: jsonEncode(jsonstr));
     print(resp.statusCode);
     print(resp.body);
+    resp.statusCode == 201 ? uploaded = true: uploaded = false;
     return "Success!";
   }
 
@@ -147,7 +149,7 @@ class EventsInfoState extends State<EventsInfo> {
 
   
   Widget inputWidget(
-      {icon: Icon, use_switch = "", txt: Text, drop: DropdownButton}) {
+      {icon: Icon, useswitch = "", txt: Text, drop: DropdownButton}) {
     String diplaytxt = txt.replaceAll(RegExp(r'_'), ' ');
     diplaytxt = '${diplaytxt[0].toUpperCase()}${diplaytxt.substring(1)}';
     double width = MediaQuery.of(context).size.width;
@@ -163,22 +165,18 @@ class EventsInfoState extends State<EventsInfo> {
         labelText: diplaytxt,
         contentPadding: EdgeInsets.all(14.0),
       ),
-      onSubmitted: (string) {
+      onChanged: (string) {
         setState(() {
-          
           jsonstr[txt] = string;
           print(jsonstr);
         });
       },
-      onEditingComplete: () {
-        //controller.clear();
-      },
     );
-    var switch_true = Switch(
-        value: jsonstr[use_switch],
+    var switchtrue = Switch(
+        value: jsonstr[useswitch],
         onChanged: (value) {
           setState(() {
-            jsonstr[use_switch] = value;
+            jsonstr[useswitch] = value;
           });
         });
     return Container(
@@ -194,7 +192,7 @@ class EventsInfoState extends State<EventsInfo> {
                   Padding(
                       padding: EdgeInsets.only(left: 4.0, right: 8.0),
                       child: icon),
-                  use_switch == ""
+                  useswitch == ""
                       ? Container(
                           width: width * .7,
                           child: text,
@@ -203,7 +201,7 @@ class EventsInfoState extends State<EventsInfo> {
                           width: width * .7,
                           child: padtext,
                         ),
-                  use_switch == "" ? Text("") : switch_true
+                  useswitch == "" ? Text("") : switchtrue
                 ],
               ),
             ],
@@ -303,11 +301,11 @@ class EventsInfoState extends State<EventsInfo> {
         inputWidget(
             icon: Icon(Icons.access_time),
             txt: jsonstr.keys.elementAt(6),
-            use_switch: jsonstr.keys.elementAt(6)),
+            useswitch: jsonstr.keys.elementAt(6)),
         inputWidget(
             icon: Icon(Icons.timer_off),
             txt: jsonstr.keys.elementAt(7),
-            use_switch: jsonstr.keys.elementAt(7)),
+            useswitch: jsonstr.keys.elementAt(7)),
         inputWidget(icon: Icon(Icons.contacts), txt: jsonstr.keys.elementAt(9)),
         inputWidget(icon: Icon(Icons.email), txt: jsonstr.keys.elementAt(10)),
         inputWidget(icon: Icon(Icons.phone), txt: jsonstr.keys.elementAt(11)),
@@ -348,7 +346,8 @@ class EventsInfoState extends State<EventsInfo> {
           } catch (err) {
             print(err);
           }
-          Navigator.of(context, rootNavigator: true).pop(context);
+          Navigator.pop(context, uploaded);
+          
         },
         tooltip: 'Create Project',
         child: Icon(Icons.check),
