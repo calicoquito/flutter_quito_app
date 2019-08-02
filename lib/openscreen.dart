@@ -5,7 +5,7 @@ import 'helperclasses/saver.dart';
 import 'helperclasses/urls.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; 
+import 'package:provider/provider.dart';
 import 'helperclasses/user.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
@@ -18,7 +18,6 @@ import 'eventsinfoedit.dart';
 import 'tasks.dart';
 import 'dart:async';
 
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 /*
   The OpenScreen Widget defines the screen a user see immediately after
@@ -75,43 +74,39 @@ class OpenScreenState extends State<OpenScreen> {
   }
 
   //Configures the actions taken by the app on notification received
-  void firebaseMessagingInit() async{
-    firebaseMessaging.configure(
-      onLaunch: (notification) async{
-        print('onLaunch');
-        print(notification);
-      },
-      onMessage: (notification) async{
-        print('onMessage');
-        print(notification);
-        Flushbar(
-          flushbarPosition: FlushbarPosition.TOP,
-          backgroundColor: Theme.of(context).primaryColor,
-          duration: Duration(seconds: 3),
-          messageText: ListTile(
-            leading: CircleAvatar(child: Icon(Icons.group),),
-            title: Text(
-              notification['notification']['title'],
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white,
-              ),
-            ),
-            subtitle: Text(
-              notification['notification']['body'],
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white
-              ),
+  void firebaseMessagingInit() async {
+    firebaseMessaging.configure(onLaunch: (notification) async {
+      print('onLaunch');
+      print(notification);
+    }, onMessage: (notification) async {
+      print('onMessage');
+      print(notification);
+      Flushbar(
+        flushbarPosition: FlushbarPosition.TOP,
+        backgroundColor: Theme.of(context).primaryColor,
+        duration: Duration(seconds: 3),
+        messageText: ListTile(
+          leading: CircleAvatar(
+            child: Icon(Icons.group),
+          ),
+          title: Text(
+            notification['notification']['title'],
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white,
             ),
           ),
-        )..show(context);
-      },
-      onResume: (notification) async{
-        print('onResume');
-        print(notification);
-      }
-    );
+          subtitle: Text(
+            notification['notification']['body'],
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      )..show(context);
+    }, onResume: (notification) async {
+      print('onResume');
+      print(notification);
+    });
   }
 
   @override
@@ -126,11 +121,11 @@ class OpenScreenState extends State<OpenScreen> {
   }
 
   Future getSWData() async {
-    try{
-      var response = await http.get(
-        url, 
-        headers: {"Accept": "application/json", "Authorization":'Bearer ${widget.user.ploneToken}'}
-      );
+    try {
+      var response = await http.get(url, headers: {
+        "Accept": "application/json",
+        "Authorization": 'Bearer ${widget.user.ploneToken}'
+      });
       var resBody = json.decode(response.body);
       data = resBody["items"];
       for (var i in data) {
@@ -147,12 +142,12 @@ class OpenScreenState extends State<OpenScreen> {
           });
           respBody = json.decode(resp.body);
           if (respBody != null) {
-            String imageLink=respBody["image"]["scales"]["thumb"]["download"];
-            if(respBody['members'].contains(widget.user.username)){
-              data[i].putIfAbsent('id', ()=> respBody['id']);
-              data[i].putIfAbsent('thumbnail', ()=>imageLink);
+            String imageLink = respBody["image"]["scales"]["thumb"]["download"];
+            if (respBody['members'].contains(widget.user.username)) {
+              data[i].putIfAbsent('id', () => respBody['id']);
+              data[i].putIfAbsent('thumbnail', () => imageLink);
               filterProjects.add(data[i]);
-              projectsData.putIfAbsent(respBody['id'], ()=>data[i]);
+              projectsData.putIfAbsent(respBody['id'], () => data[i]);
             }
             return imageLink;
           }
@@ -164,7 +159,7 @@ class OpenScreenState extends State<OpenScreen> {
           )..show(context);
         }
       }
-      
+
       for (var i = 0; i < data.length; i++) {
         var imgs = await getimglink(i);
         if (imgs != null) {
@@ -175,21 +170,25 @@ class OpenScreenState extends State<OpenScreen> {
 
       // set data state and save json for online use when this try block works
       setState(() {
-        data = filterProjects;
+        data = data;
         Saver.setData(data: data, name: "projectsdata");
-        projects=projectsData;
+        projects = projectsData;
       });
 
       return "Success!";
     } catch (err) {
       print(err);
+      //data is empty so get saved data when try block fails
+      data = await Saver.getData(name: "projectsdata");
+      setState(() {
+        data = data;
+      });
     }
     //data is empty so get saved data when try block fails
     data = await Saver.getData(name: "projectsdata");
     // setState(() {
     //   data = data;
     // });
-
   }
 
   Future delete(int index) async {
@@ -204,14 +203,12 @@ class OpenScreenState extends State<OpenScreen> {
         },
       );
       return "Success!";
-    } 
-    catch (err) {
+    } catch (err) {
       // internet is not conected if this block fails
       internet = false;
       print(err);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -233,20 +230,20 @@ class OpenScreenState extends State<OpenScreen> {
                       onTap: () {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                          return TaskList(url: data[index]["@id"], user: widget.user,);
+                          return TaskList(
+                            url: data[index]["@id"],
+                            user: user,
+                          );
                         }));
                       },
-                      leading:
-                      CircleAvatar(child: 
-                        data[index]["image"] == null
-                          ? Image.asset('assets/images/default-image.jpg'): 
-                            CachedNetworkImage(imageUrl: data[index]["image"],
-                            placeholder: (context, url)=> CircularProgressIndicator(),
-                            width: 80.0,
-                            ),                      
-                         backgroundColor: Colors.transparent,
-                        radius: 28.0,
-                      ),
+                      leading: data[index]["image"] == null
+                          ? Image.asset('assets/images/default-image.jpg')
+                          : CachedNetworkImage(
+                              imageUrl: data[index]["image"],
+                              placeholder: (context, url) =>
+                                  CircularProgressIndicator(),
+                              width: 80.0,
+                            ),
                       trailing: PopupMenuButton<int>(
                         itemBuilder: (context) => [
                               PopupMenuItem(
@@ -289,7 +286,8 @@ class OpenScreenState extends State<OpenScreen> {
                   icon: Icons.edit,
                   onTap: () => Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return EventsInfoEdit(user: user);
+                        return EventsInfoEdit(
+                            url: data[index]["@id"], user: user);
                       })),
                 ),
               ],

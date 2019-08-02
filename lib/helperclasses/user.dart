@@ -6,6 +6,7 @@ import 'saver.dart';
  * traverses the app
  */
 
+
 class User{
   bool _isSignedIn = false;
   String _username = 'null';
@@ -18,9 +19,11 @@ class User{
   Map _members = Map(); // Map<String, String>
   List _teams= List(); // List<Map<String, String>>
 
-  static User _user = User._internal();
 
-  factory User() => _user; 
+  static final User _user = User._internal();
+
+
+  factory User() => _user;
 
   User._internal() {
     initialize();
@@ -232,5 +235,15 @@ class User{
     Saver.setData(name: 'projects', data: null);
     Saver.setData(name: 'members', data: null);
     Saver.setSignInState(false);
+  }
+
+  static Future <bool> signedin()async{
+    var username = await Saver.getData(name: 'username');
+    if (username.isNotEmpty){
+    return true;
+    }else{
+      return false;
+    }
+
   }
 }
