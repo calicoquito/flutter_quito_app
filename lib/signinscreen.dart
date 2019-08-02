@@ -1,3 +1,4 @@
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -245,15 +246,20 @@ class SignInScreenState extends State<SignInScreen>
                                       final mattermostJson =
                                           jsonDecode(responses[1].body);
 
-                                      user.username =
-                                          usernameController.text.trim();
-                                      user.password =
-                                          passwordController.text.trim();
-                                      user.ploneToken = ploneJson['token'];
-                                      user.userId = mattermostJson['id'];
-                                      user.email = mattermostJson['email'];
-                                      user.mattermostToken =
-                                          responses[1].headers['token'];
+                                user.username =  usernameController.text.trim();
+                                user.password = passwordController.text.trim();
+                                user.ploneToken = ploneJson['token'];
+                                user.userId = mattermostJson['id'];
+                                user.email = mattermostJson['email'];
+                                user.mattermostToken = responses[1].headers['token'];
+
+                                await user.login();
+                                
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context)=> SplashScreen(user:user)
+                                  )
+                                );
 
                                       Navigator.of(context).push(
                                           MaterialPageRoute(

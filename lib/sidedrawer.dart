@@ -5,7 +5,6 @@ import 'package:quito_1/openscreen.dart';
 import 'package:quito_1/profile_dialog.dart';
 import 'chatscreen.dart';
 import 'helperclasses/user.dart';
-import 'projectscreen.dart';
 import 'settings.dart';
 
 class SideDrawer extends StatelessWidget{
@@ -47,15 +46,6 @@ class SideDrawer extends StatelessWidget{
               },
             ),
             ListTile(
-              leading: Icon(Icons.work),
-              title: Text('Projects'),
-              onTap: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return OpenScreen();
-                        }));
-              },
-            ),
-            ListTile(
               leading: Icon(Icons.settings),
               title: Text('Settings'),
               onTap: (){
@@ -70,7 +60,8 @@ class SideDrawer extends StatelessWidget{
             ListTile(
               leading: Icon(Icons.exit_to_app),
               title: Text('Logout'),
-              onTap: (){
+              onTap: ()async{
+                await user.logout();
                 Navigator.of(context).pushNamedAndRemoveUntil('/', (route)=>false);
               },
             )

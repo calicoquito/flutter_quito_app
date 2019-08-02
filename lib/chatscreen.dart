@@ -31,7 +31,7 @@ class ChatScreenState extends State<ChatScreen>{
 
   Future<void> getChannels() async{
     try{
-      List<String> teamEndpoints = widget.user.teams.map((team){
+      List teamEndpoints = widget.user.teams.map((team){
         return 'http://mattermost.alteroo.com/api/v4/users/${widget.user.userId}/teams/${team['id']}/channels';
       }).toList();
 
@@ -48,7 +48,8 @@ class ChatScreenState extends State<ChatScreen>{
         final json = jsonDecode(resp.body);
 
         final channels = json.where((channel){
-          return widget.user.projects.keys.toList().contains(channel['name']);
+          bool isMember = widget.user.projects.keys.toList().contains(channel['name']);
+          return isMember;
         });
 
         channels.forEach((channel){
@@ -75,11 +76,11 @@ class ChatScreenState extends State<ChatScreen>{
     }
     catch(err){
       print(err);
-      Flushbar(
-        flushbarPosition: FlushbarPosition.BOTTOM,
-        message: 'No Internet',
-        duration: Duration(seconds: 3),
-      )..show(context);
+      // Flushbar(
+      //   flushbarPosition: FlushbarPosition.BOTTOM,
+      //   message: 'No Internet',
+      //   duration: Duration(seconds: 3),
+      // )..show(context);
     }
     finally{
       setState(() {

@@ -140,7 +140,6 @@ class OpenScreenState extends State<OpenScreen> {
             "Accept": "application/json",
             "Authorization": 'Bearer ${widget.user.ploneToken}'
           });
-          print(resp.statusCode);
           respBody = json.decode(resp.body);
           if (respBody != null) {
             String imageLink = respBody["image"]["scales"]["thumb"]["download"];
@@ -185,6 +184,11 @@ class OpenScreenState extends State<OpenScreen> {
         data = data;
       });
     }
+    //data is empty so get saved data when try block fails
+    data = await Saver.getData(name: "projectsdata");
+    // setState(() {
+    //   data = data;
+    // });
   }
 
   Future delete(int index) async {
@@ -302,65 +306,62 @@ class OpenScreenState extends State<OpenScreen> {
           });
     }
 
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Scaffold(
-        drawer: SideDrawer(),
-        appBar: AppBar(title: appBarTitle, actions: <Widget>[
-          IconButton(
-            icon: actionIcon,
-            onPressed: () {
-              setState(() {
-                if (actionIcon.icon == Icons.search) {
-                  actionIcon = Icon(Icons.close);
-                  appBarTitle = TextField(
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
-                    decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.search, color: Colors.white),
-                        hintText: "Search...",
-                        hintStyle: TextStyle(color: Colors.white)),
-                    onChanged: (text) {
-                      if (data.length < holder.length) {
-                        data = holder;
-                      }
-                      text = text.toLowerCase();
-                      setState(() {
-                        newdata = data.where((project) {
-                          var name = project["title"].toLowerCase();
-                          return name.contains(text);
-                        }).toList();
-                      });
-                      setsearchdata();
-                    },
-                  );
-                } else {
-                  actionIcon = Icon(Icons.search);
-                  appBarTitle = Text('Projects');
-                }
-              });
-            },
-          ),
-        ]),
-        body: Container(
-          child: RefreshIndicator(
-              onRefresh: () async {
-                getSWData();
-              },
-              child: lst(Icon(Icons.person), data)),
-        ),
-        floatingActionButton: FloatingActionButton(
-          child: Icon(
-            Icons.add,
-            color: Colors.white,
-          ),
+    return Scaffold(
+      drawer: SideDrawer(),
+      appBar: AppBar(title: appBarTitle, actions: <Widget>[
+        IconButton(
+          icon: actionIcon,
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return EventsInfo(url: url, user: user);
-            }));
+            setState(() {
+              if (actionIcon.icon == Icons.search) {
+                actionIcon = Icon(Icons.close);
+                appBarTitle = TextField(
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                  decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.search, color: Colors.white),
+                      hintText: "Search...",
+                      hintStyle: TextStyle(color: Colors.white)),
+                  onChanged: (text) {
+                    if (data.length < holder.length) {
+                      data = holder;
+                    }
+                    text = text.toLowerCase();
+                    setState(() {
+                      newdata = data.where((project) {
+                        var name = project["title"].toLowerCase();
+                        return name.contains(text);
+                      }).toList();
+                    });
+                    setsearchdata();
+                  },
+                );
+              } else {
+                actionIcon = Icon(Icons.search);
+                appBarTitle = Text('Projects');
+              }
+            });
           },
         ),
+      ]),
+      body: Container(
+        child: RefreshIndicator(
+            onRefresh: () async {
+              getSWData();
+            },
+            child: lst(Icon(Icons.person), data)),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return EventsInfo(user: user);
+          }));
+        },
       ),
     );
   }
