@@ -69,18 +69,16 @@ class TaskListState extends State<TaskList> {
     } catch (err) {
       print(err);
       //data is empty so get saved data when try block fails
-      
-      setState(() async {
-        data = await Saver.getData(name: "tasksdata");
+      data = await Saver.getData(name: "tasksdata");
+      setState((){
+        data = data;
       });
+      for (var i in data) {
+          setval.add(false);
+        }
       print(data);
       return "Success!";
     }
-    //data is empty so get saved data when try block fails
-    data = await Saver.getData(name: "tasksdata");
-    setState(() {
-      data = data;
-    });
   }
 
   @override
