@@ -15,7 +15,7 @@ import 'userinfo.dart';
 class EventsInfo extends StatefulWidget {
   final String url;
   final User user;
-  EventsInfo({@required this.url, this.user});
+  EventsInfo({this.url, this.user});
   EventsInfoState createState() => EventsInfoState(user: user);
 }
 
