@@ -167,28 +167,24 @@ class OpenScreenState extends State<OpenScreen> {
           data[i]['image'] = imgs;
         }
       }
-
       // set data state and save json for online use when this try block works
       setState(() {
-        data = data;
-        Saver.setData(data: data, name: "projectsdata");
+        data = filterProjects;
+        Saver.setData(data: filterProjects, name: "projectsdata");
         projects = projectsData;
       });
 
       return "Success!";
-    } catch (err) {
+    } 
+    catch (err) {
+      print('here');
       print(err);
       //data is empty so get saved data when try block fails
       data = await Saver.getData(name: "projectsdata");
       setState(() {
         data = data;
       });
-    }
-    //data is empty so get saved data when try block fails
-    data = await Saver.getData(name: "projectsdata");
-    // setState(() {
-    //   data = data;
-    // });
+    }    
   }
 
   Future delete(int index) async {

@@ -29,7 +29,7 @@ class ChatScreenState extends State<ChatScreen>{
   final refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
 
 
-  Future<void> getChannels() async{
+  void getChannels() async{
     try{
       List teamEndpoints = widget.user.teams.map((team){
         return 'http://mattermost.alteroo.com/api/v4/users/${widget.user.userId}/teams/${team['id']}/channels';
@@ -46,12 +46,11 @@ class ChatScreenState extends State<ChatScreen>{
 
       responses.forEach((resp){
         final json = jsonDecode(resp.body);
-
         final channels = json.where((channel){
           bool isMember = widget.user.projects.keys.toList().contains(channel['name']);
           return isMember;
         });
-
+        
         channels.forEach((channel){
           if(channel['display_name']==""){
             final titleIds = channel['name'].split('_');

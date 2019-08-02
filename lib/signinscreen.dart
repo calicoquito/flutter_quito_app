@@ -65,11 +65,6 @@ class SignInScreenState extends State<SignInScreen>
     usernameErrorString = null;
     isLoading = false;
     isTyping = false;
-    // if (User.signedin == true) {
-    //     final User user = User.retrieve();
-    //   Navigator.of(context).push(
-    //       MaterialPageRoute(builder: (context) => SplashScreen(user: user)));
-    // }
   }
 
   @override
@@ -372,17 +367,19 @@ class PasswordTextFieldState extends State<PasswordTextField> {
       obscureText: !isPressed,
       onChanged: handleChange,
       decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.white70,
-          contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
-          labelText: 'Password',
-          hintText: 'password',
-          suffixIcon: FlatButton.icon(
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              padding: EdgeInsets.zero,
-              label: Text(''),
-              icon: icon,
-              onPressed: handlePress)),
+        filled: true,
+        fillColor: Colors.white70,
+        contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
+        labelText: 'Password',
+        hintText: 'password',
+        suffixIcon: FlatButton.icon(
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          padding: EdgeInsets.zero,
+          label: Text(''),
+          icon: icon,
+          onPressed: handlePress
+        )
+      ),
     );
   }
 }

@@ -32,7 +32,7 @@ dependencies:
   shared_preferences:
   cached_network_image:
   flutter_cache_manager:
-  flushbar: '1.6.0'
+  flushbar: '1.5.3'
 
 
 dev_dependencies:

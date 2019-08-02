@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:provider/provider.dart';
-import 'package:quito_1/openscreen.dart';
-import 'package:quito_1/profile_dialog.dart';
+import 'profile_dialog.dart';
 import 'chatscreen.dart';
 import 'helperclasses/user.dart';
 import 'settings.dart';
@@ -40,7 +39,7 @@ class SideDrawer extends StatelessWidget{
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context)=> ChatScreen(user:Provider.of<User>(context))
+                    builder: (context)=> ChatScreen(user: Provider.of<User>(context))
                   )
                 );
               },

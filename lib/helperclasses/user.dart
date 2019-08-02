@@ -29,17 +29,17 @@ class User{
     initialize();
   }
 
-  void initialize() async{
-    _email = await _fetchEmail();
-    _username = await _fetchUsername();
-    _password = await _fetchPassword();
-    _ploneToken = await _fetchPloneToken();
-    _mattermostToken = await _fetchMattermostToken();
-    _userId = await _fetchUserId();
-    _isSignedIn = await _fetchSignInStatus();
-    _members = await _fetchMembers();
-    _projects = await _fetchProjects();
-    _teams = await _fetchTeams();
+  void initialize(){
+    _fetchEmail();
+    _fetchUsername();
+    _fetchPassword();
+    _fetchPloneToken();
+    _fetchMattermostToken();
+    _fetchUserId();
+    _fetchSignInStatus();
+    _fetchMembers();
+    _fetchProjects();
+    _fetchTeams();
   }
 
   Future<String> _fetchUsername() async {
@@ -199,7 +199,9 @@ class User{
     }
   }
 
-  get teams => _teams;
+  get teams{ 
+    return _teams;
+  }
 
   set teams(List teams) {
     _teams = teams;

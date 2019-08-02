@@ -18,11 +18,7 @@ class SplashScreen extends StatefulWidget{
   SplashScreenState createState() => SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  // static AnimationController controller;
-
-  // Animation<Color> animation;
-
+class SplashScreenState extends State<SplashScreen> {
   List<Map<String, String>> teams = List();
   Map<String, String> members  = Map();
 
@@ -36,10 +32,13 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
       final json = jsonDecode(resp.body);
       
       json.forEach((team){
-        teams.add({
-          'id': team['id'],
-          'name':team['name']
+        setState(() {
+          teams.add({
+            'id': team['id'],
+            'name':team['name']
+          });
         });
+        
       });
       for (var team in teams){
         final resp = await http.get(
@@ -48,11 +47,14 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
         );
         final jsonData = jsonDecode(resp.body);
         jsonData.forEach((member){
-          members.addAll({
-            'id': member['id'], 
-            'username': member['username'],
-            member['id']: member['username'],
-            'team_id':team['id']});
+          setState(() {
+            members.addAll({
+              'id': member['id'], 
+              'username': member['username'],
+              member['id']: member['username'],
+              'team_id':team['id']
+            });
+          });
         });
       }
     }
@@ -67,18 +69,7 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
 
   @override
   void initState(){
-    super.initState();
-  //   controller = AnimationController(vsync: this);
-  //   animation = Tween<Color>(
-  //     begin: Colors.blue,
-  //     end: Colors.purple
-  //   ).animate(
-  //     CurvedAnimation(
-  //       parent: controller,
-  //       curve: Curves.linear
-  //     )
-  // );
-    
+    super.initState();    
     getTeams()
     .whenComplete((){
       Navigator.of(context).pushAndRemoveUntil(
@@ -92,7 +83,6 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
 
   @override
   void dispose() {
-    // controller.dispose();
     super.dispose();
   }
 
