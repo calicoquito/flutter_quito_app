@@ -6,8 +6,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:quito_1/helperclasses/jsons.dart';
 
 import 'addmembers.dart';
+import 'helperclasses/imgmanager.dart';
+import 'helperclasses/netmanager.dart';
 import 'helperclasses/urls.dart';
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
@@ -22,7 +25,7 @@ class EventsInfo extends StatefulWidget {
 class EventsInfoState extends State<EventsInfo> {
   final String url = Urls.main;
   final User user;
-  EventsInfoState({ this.user});
+  EventsInfoState({this.user});
   String textString = "";
   bool isSwitched = false;
   List setval;
@@ -32,123 +35,36 @@ class EventsInfoState extends State<EventsInfo> {
 
   List assignedMembers = [];
 
-  Map jsonstr = {
-    "@type": "project",
-    "title": "Project by api 9",
-    "description": "Project for tessting purposes",
-    "contributors": [],
-    "members": [],
-    "start": "2019-06-12T17:20:00+00:00",
-    "end": "2020-06-17T19:00:00+00:00",
-    "whole_day": false,
-    "open_end": false,
-    "sync_uid": null,
-    "contact_name": "",
-    "contact_email": "",
-    "contact_phone": "",
-    "event_url": null,
-    "location": "Office Quito",
-    "recurrence": null,
-    "image": {
-      "filename": "test.jpg",
-      "content-type": "image/jpeg",
-      "data": "",
-      "encoding": "base64"
-    },
-    "image_caption": "Image captions",
-    "text": {
-      "content-type": "text/html",
-      "data":
-          "<h1><em><strong>This event is just for test that starts at 12 today and goes on until I feel like it should stop</strong></em></h1>",
-      "encoding": "utf-8"
-    },
-    "changeNote": null
-  };
+  Map jsonstr = Jsons.projectsjson;
 
-  Future<void> _optionsDialogBox() {
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: SingleChildScrollView(
-              child: ListBody(
-                children: <Widget>[
-                  GestureDetector(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text('Take a photo'),
-                        Icon(Icons.camera)
-                      ],
-                    ),
-                    onTap: () {
-                      openimg(ImageSource.camera);
-                    },
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                  ),
-                  GestureDetector(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text('Select from gallery'),
-                        Icon(Icons.image)
-                      ],
-                    ),
-                    onTap: () {
-                      openimg(ImageSource.gallery);
-                    },
-                  ),
-                ],
-              ),
-            ),
-          );
-        });
-  }
 
-  Future openimg(ImageSource source) async {
-    var file = await ImagePicker.pickImage(source: source);
-    if (file != null) {
-      cropImage(file);
-    }
-  }
 
   Future<String> uploadImg() async {
-    var base64Image = photo != null ? base64Encode(photo.readAsBytesSync()) : "";
+    var base64Image =
+        photo != null ? base64Encode(photo.readAsBytesSync()) : "";
     jsonstr["image"]["data"] = base64Image;
-    var resp = await http.post(url,
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": "Bearer ${widget.user.ploneToken}",
-        },
-        body: jsonEncode(jsonstr));
-    print(resp.statusCode);
-    print(resp.body);
-    resp.statusCode == 201 ? uploaded = true: uploaded = false;
+    NetManager.editProject(url, jsonstr);  // NEW
+    // var resp = await http.post(url,
+    //     headers: {
+    //       "Accept": "application/json",
+    //       "Content-Type": "application/json",
+    //       "Authorization": "Bearer ${widget.user.ploneToken}",
+    //     },
+    //     body: jsonEncode(jsonstr));
+    // print(resp.statusCode);
+    // print(resp.body);
+    // resp.statusCode == 201 ? uploaded = true : uploaded = false;
     return "Success!";
   }
 
+  // Future crop(File imageFile) async {
+  //   croppedFile = await ImgManager.cropImage(imageFile);
+  //   setState(() {
+  //     photo = croppedFile;
+  //   });
+  //   Navigator.of(context, rootNavigator: true).pop(context);
+  // }
 
-  Future cropImage(File imageFile) async {
-    croppedFile = await ImageCropper.cropImage(
-      toolbarColor: Color(0xff7e1946),
-      statusBarColor: Colors.blueGrey,
-      toolbarWidgetColor: Colors.white,
-      sourcePath: imageFile.path,
-      ratioX: 1.0,
-      ratioY: 1.0,
-      maxWidth: 512,
-      maxHeight: 512,
-    );
-    setState(() {
-      photo = croppedFile;
-    });
-    Navigator.of(context, rootNavigator: true).pop(context);
-  }
-
-  
   Widget inputWidget(
       {icon: Icon, useswitch = "", txt: Text, drop: DropdownButton}) {
     String diplaytxt = txt.replaceAll(RegExp(r'_'), ' ');
@@ -232,8 +148,12 @@ class EventsInfoState extends State<EventsInfo> {
                     color: Colors.white,
                   )
                 : Image.file(photo),
-            onPressed: () {
-              _optionsDialogBox();
+            onPressed: ()async{
+              File newimg = await ImgManager.optionsDialogBox(context);
+              setState((){
+                photo = newimg;
+              });
+              
             },
           ),
         ),
@@ -247,10 +167,15 @@ class EventsInfoState extends State<EventsInfo> {
                       MaterialPageRoute(builder: (context) {
                     return AddMembersPage(user: user);
                   }));
+
                   setState(() {
+                    assignedMembers =
+                        assignedMembers == null ? [] : assignedMembers;
                     jsonstr["contributors"] = json.encode(assignedMembers);
-                    for (var i in assignedMembers){
-                    jsonstr["members"].add(json.encode(i));}
+
+                    for (var i in assignedMembers) {
+                      jsonstr["members"].add(json.encode(i));
+                    }
                   });
                 },
                 child: Icon(
@@ -350,7 +275,6 @@ class EventsInfoState extends State<EventsInfo> {
             print(err);
           }
           Navigator.pop(context, uploaded);
-          
         },
         tooltip: 'Create Project',
         child: Icon(Icons.check),
