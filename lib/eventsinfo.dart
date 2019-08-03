@@ -37,6 +37,7 @@ class EventsInfoState extends State<EventsInfo> {
     "title": "Project by api 9",
     "description": "Project for tessting purposes",
     "contributors": [],
+    "members": [],
     "start": "2019-06-12T17:20:00+00:00",
     "end": "2020-06-17T19:00:00+00:00",
     "whole_day": false,
@@ -173,7 +174,7 @@ class EventsInfoState extends State<EventsInfo> {
       },
     );
     var switchtrue = Switch(
-        value: jsonstr[useswitch],
+        value: jsonstr[useswitch] == true ? true : false,
         onChanged: (value) {
           setState(() {
             jsonstr[useswitch] = value;
@@ -248,6 +249,8 @@ class EventsInfoState extends State<EventsInfo> {
                   }));
                   setState(() {
                     jsonstr["contributors"] = json.encode(assignedMembers);
+                    for (var i in assignedMembers){
+                    jsonstr["members"].add(json.encode(i));}
                   });
                 },
                 child: Icon(

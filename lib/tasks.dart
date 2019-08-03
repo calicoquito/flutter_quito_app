@@ -46,7 +46,7 @@ class TaskListState extends State<TaskList> {
     getSWData();
   }
 
-  Future<String> getSWData() async {
+  Future getSWData() async {
     try {
       var response = await http.get(url, headers: {
         "Accept": "application/json",
@@ -57,7 +57,7 @@ class TaskListState extends State<TaskList> {
       print(resBody['items']);
       setState(() {
         data = resBody["items"];
-        Saver.setData(data: data, name: "tasksdata");
+        Saver.setData(data: data, name: "$url-tasksdata");
         print(data);
         for (var i in data) {
           setval.add(false);
@@ -69,7 +69,7 @@ class TaskListState extends State<TaskList> {
     } catch (err) {
       print(err);
       //data is empty so get saved data when try block fails
-      data = await Saver.getData(name: "tasksdata");
+      data = await Saver.getData(name: "$url-tasksdata");
       setState((){
         data = data;
       });

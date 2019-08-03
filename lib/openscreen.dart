@@ -132,7 +132,7 @@ class OpenScreenState extends State<OpenScreen> {
 
       List filterProjects = List();
       Map projectsData = Map();
-      Future<String> getimglink(int i) async {
+      Future getimglink(int i) async {
         try {
           var resp = await http.get(data[i]["@id"], headers: {
             "Accept": "application/json",
@@ -168,7 +168,7 @@ class OpenScreenState extends State<OpenScreen> {
 
       // set data state and save json for online use when this try block works
       setState(() {
-        data = data;
+        data = filterProjects;
         Saver.setData(data: data, name: "projectsdata");
         projects = projectsData;
       });
