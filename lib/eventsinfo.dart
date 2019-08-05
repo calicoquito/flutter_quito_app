@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +9,7 @@ import 'package:quito_1/helperclasses/jsons.dart';
 import 'addmembers.dart';
 import 'helperclasses/imgmanager.dart';
 import 'helperclasses/netmanager.dart';
+import 'helperclasses/uploadqueue.dart';
 import 'helperclasses/urls.dart';
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
@@ -39,7 +38,10 @@ class EventsInfoState extends State<EventsInfo> {
     var base64Image =
         photo != null ? base64Encode(photo.readAsBytesSync()) : "";
     jsonstr["image"]["data"] = base64Image;
-    NetManager.uploadProject(url, jsonstr);  // NEW
+    int respcode = await NetManager.uploadProject(url, jsonstr);  // NEW
+    if (respcode != 204){
+      UploadQueue.addproject(url, jsonstr);
+    }
     return "Success!";
   }
 

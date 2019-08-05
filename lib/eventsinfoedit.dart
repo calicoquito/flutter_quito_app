@@ -7,6 +7,7 @@ import 'addmembers.dart';
 import 'helperclasses/imgmanager.dart';
 import 'helperclasses/jsons.dart';
 import 'helperclasses/netmanager.dart';
+import 'helperclasses/uploadqueue.dart';
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
@@ -60,7 +61,10 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     jsonstr["image"]["data"] = data["image"] != null
         ? base64Encode(file.readAsBytesSync())
         : imgstring;
-    NetManager.editProject(url, jsonstr);
+    int respcode = await NetManager.editProject(url, jsonstr); // NEW
+    if (respcode != 204){
+      UploadQueue.addproject(url, jsonstr);
+    }
     return "Success!";
   }
 

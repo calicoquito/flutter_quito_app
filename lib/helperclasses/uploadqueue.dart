@@ -1,9 +1,8 @@
 import 'package:quito_1/helperclasses/netmanager.dart';
 import 'package:quito_1/helperclasses/saver.dart';
 
-class UpouadQueue {
-  
-  addtask(String url, Map json) async {
+class UploadQueue {
+  static addtask(String url, Map json) async {
     List taskupload = [url, json];
     List taskuploadlist = await Saver.getData(name: "taskuploadlist");
     if (taskuploadlist == null) {
@@ -16,7 +15,7 @@ class UpouadQueue {
     Saver.setData(name: "taskuploadlist", data: taskuploadlist);
   }
 
-  uploadtasks() async {
+  static uploadtasks() async {
     List taskuploadlist = await Saver.getData(name: "taskuploadlist");
     if (taskuploadlist == null) {
       for (var i in taskuploadlist) {
@@ -30,7 +29,7 @@ class UpouadQueue {
     }
   }
 
-  removetask(String url, Map json) async {
+  static removetask(String url, Map json) async {
     List taskupload = [url, json];
     List taskuploadlist = await Saver.getData(name: "taskuploadlist");
     for (var i in taskuploadlist) {
@@ -41,7 +40,7 @@ class UpouadQueue {
     Saver.setData(name: "taskuploadlist", data: taskuploadlist);
   }
 
-  addproject(String url, Map json) async {
+  static addproject(String url, Map json) async {
     List projectupload = [url, json];
     List projectuploadlist = await Saver.getData(name: "projectuploadlist");
     if (projectuploadlist == null) {
@@ -54,7 +53,7 @@ class UpouadQueue {
     Saver.setData(name: "projectuploadlist", data: projectuploadlist);
   }
 
-  uploadprojects() async {
+  static uploadprojects() async {
     List projectuploadlist = await Saver.getData(name: "projectuploadlist");
     if (projectuploadlist == null) {
       for (var i in projectuploadlist) {
@@ -68,7 +67,7 @@ class UpouadQueue {
     }
   }
 
-  removeproject(String url, Map json) async {
+  static removeproject(String url, Map json) async {
     List projectupload = [url, json];
     List projectuploadlist = await Saver.getData(name: "projectuploadlist");
     for (var i in projectuploadlist) {
@@ -77,5 +76,17 @@ class UpouadQueue {
       }
     }
     Saver.setData(name: "projectuploadlist", data: projectuploadlist);
+  }
+
+  static Future<bool> uploadAll() async {
+    uploadprojects();
+    uploadtasks();
+    List projectuploadlist = await Saver.getData(name: "projectuploadlist");
+    List taskuploadlist = await Saver.getData(name: "taskuploadlist");
+
+    if (projectuploadlist.isEmpty && taskuploadlist.isEmpty) {
+      return true;
+    }
+    return false;
   }
 }

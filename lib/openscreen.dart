@@ -1,6 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:quito_1/helperclasses/netmanager.dart';
-import 'helperclasses/saver.dart';
 import 'helperclasses/urls.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
@@ -8,10 +7,8 @@ import 'package:provider/provider.dart';
 import 'helperclasses/user.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'membersview.dart';
-import 'dart:convert';
 import 'eventsinfo.dart';
 import 'eventsinfoedit.dart';
 import 'tasks.dart';

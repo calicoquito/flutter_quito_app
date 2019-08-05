@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -8,7 +7,6 @@ import 'urls.dart';
 
 class NetManager {
   static User user;
-  static BuildContext netcontext;
 
   static Future<List> getProjectsData() async {
     print('Bearer ${user.ploneToken}');
