@@ -2,8 +2,8 @@ class Jsons{
 
   static Map projectsjson = {
     "@type": "project",
-    "title": "Project by api 9",
-    "description": "Project for tessting purposes",
+    "title": "Untitled",
+    "description": "No description",
     "contributors": [],
     "start": "2019-06-12T17:20:00+00:00",
     "end": "2020-06-17T19:00:00+00:00",
@@ -14,7 +14,7 @@ class Jsons{
     "contact_email": "",
     "contact_phone": "",
     "event_url": null,
-    "location": "Office Quito",
+    "location": "No location",
     "recurrence": null,
     "image": {
       "filename": "test.jpg",

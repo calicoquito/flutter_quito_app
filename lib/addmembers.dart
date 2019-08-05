@@ -64,21 +64,13 @@ class AddMembersPageState extends State<AddMembersPage>
   }
 
   Future<String> getData() async {
-    // var response = await http.get(url, headers: {
-    //     "Accept": "application/json",
-    //     "Authorization": 'Bearer ${widget.user.ploneToken}'
-    //   });
-
-    // print(response.statusCode);
-    // setState(() {
-    //   var resBody = json.decode(response.body);
     data = await NetManager.getUsersData();
     setState(() {
+      data = data;
+    });
       for (var i = 0; i < data.length; i++) {
         setval.add(false);
       }
-    });
-
     return "Success!";
   }
 

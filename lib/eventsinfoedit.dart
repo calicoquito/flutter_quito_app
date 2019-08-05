@@ -1,14 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'addmembers.dart';
+import 'helperclasses/imgmanager.dart';
+import 'helperclasses/jsons.dart';
+import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
@@ -16,14 +14,14 @@ class EventsInfoEdit extends StatefulWidget {
   final String url;
   final User user;
   EventsInfoEdit({@required this.url, this.user});
-  EventsInfoEditState createState() => EventsInfoEditState(url: url, user: user);
+  EventsInfoEditState createState() =>
+      EventsInfoEditState(url: url, user: user);
 }
 
 class EventsInfoEditState extends State<EventsInfoEdit> {
   final String url;
   final User user;
   EventsInfoEditState({@required this.url, this.user});
-  //TextEditingController controller = TextEditingController();
   String textString = "";
   bool isSwitched = false;
   List setval = List();
@@ -42,142 +40,27 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     getdata();
   }
 
-  Map jsonstr = {
-    "@type": "project",
-    "title": "Project by api 4",
-    "description": "Project for tessting purposes",
-    "contributors": [],
-    "start": "2019-06-12T17:20:00+00:00",
-    "end": "2020-06-17T19:00:00+00:00",
-    "whole_day": false,
-    "open_end": false,
-    "sync_uid": null,
-    "contact_name": "",
-    "contact_email": "",
-    "contact_phone": "",
-    "event_url": null,
-    "location": "Office Quito",
-    "recurrence": null,
-    "image": {
-      "filename": "test.jpg",
-      "content-type": "image/jpeg",
-      "data": "",
-      "encoding": "base64"
-    },
-    "image_caption": "Image captions",
-    "text": {
-      "content-type": "text/html",
-      "data":
-          "<h1><em><strong>This event is just for test that starts at 12 today and goes on until I feel like it should stop</strong></em></h1>",
-      "encoding": "utf-8"
-    },
-    "changeNote": null
-  };
-
-  Future<void> _optionsDialogBox() {
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: new SingleChildScrollView(
-              child: new ListBody(
-                children: <Widget>[
-                  GestureDetector(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text('Take a photo'),
-                        Icon(Icons.camera)
-                      ],
-                    ),
-                    onTap: () {
-                      openimg(ImageSource.camera);
-                    },
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                  ),
-                  GestureDetector(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text('Select from gallery'),
-                        Icon(Icons.image)
-                      ],
-                    ),
-                    onTap: () {
-                      openimg(ImageSource.gallery);
-                    },
-                  ),
-                ],
-              ),
-            ),
-          );
-        });
-  }
+  Map jsonstr = Jsons.projectsjson;
 
   Future<String> getdata() async {
-    var resp = await http.get(url, headers: {
-      "Accept": "application/json",
-      "Authorization": "Bearer ${widget.user.ploneToken}",
-    });
-    print(resp.statusCode);
-    data = json.decode(resp.body);
-    if (data["contributors"] != null){
-    assignedMembers = data["contributors"].isEmpty ? null 
-    : json.decode(data["contributors"][0]);}
-    var file = await DefaultCacheManager().getSingleFile(data['image']['download']);
+    Map netdata = await NetManager.getProjectEditData(url);
+    data = netdata["data"];
+    var file = netdata["file"];
+    assignedMembers = netdata["assignedMembers"];
     setState(() {
-      photo = data['image'] == null? null
-          : file;
+      photo = data['image'] == null ? null : file;
     });
-
     return "Success!";
   }
 
-  Future openimg(ImageSource source) async {
-    var file = await ImagePicker.pickImage(source: source);
-    if (file != null){
-      cropImage(file);
-      file = photo;
-    }
-      var base64Image = file != null ? base64Encode(file.readAsBytesSync()) : "";
-      jsonstr["image"]["data"] = base64Image;
-    
-  }
-
-  Future cropImage(File imageFile) async {
-    croppedFile = await ImageCropper.cropImage(
-      toolbarColor: Color(0xff7e1946),
-      statusBarColor: Colors.blueGrey,
-      toolbarWidgetColor: Colors.white,
-      sourcePath: imageFile.path,
-      ratioX: 1.0,
-      ratioY: 1.0,
-      maxWidth: 512,
-      maxHeight: 512,
-    );
-    setState(() {
-      photo = croppedFile;
-    });
-    Navigator.of(context, rootNavigator: true).pop(context);
-  }
-
   Future<String> uploadPatch() async {
-    var file = photo == null ? File('assets/images/default-image.jpg'): photo;
-    String imgstring = croppedFile == null ? "" 
-    : base64Encode(croppedFile.readAsBytesSync());
+    var file = photo == null ? File('assets/images/default-image.jpg') : photo;
+    String imgstring =
+        croppedFile == null ? "" : base64Encode(croppedFile.readAsBytesSync());
     jsonstr["image"]["data"] = data["image"] != null
-        ? base64Encode(file.readAsBytesSync()) : imgstring;
-    var resp = await http.patch(url,
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": "Bearer ${widget.user.ploneToken}",
-        },
-        body: jsonEncode(jsonstr));
-    print(resp.statusCode);
-    if (resp.statusCode == 204){uploaded = true;} 
+        ? base64Encode(file.readAsBytesSync())
+        : imgstring;
+    NetManager.editProject(url, jsonstr);
     return "Success!";
   }
 
@@ -190,12 +73,12 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
       diplaytxt,
       style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
     );
-var text = TextField(
+    var text = TextField(
       autocorrect: true,
       textAlign: TextAlign.justify,
       decoration: InputDecoration(
         helperText: diplaytxt,
-        hintText: data[txt].runtimeType == String? data[txt] : "",
+        hintText: data[txt].runtimeType == String ? data[txt] : "",
         contentPadding: EdgeInsets.all(14.0),
       ),
       onChanged: (string) {
@@ -264,8 +147,13 @@ var text = TextField(
                     color: Colors.white,
                   )
                 : Image.file(photo),
-            onPressed: () {
-              _optionsDialogBox();
+            onPressed: () async {
+              File newimg = await ImgManager.optionsDialogBox(context);
+              if (newimg != null) {
+                setState(() {
+                  photo = newimg;
+                });
+              }
             },
           ),
         ),
@@ -305,14 +193,18 @@ var text = TextField(
                           FlatButton(
                             child: CircleAvatar(
                               radius: 20.0,
-                              backgroundImage:  assignedMembers[index]["portrait"] == null ? 
-                                AssetImage('assets/images/default-image.jpg') :
-                                NetworkImage(assignedMembers[index]["portrait"]),
+                              backgroundImage:
+                                  assignedMembers[index]["portrait"] == null
+                                      ? AssetImage(
+                                          'assets/images/default-image.jpg')
+                                      : NetworkImage(
+                                          assignedMembers[index]["portrait"]),
                               backgroundColor: Colors.transparent,
                             ),
                             onPressed: () => Navigator.push(context,
                                     MaterialPageRoute(builder: (context) {
-                                  return UserInfo(userinfo: assignedMembers[index]);
+                                  return UserInfo(
+                                      userinfo: assignedMembers[index]);
                                 })),
                           ),
                           Text(

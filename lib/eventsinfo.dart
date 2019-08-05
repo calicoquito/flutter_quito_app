@@ -32,38 +32,17 @@ class EventsInfoState extends State<EventsInfo> {
   var photo;
   File croppedFile;
   bool uploaded;
-
   List assignedMembers = [];
-
   Map jsonstr = Jsons.projectsjson;
-
-
 
   Future<String> uploadImg() async {
     var base64Image =
         photo != null ? base64Encode(photo.readAsBytesSync()) : "";
     jsonstr["image"]["data"] = base64Image;
-    NetManager.editProject(url, jsonstr);  // NEW
-    // var resp = await http.post(url,
-    //     headers: {
-    //       "Accept": "application/json",
-    //       "Content-Type": "application/json",
-    //       "Authorization": "Bearer ${widget.user.ploneToken}",
-    //     },
-    //     body: jsonEncode(jsonstr));
-    // print(resp.statusCode);
-    // print(resp.body);
-    // resp.statusCode == 201 ? uploaded = true : uploaded = false;
+    NetManager.uploadProject(url, jsonstr);  // NEW
     return "Success!";
   }
 
-  // Future crop(File imageFile) async {
-  //   croppedFile = await ImgManager.cropImage(imageFile);
-  //   setState(() {
-  //     photo = croppedFile;
-  //   });
-  //   Navigator.of(context, rootNavigator: true).pop(context);
-  // }
 
   Widget inputWidget(
       {icon: Icon, useswitch = "", txt: Text, drop: DropdownButton}) {

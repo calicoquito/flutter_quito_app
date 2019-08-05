@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:quito_1/helperclasses/netmanager.dart';
 import 'helperclasses/saver.dart';
 import 'helperclasses/urls.dart';
 import 'package:flushbar/flushbar.dart';
@@ -46,8 +47,8 @@ class OpenScreen extends StatefulWidget {
 class OpenScreenState extends State<OpenScreen> {
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   final User user;
-  OpenScreenState({this.user});
   final String url = Urls.projects;
+  OpenScreenState({this.user});
   List data = List();
   Widget appBarTitle = Text('Projects');
   Icon actionIcon = Icon(Icons.search);
@@ -119,87 +120,17 @@ class OpenScreenState extends State<OpenScreen> {
   }
 
   Future getSWData() async {
-    try {
-      var response = await http.get(url, headers: {
-        "Accept": "application/json",
-        "Authorization": 'Bearer ${widget.user.ploneToken}'
-      });
-      var resBody = json.decode(response.body);
-      data = resBody["items"];
-      for (var i in data) {
-        i = i as Map;
-      }
-
-      List filterProjects = List();
-      Map projectsData = Map();
-      Future getimglink(int i) async {
-        try {
-          var resp = await http.get(data[i]["@id"], headers: {
-            "Accept": "application/json",
-            "Authorization": 'Bearer ${widget.user.ploneToken}'
-          });
-          respBody = json.decode(resp.body);
-          if (respBody != null) {
-            String imageLink = respBody["image"]["scales"]["thumb"]["download"];
-            if (respBody['members'].contains(widget.user.username)) {
-              data[i].putIfAbsent('id', () => respBody['id']);
-              data[i].putIfAbsent('thumbnail', () => imageLink);
-              filterProjects.add(data[i]);
-              projectsData.putIfAbsent(respBody['id'], () => data[i]);
-            }
-            return imageLink;
-          }
-        } catch (err) {
-          print(err);
-          Flushbar(
-            duration: Duration(seconds: 3),
-            message: "Error Fetching project data",
-          )..show(context);
-        }
-      }
-
-      for (var i = 0; i < data.length; i++) {
-        var imgs = await getimglink(i);
-        if (imgs != null) {
-          data[i] = data[i];
-          data[i]['image'] = imgs;
-        }
-      }
-
-      // set data state and save json for online use when this try block works
-      setState(() {
-        data = filterProjects;
-        Saver.setData(data: data, name: "projectsdata");
-        projects = projectsData;
-      });
-
-      return "Success!";
-    } catch (err) {
-      print(err);
-      //data is empty so get saved data when try block fails
-      data = await Saver.getData(name: "projectsdata");
-      setState(() {
-        data = data;
-      });
-    }
+    data = await NetManager.getProjectsData();
+    setState(() {
+      data = data;
+      print(data);
+    });
   }
 
   Future delete(int index) async {
-    String url = data[index]["@id"];
-    try {
-      var resp = await http.delete(
-        url,
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": 'Bearer ${widget.user.ploneToken}'
-        },
-      );
-      return "Success!";
-    } catch (err) {
-      // internet is not conected if this block fails
-      internet = false;
-      print(err);
+    var response = await NetManager.deleteProject(index, data);
+    if (response.body == 204) {
+      getSWData();
     }
   }
 
@@ -221,6 +152,7 @@ class OpenScreenState extends State<OpenScreen> {
                     ListTile(
                       contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
                       onTap: () {
+                        print(index);
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
                           return TaskList(
@@ -279,14 +211,14 @@ class OpenScreenState extends State<OpenScreen> {
                   icon: Icons.edit,
                   onTap: () async {
                     bool uploaded = await Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return EventsInfoEdit(
-                            url: data[index]["@id"], user: user);
-                      }));
-                      if (uploaded == true){getSWData();}
-                      
-                  }
-                      ,
+                        MaterialPageRoute(builder: (context) {
+                      return EventsInfoEdit(
+                          url: data[index]["@id"], user: user);
+                    }));
+                    if (uploaded == true) {
+                      getSWData();
+                    }
+                  },
                 ),
               ],
               secondaryActions: <Widget>[
@@ -294,9 +226,10 @@ class OpenScreenState extends State<OpenScreen> {
                   caption: 'Delete',
                   color: Colors.red,
                   icon: Icons.delete,
-                  onTap: () {
+                  onTap: () async{
                     data.removeAt(index);
                     delete(index);
+                    getSWData();
                   },
                 ),
               ],
