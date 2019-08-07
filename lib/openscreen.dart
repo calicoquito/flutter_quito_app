@@ -125,8 +125,12 @@ class OpenScreenState extends State<OpenScreen> {
   }
 
   Future delete(int index) async {
-    var response = await NetManager.deleteProject(index, data);
-    if (response.body == 204) {
+    print(index);
+    print(data);
+    print(data[index]);
+    var response = await NetManager.delete(data[index]["@id"]);
+    if (response == 204) {
+      data.removeAt(index);
       getSWData();
     }
   }
@@ -224,9 +228,7 @@ class OpenScreenState extends State<OpenScreen> {
                   color: Colors.red,
                   icon: Icons.delete,
                   onTap: () async{
-                    data.removeAt(index);
                     delete(index);
-                    getSWData();
                   },
                 ),
               ],

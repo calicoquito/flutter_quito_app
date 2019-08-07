@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'dart:convert';
+import 'helperclasses/netmanager.dart';
 import 'helperclasses/saver.dart';
 import 'helperclasses/user.dart';
 import 'task.dart';
@@ -47,37 +48,30 @@ class TaskListState extends State<TaskList> {
   }
 
   Future getSWData() async {
-    try {
-      var response = await http.get(url, headers: {
-        "Accept": "application/json",
-        "Authorization": "Bearer ${widget.user.ploneToken}",
-      });
-      var resBody = json.decode(response.body);
-      print(widget.user.ploneToken);
-      print(resBody['items']);
-      setState(() {
-        data = resBody["items"];
-        Saver.setData(data: data, name: "$url-tasksdata");
-        print(data);
-        for (var i in data) {
-          setval.add(false);
-          // if (data[i]['additiional_files'] == null) {
-          //   data[i]['additiional_files'] = Random().nextInt(15);
-          // }
-        }
-      });
-    } catch (err) {
-      print(err);
-      //data is empty so get saved data when try block fails
-      data = await Saver.getData(name: "$url-tasksdata");
-      setState((){
-        data = data;
-      });
+    data = await NetManager.getTasksData(url);
+    for (var i = 0; i == data.length; i++) {
+      setval.add(false);
+    }
+    setState(() {
+      data = data;
       for (var i in data) {
-          setval.add(false);
-        }
-      print(data);
-      return "Success!";
+        setval.add(false);
+        // if (data[i]['additiional_files'] == null) {
+        //   data[i]['additiional_files'] = Random().nextInt(15);
+        // }
+      }
+    });
+  }
+
+  Future delete(int index) async {
+    var response = await NetManager.delete(data[index]["@id"]);
+    if (response == 204) {
+      data.removeAt(index);
+      getSWData().whenComplete(() {
+        setState(() {
+          data = data;
+        });
+      });
     }
   }
 
@@ -149,9 +143,8 @@ class TaskListState extends State<TaskList> {
                   caption: 'Delete',
                   color: Colors.red,
                   icon: Icons.delete,
-                  onTap: () {
-                    data.removeAt(index);
-                    //delete(index);
+                  onTap: () async {
+                    delete(index);
                   },
                 ),
               ],

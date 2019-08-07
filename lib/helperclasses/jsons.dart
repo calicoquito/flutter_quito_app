@@ -35,17 +35,16 @@ class Jsons{
 
   static Map taskjson = {
     "@type": "task",
-    "title": "Task upload by api",
-    "description": "the task is to test the api",
+    "title": "Untitled",
+    "description": "No description",
     "task_detail": {
       "content-type": "text/html",
       "data": "<h2>Talk to some people to volunteer on the the project</h2>",
       "encoding": "utf-8"
     },
     "additional_files": null,
+    "contributors": [],
     "complete": false
   };
-
-
 
 }

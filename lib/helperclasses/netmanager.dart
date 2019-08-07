@@ -1,5 +1,6 @@
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
+import 'package:quito_1/helperclasses/uploadqueue.dart';
 import 'dart:convert';
 import 'saver.dart';
 import 'user.dart';
@@ -19,6 +20,7 @@ class NetManager {
         "Accept": "application/json",
         "Authorization": 'Bearer ${user.ploneToken}'
       });
+
       var resBody = json.decode(response.body);
       print(response.statusCode);
       data = resBody["items"];
@@ -59,7 +61,7 @@ class NetManager {
       }
 
       // set data state and save json for online use when this try block works
-      data = data;//filterProjects;
+      data = data; //filterProjects;
       Saver.setData(data: data, name: "projectsdata");
       projects = projectsData;
 
@@ -72,38 +74,32 @@ class NetManager {
     return data;
   }
 
-  static Future<int> uploadProject(String url, Map projectsjson) async {
-    var resp = await http.post(url,
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": "Bearer ${user.ploneToken}",
-        },
-        body: jsonEncode(projectsjson));
+
+
+  static Future getProjectEditData(String url) async {
+    Map data = Map();
+    List assignedMembers = List();
+    var file;
+    var resp = await http.get(url, headers: {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${user.ploneToken}",
+    });
     print(resp.statusCode);
-    print(resp.body);
-    return resp.statusCode;
+    data = json.decode(resp.body);
+    if (data["contributors"] != null) {
+      assignedMembers = data["contributors"].isEmpty
+          ? null
+          : json.decode(data["contributors"][0]);
+    }
+    if (data['image'] != null) {
+      file =
+          await DefaultCacheManager().getSingleFile(data['image']['download']);
+    }
+
+    return {"data": data, "file": file, "assignedMembers": assignedMembers};
   }
 
-  static Future deleteProject(int index, List data) async {
-    String url = data[index]["@id"];
-    try {
-      var resp = await http.delete(
-        url,
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": 'Bearer ${user.ploneToken}'
-        },
-      );
-      print(resp.statusCode);
-      if (resp.statusCode == 204){
-      return data;
-      }
-    } catch (err) {
-      print(err);
-    }
-  }
+
 
   static Future<List> getUsersData() async {
     List data = List();
@@ -127,13 +123,13 @@ class NetManager {
       print(err);
       data = [];
     }
-    if (data == null){
+    if (data == null) {
       data = [];
     }
     return data;
   }
 
-  static Future getTasksData(String url) async {
+  static Future<List> getTasksData(String url) async {
     List data = List();
     List<bool> setval = List();
 
@@ -146,7 +142,7 @@ class NetManager {
       print(user.ploneToken);
       print(resBody['items']);
       data = resBody["items"];
-      Saver.setData(data: data, name: "$url-tasksdata");
+      //Saver.setData(data: data, name: "$url-tasksdata");
       print(data);
       for (var i = 0; i == data.length; i++) {
         setval.add(false);
@@ -162,6 +158,7 @@ class NetManager {
       print(data);
       return data;
     }
+    return data;
   }
 
   static Future<Map> getTask(String url, Map data) async {
@@ -181,36 +178,21 @@ class NetManager {
     return data;
   }
 
-  static Future<int> uploadTask(String url, Map data) async {
-    var response;
-    try {
-      response = await http.get(url, headers: {
-        "Accept": "application/json",
-        "Authorization": "Bearer ${user.ploneToken}",
-      });
-      return response.statusCode;
-    } catch (err) {}
-    return response.statuscode == null ? 400 : response.statuscode;
-  }
 
-  static Future getProjectEditData(String url) async {
-    Map data = Map();
-    List assignedMembers = List();
-    var file;
-    var resp = await http.get(url, headers: {
-      "Accept": "application/json",
-      "Authorization": "Bearer ${user.ploneToken}",
-    });
-    print(resp.statusCode);
-    data = json.decode(resp.body);
-    if (data["contributors"] != null){
-    assignedMembers = data["contributors"].isEmpty ? null 
-    : json.decode(data["contributors"][0]);}
-    if (data['image']!= null){
-    file = await DefaultCacheManager().getSingleFile(data['image']['download']);
+  
+  static Future<int> uploadProject(String url, Map json) async {
+    var response = await http.post(url,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${user.ploneToken}",
+        },
+        body: jsonEncode(json));
+    print(response.statusCode);
+    if (response.statusCode != 204) {
+      //UploadQueue.addtask(uploadtype.add, url, json);
     }
-
-    return {"data": data, "file" : file,"assignedMembers" : assignedMembers};
+    return response.statusCode;
   }
 
   static Future<int> editProject(String url, Map json) async {
@@ -225,4 +207,67 @@ class NetManager {
     return resp.statusCode;
   }
 
+  static Future<int> uploadTask(String url, Map json) async {
+    // print(url);
+    // var bytes = utf8.encode("admin:admin");
+    // var credentials = base64.encode(bytes);
+    //taskjson['additional_files']  = Random().nextInt(15);
+    //NetManager.uploadTask(url, json);
+
+    var response = await http.post(url,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${user.ploneToken}",
+        },
+        body: jsonEncode(json));
+    print(response.statusCode);
+    print(response.body);
+    if (response.statusCode != 201) {
+      //UploadQueue.addtask(uploadtype.add, url, json);
+    }
+    return response.statusCode;
+  }
+
+  // static Future deleteProject(int index, List data) async {
+  //   String url = data[index]["@id"];
+  //   try {
+  //     var resp = await http.delete(
+  //       url,
+  //       headers: {
+  //         "Accept": "application/json",
+  //         "Content-Type": "application/json",
+  //         "Authorization": 'Bearer ${user.ploneToken}'
+  //       },
+  //     );
+  //     print(resp.statusCode);
+  //     if (resp.statusCode == 204) {
+  //       return data;
+  //     }
+  //   } catch (err) {
+  //     print(err);
+  //   }
+  // }
+
+  static Future<int> delete(String url) async {
+    var resp;
+    try {
+       resp = await http.delete(
+        url,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Authorization": 'Bearer ${user.ploneToken}'
+        },
+      );
+      print(resp.statusCode);
+      print(resp.body);
+      if (resp.statusCode == 204) {
+        return resp.statusCode;
+      }
+    } catch (err) {
+      print(err);
+    }
+    return resp.statusCode;
+  }
 }

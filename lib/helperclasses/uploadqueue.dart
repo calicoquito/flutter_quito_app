@@ -1,92 +1,60 @@
 import 'package:quito_1/helperclasses/netmanager.dart';
 import 'package:quito_1/helperclasses/saver.dart';
 
+enum uploadtype {
+  addproject,
+  editproject,
+  addtask,
+  edittask,
+  delete,
+}
+
 class UploadQueue {
-  static addtask(String url, Map json) async {
-    List taskupload = [url, json];
-    List taskuploadlist = await Saver.getData(name: "taskuploadlist");
-    if (taskuploadlist == null) {
-      taskuploadlist = [
+
+  static add(uploadtype type, String url, Map json) async {
+    List upload = [url, json];
+    List uploadlist = await Saver.getData(name: "uploadlist");
+    if (uploadlist == null) {
+      uploadlist = [
         [url, json]
       ];
-    } else {
-      taskuploadlist.add(taskupload);
+    } else if (!uploadlist.contains(upload)){
+      uploadlist.add(upload);
     }
-    Saver.setData(name: "taskuploadlist", data: taskuploadlist);
+    Saver.setData(name: "uploadlist", data: uploadlist);
   }
 
-  static uploadtasks() async {
-    List taskuploadlist = await Saver.getData(name: "taskuploadlist");
-    if (taskuploadlist == null) {
-      for (var i in taskuploadlist) {
-        String url = i[0];
-        Map json = i[1];
-        var response = await NetManager.uploadTask(url, json);
+  static upload() async {
+    var response;
+    List uploadlist = await Saver.getData(name: "uploadlist");
+    if (uploadlist != null) {
+      for (var i in uploadlist) {
+        uploadtype type = i[0];
+        String url = i[1];
+        Map json = i[2];
+        if (type == uploadtype.addproject){
+          response = await NetManager.uploadProject(url, json);
+        }else if (type == uploadtype.addtask){
+          response = await NetManager.uploadTask(url, json);
+        }else if (type == uploadtype.editproject){
+          response = await NetManager.editProject(url, json);
+        }
         if (response == 204) {
-          removetask(url, json);
+          uploadlist.remove([url, json]);
         }
       }
     }
   }
 
-  static removetask(String url, Map json) async {
-    List taskupload = [url, json];
-    List taskuploadlist = await Saver.getData(name: "taskuploadlist");
-    for (var i in taskuploadlist) {
-      if (i == taskupload) {
-        taskuploadlist.remove(i);
-      }
-    }
-    Saver.setData(name: "taskuploadlist", data: taskuploadlist);
-  }
 
-  static addproject(String url, Map json) async {
-    List projectupload = [url, json];
+  static Future<String> uploadAll() async {
+    upload();
     List projectuploadlist = await Saver.getData(name: "projectuploadlist");
-    if (projectuploadlist == null) {
-      projectuploadlist = [
-        [url, json]
-      ];
-    } else {
-      projectuploadlist.add(projectupload);
-    }
-    Saver.setData(name: "projectuploadlist", data: projectuploadlist);
-  }
+    List uploadlist = await Saver.getData(name: "uploadlist");
 
-  static uploadprojects() async {
-    List projectuploadlist = await Saver.getData(name: "projectuploadlist");
-    if (projectuploadlist == null) {
-      for (var i in projectuploadlist) {
-        String url = i[0];
-        Map json = i[1];
-        var response = await NetManager.uploadProject(url, json);
-        if (response == 204) {
-          removeproject(url, json);
-        }
-      }
+    if (projectuploadlist.isEmpty && uploadlist.isEmpty) {
+      return "uploaded";
     }
-  }
-
-  static removeproject(String url, Map json) async {
-    List projectupload = [url, json];
-    List projectuploadlist = await Saver.getData(name: "projectuploadlist");
-    for (var i in projectuploadlist) {
-      if (i == projectupload) {
-        projectuploadlist.remove(i);
-      }
-    }
-    Saver.setData(name: "projectuploadlist", data: projectuploadlist);
-  }
-
-  static Future<bool> uploadAll() async {
-    uploadprojects();
-    uploadtasks();
-    List projectuploadlist = await Saver.getData(name: "projectuploadlist");
-    List taskuploadlist = await Saver.getData(name: "taskuploadlist");
-
-    if (projectuploadlist.isEmpty && taskuploadlist.isEmpty) {
-      return true;
-    }
-    return false;
+    return "failed";
   }
 }

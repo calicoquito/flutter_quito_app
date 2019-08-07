@@ -40,7 +40,7 @@ class EventsInfoState extends State<EventsInfo> {
     jsonstr["image"]["data"] = base64Image;
     int respcode = await NetManager.uploadProject(url, jsonstr);  // NEW
     if (respcode != 204){
-      UploadQueue.addproject(url, jsonstr);
+      //UploadQueue.addproject(url, jsonstr);
     }
     return "Success!";
   }
@@ -155,7 +155,7 @@ class EventsInfoState extends State<EventsInfo> {
                     jsonstr["contributors"] = json.encode(assignedMembers);
 
                     for (var i in assignedMembers) {
-                      jsonstr["members"].add(json.encode(i));
+                      jsonstr["contributors"].add(json.encode(i));
                     }
                   });
                 },

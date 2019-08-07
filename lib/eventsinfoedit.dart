@@ -63,7 +63,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
         : imgstring;
     int respcode = await NetManager.editProject(url, jsonstr); // NEW
     if (respcode != 204){
-      UploadQueue.addproject(url, jsonstr);
+      //UploadQueue.addproject(url, jsonstr);
     }
     return "Success!";
   }

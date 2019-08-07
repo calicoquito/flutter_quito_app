@@ -1,12 +1,11 @@
-import 'dart:math';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
 
 import 'addmembers.dart';
+import 'helperclasses/jsons.dart';
+import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
 
@@ -28,34 +27,7 @@ class TaskState extends State<Task> {
   List setval;
   List assignedMembers;
 
-  Map taskjson = {
-    "@type": "task",
-    "title": "Task upload by api",
-    "description": "the task is to test the api",
-    "task_detail": {
-      "content-type": "text/html",
-      "data": "<h2>Talk to some people to volunteer on the the project</h2>",
-      "encoding": "utf-8"
-    },
-    "additional_files": null,
-    "complete": false
-  };
-
-  Future<String> uploadTask() async {
-    // print(url);
-    // var bytes = utf8.encode("admin:admin");
-    // var credentials = base64.encode(bytes);
-    taskjson['additional_files']  = Random().nextInt(15);
-    var resp = await http.post(url,
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": "Bearer ${widget.user.ploneToken}",
-        },
-        body: jsonEncode(taskjson));
-    print(resp.statusCode);
-    return "Success!";
-  }
+  Map taskjson = Jsons.taskjson;
 
   @override
   Widget build(BuildContext context) {
@@ -131,22 +103,23 @@ class TaskState extends State<Task> {
             padding: EdgeInsets.only(top: 20.0, left: 50.0, right: 50.0),
             child: Container(
                 height: 60,
-                child: RaisedButton(
-                  onPressed: () async {
-                    setState(() async {
-                      assignedMembers = await Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return AddMembersPage(user: user);
-                      }));
-                    });
+              child: RaisedButton(
+                onPressed: () async {
+                  assignedMembers = await Navigator.push(context,
+                      MaterialPageRoute(builder: (context) {
+                    return AddMembersPage(user: user);
+                  }));
+                  setState(() {
+                    taskjson["contributors"] = json.encode(assignedMembers);
 
-                    print(assignedMembers);
-                  },
-                  child: Icon(
-                    Icons.group_add,
-                    color: Colors.white,
-                  ),
-                )),
+                    print(taskjson["contributors"]);
+                  });
+                },
+                child: Icon(
+                  Icons.group_add,
+                  color: Colors.white,
+                ),
+              )),
           ),
           Container(
             height: 100.0,
@@ -192,7 +165,7 @@ class TaskState extends State<Task> {
           color: Colors.white,
         ),
         onPressed: () {
-          uploadTask();
+          NetManager.uploadTask(url, taskjson);
           Navigator.of(context, rootNavigator: true).pop(context);
         },
       ),
