@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -28,7 +29,6 @@ class ChatScreenState extends State<ChatScreen>{
   bool isLoading = true;
   final refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
 
-
   void getChannels() async{
     try{
       List teamEndpoints = widget.user.teams.map((team){
@@ -56,30 +56,54 @@ class ChatScreenState extends State<ChatScreen>{
             final titleIds = channel['name'].split('_');
             if(titleIds[0]==widget.user.userId && titleIds.length ==3){
               setState(() {
-                chats.add(Chat(title: widget.user.members[titleIds[2]], channelId: channel['id'], type: 'direct',));
+                chats.add(Chat(
+                  title: widget.user.members[titleIds[2]], 
+                  channelId: channel['id'], 
+                  type: 'direct',
+                  subtitle: 'Yo'
+                ));
               });
             }
             else{
               setState(() {
-                chats.add(Chat(title: widget.user.members[titleIds[0]], channelId: channel['id'], type: 'direct',));
+                chats.add(Chat(
+                  title: widget.user.members[titleIds[0]], 
+                  channelId: channel['id'], 
+                  type: 'direct',
+                  subtitle: 'Hi'
+                ));
               });
             }
           }
           else{
             setState(() {
-              chats.add(Chat(title: channel['display_name'], channelId: channel['id'], type: 'group', project: widget.user.projects[channel['name']],));
+              chats.add(Chat(
+                title: channel['display_name'], 
+                channelId: channel['id'], 
+                type: 'group', 
+                project: widget.user.projects[channel['name']],
+                subtitle: 'bye',
+              ));
             });
           }
         }); 
       });
     }
+    on SocketException catch(err){
+      print(err);
+      Flushbar(
+        flushbarPosition: FlushbarPosition.BOTTOM,
+        message: 'No Internet',
+        duration: Duration(seconds: 3),
+      )..show(context);
+    } 
     catch(err){
       print(err);
-      // Flushbar(
-      //   flushbarPosition: FlushbarPosition.BOTTOM,
-      //   message: 'No Internet',
-      //   duration: Duration(seconds: 3),
-      // )..show(context);
+      Flushbar(
+        flushbarPosition: FlushbarPosition.BOTTOM,
+        message: 'An error has occurred. Reload',
+        duration: Duration(seconds: 3),
+      )..show(context); 
     }
     finally{
       setState(() {
@@ -96,7 +120,6 @@ class ChatScreenState extends State<ChatScreen>{
 
   @override
   void dispose() {
-    print('Chat Screen disposed');
     super.dispose();
   }
 

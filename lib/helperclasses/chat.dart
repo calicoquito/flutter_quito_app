@@ -13,10 +13,11 @@ class Chat extends StatefulWidget{
   final String title;
   final String channelId;
   final project;
+  final String subtitle;
   final String type;
 
   @override
-  Chat({Key key, this.title, @required this.channelId, this.type, this.project}): super(key:key);
+  Chat({Key key, this.title, @required this.channelId, this.type, this.project, this.subtitle}): super(key:key);
 
   @override
   ChatState createState() => ChatState();
@@ -71,6 +72,7 @@ class ChatState extends State<Chat> {
         ),
         title: Text(widget.title),
         trailing: trailing,
+        subtitle: Text(widget.subtitle),
       ),
     );
   }

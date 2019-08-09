@@ -21,10 +21,69 @@ class SplashScreen extends StatefulWidget{
 class SplashScreenState extends State<SplashScreen> {
   List<Map<String, String>> teams = List();
   Map<String, String> members  = Map();
+  String diagnosticId = 'null';
+  String sessionId = 'null';
+
+  Future<void> getSessionId() async{
+    try{
+      final resp = await http.get(
+        'http://mattermost.alteroo.com/api/v4/users/${widget.user.userId}/sessions',
+        headers: {'Content-Type':'application/json', 'Authorization':'Bearer ${widget.user.mattermostToken}'},
+      );
+      final json = jsonDecode(resp.body);
+      setState(() {
+        sessionId = json[0]['id'];
+      });
+      print(sessionId);
+
+    }
+    catch(err){
+      print(err);
+    }
+  }
+
+  Future<void> setDeviceId() async{
+    try{
+      final resp = await http.put(
+        'http://mattermost.alteroo.com/api/v4/users/sessions/device',
+        headers: {'Content-Type':'application/json', 'Authorization':'Bearer ${widget.user.mattermostToken}'},
+        body: jsonEncode({'device_id':'android_rn:$sessionId'})
+      );
+      print('----------------------PUT Request Response--------------------');
+      print(resp.body);
+      print('**************************************************************');
+    }
+    catch(err){
+      print(err);
+    }
+  }
+
+  Future<void> getServerId() async{
+    try{
+      final resp = await http.get(
+        'http://mattermost.alteroo.com/api/v4/config/client?format=old',
+        headers: {'Accept':'application/json', 'Authorization':'Bearer ${widget.user.mattermostToken}'}
+      );
+
+      final diagId = jsonDecode(resp.body)['DiagnosticId'];
+      
+      setState((){
+        diagnosticId = diagId;
+      });
+
+      print('Server Id $diagnosticId');
+    }
+    catch(err){
+      print(err);
+    }
+  }
 
 
   Future<void> getTeams() async {
     try{
+      await getSessionId();
+      await setDeviceId();
+      await getServerId();
       final resp = await http.get(
         'http://mattermost.alteroo.com/api/v4/users/${widget.user.userId}/teams',
         headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
@@ -38,7 +97,6 @@ class SplashScreenState extends State<SplashScreen> {
             'name':team['name']
           });
         });
-        
       });
       for (var team in teams){
         final resp = await http.get(
@@ -91,6 +149,8 @@ class SplashScreenState extends State<SplashScreen> {
     final User user = Provider.of<User>(context);
     user.members = members;
     user.teams = teams;
+    user.serverId = diagnosticId;
+    user.sessionId = sessionId;
     return Material(
       child: Center(
         child: Column(
