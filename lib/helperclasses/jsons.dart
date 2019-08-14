@@ -30,7 +30,6 @@ class Jsons{
       "encoding": "utf-8"
     },
     "changeNote": null,
-    "members":[]
   };
 
   static Map taskjson = {

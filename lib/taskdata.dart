@@ -38,21 +38,20 @@ class TaskDataState extends State<TaskData> {
       "Authorization": "Bearer ${widget.user.ploneToken}",
     });
     var resBody = json.decode(response.body);
-    print(resBody);
     setState(() {
       data = resBody;
-          if (data["contributors"] != null) {
-      assignedMembers = data["contributors"].isEmpty
+          if (data["members"] != null) {
+      assignedMembers = data["members"].isEmpty
           ? null
-          : json.decode(data["contributors"][0]);
+          : data["members"];
     }
       title = data["title"] == null ? "Tile: " : "Title: ${data["title"]}";
       description = data["description"] == null
           ? "Description: "
           : "Description: ${data["description"]}";
-      //details = data["task_detail"]["data"] == null ? "Details: " : "Details: ${data["task_detail"]["data"]}";
-      print(data["contributors"]);
-      print('${data["title"]}, ${data["description"]}, ${data["task_detail"]}');
+      //details = data["detail"]["data"] == null ? "Details: " : "Details: ${data["detail"]["data"]}";
+      print(data["members"]);
+      print('${data["title"]}, ${data["description"]}, ${data["detail"]}');
     });
     return "Success!";
   }

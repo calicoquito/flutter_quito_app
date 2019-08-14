@@ -2,6 +2,7 @@ import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quito_1/helperclasses/netmanager.dart';
+import 'package:quito_1/helperclasses/uploadqueue.dart';
 import 'helperclasses/saver.dart';
 import 'openscreen.dart';
 import 'signinscreen.dart';
@@ -33,8 +34,8 @@ class _RouterState extends State<Router> {
   Widget build(BuildContext context) {
     final User user = Provider.of<User>(context);
     if (isSignedIn == true) {
+      UploadQueue.uploadAll();
       NetManager.user = user;
-      print('Bearer ${user.ploneToken}');
       return OpenScreen(
         user: user,
       );

@@ -33,8 +33,9 @@ dependencies:
   flutter_cache_manager:
   cached_network_image:
   flushbar: '1.5.3'
+  workmanager: '0.0.6'
 
-
+    
 dev_dependencies:
   flutter_test:
     sdk: flutter

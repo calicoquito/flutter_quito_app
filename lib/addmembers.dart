@@ -55,7 +55,8 @@ class AddMembersPageState extends State<AddMembersPage>
     for (int i = 0; i < setval.length; i++) {
       if (setval[i] == true) {
         Map user = data[i];
-        selectusers.add(user);
+        String username = user["username"];
+        selectusers.add(username);
       }
     }
     Navigator.pop(context, selectusers);

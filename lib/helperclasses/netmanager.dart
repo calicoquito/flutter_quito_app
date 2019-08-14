@@ -142,7 +142,6 @@ class NetManager {
       print(user.ploneToken);
       print(resBody['items']);
       data = resBody["items"];
-      //Saver.setData(data: data, name: "$url-tasksdata");
       print(data);
       for (var i = 0; i == data.length; i++) {
         setval.add(false);
@@ -190,30 +189,28 @@ class NetManager {
         body: jsonEncode(json));
     print(response.statusCode);
     if (response.statusCode != 204) {
-      //UploadQueue.addtask(uploadtype.add, url, json);
+      UploadQueue.add(uploadtype.addproject, url, json);
     }
     return response.statusCode;
   }
 
   static Future<int> editProject(String url, Map json) async {
-    var resp = await http.patch(url,
+    var response = await http.patch(url,
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
           "Authorization": "Bearer ${user.ploneToken}",
         },
         body: jsonEncode(json));
-    print(resp.statusCode);
-    return resp.statusCode;
+    print(response.statusCode);
+        if (response.statusCode != 201) {
+      UploadQueue.add(uploadtype.editproject, url, json);
+    }
+    return response.statusCode;
   }
 
   static Future<int> uploadTask(String url, Map json) async {
-    // print(url);
-    // var bytes = utf8.encode("admin:admin");
-    // var credentials = base64.encode(bytes);
-    //taskjson['additional_files']  = Random().nextInt(15);
-    //NetManager.uploadTask(url, json);
-
+    print(json);
     var response = await http.post(url,
         headers: {
           "Accept": "application/json",
@@ -222,32 +219,27 @@ class NetManager {
         },
         body: jsonEncode(json));
     print(response.statusCode);
-    print(response.body);
     if (response.statusCode != 201) {
-      //UploadQueue.addtask(uploadtype.add, url, json);
+      UploadQueue.add(uploadtype.addtask, url, json);
     }
     return response.statusCode;
   }
 
-  // static Future deleteProject(int index, List data) async {
-  //   String url = data[index]["@id"];
-  //   try {
-  //     var resp = await http.delete(
-  //       url,
-  //       headers: {
-  //         "Accept": "application/json",
-  //         "Content-Type": "application/json",
-  //         "Authorization": 'Bearer ${user.ploneToken}'
-  //       },
-  //     );
-  //     print(resp.statusCode);
-  //     if (resp.statusCode == 204) {
-  //       return data;
-  //     }
-  //   } catch (err) {
-  //     print(err);
-  //   }
-  // }
+  static Future<int> editTask(String url, Map json) async {
+    print(json);
+    var response = await http.patch(url,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${user.ploneToken}",
+        },
+        body: jsonEncode(json));
+    print(response.statusCode);
+    if (response.statusCode != 201) {
+      UploadQueue.add(uploadtype.edittask, url, json);
+    }
+    return response.statusCode;
+  }
 
   static Future<int> delete(String url) async {
     var resp;
