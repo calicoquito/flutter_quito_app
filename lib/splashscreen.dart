@@ -18,17 +18,72 @@ class SplashScreen extends StatefulWidget{
   SplashScreenState createState() => SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  // static AnimationController controller;
-
-  // Animation<Color> animation;
-
+class SplashScreenState extends State<SplashScreen> {
   List<Map<String, String>> teams = List();
   Map<String, String> members  = Map();
+  String diagnosticId = 'null';
+  String sessionId = 'null';
+
+  Future<void> getSessionId() async{
+    try{
+      final resp = await http.get(
+        'http://mattermost.alteroo.com/api/v4/users/${widget.user.userId}/sessions',
+        headers: {'Content-Type':'application/json', 'Authorization':'Bearer ${widget.user.mattermostToken}'},
+      );
+      final json = jsonDecode(resp.body);
+      setState(() {
+        sessionId = json[0]['id'];
+      });
+      print(sessionId);
+
+    }
+    catch(err){
+      print(err);
+    }
+  }
+
+  Future<void> setDeviceId() async{
+    try{
+      final resp = await http.put(
+        'http://mattermost.alteroo.com/api/v4/users/sessions/device',
+        headers: {'Content-Type':'application/json', 'Authorization':'Bearer ${widget.user.mattermostToken}'},
+        body: jsonEncode({'device_id':'android_rn:$sessionId'})
+      );
+      print('----------------------PUT Request Response--------------------');
+      print(resp.body);
+      print('**************************************************************');
+    }
+    catch(err){
+      print(err);
+    }
+  }
+
+  Future<void> getServerId() async{
+    try{
+      final resp = await http.get(
+        'http://mattermost.alteroo.com/api/v4/config/client?format=old',
+        headers: {'Accept':'application/json', 'Authorization':'Bearer ${widget.user.mattermostToken}'}
+      );
+
+      final diagId = jsonDecode(resp.body)['DiagnosticId'];
+      
+      setState((){
+        diagnosticId = diagId;
+      });
+
+      print('Server Id $diagnosticId');
+    }
+    catch(err){
+      print(err);
+    }
+  }
 
 
   Future<void> getTeams() async {
     try{
+      await getSessionId();
+      await setDeviceId();
+      await getServerId();
       final resp = await http.get(
         'http://mattermost.alteroo.com/api/v4/users/${widget.user.userId}/teams',
         headers: {'Authorization':'Bearer ${widget.user.mattermostToken}'}
@@ -36,9 +91,11 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
       final json = jsonDecode(resp.body);
       
       json.forEach((team){
-        teams.add({
-          'id': team['id'],
-          'name':team['name']
+        setState(() {
+          teams.add({
+            'id': team['id'],
+            'name':team['name']
+          });
         });
       });
       for (var team in teams){
@@ -48,11 +105,14 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
         );
         final jsonData = jsonDecode(resp.body);
         jsonData.forEach((member){
-          members.addAll({
-            'id': member['id'], 
-            'username': member['username'],
-            member['id']: member['username'],
-            'team_id':team['id']});
+          setState(() {
+            members.addAll({
+              'id': member['id'], 
+              'username': member['username'],
+              member['id']: member['username'],
+              'team_id':team['id']
+            });
+          });
         });
       }
     }
@@ -67,18 +127,7 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
 
   @override
   void initState(){
-    super.initState();
-  //   controller = AnimationController(vsync: this);
-  //   animation = Tween<Color>(
-  //     begin: Colors.blue,
-  //     end: Colors.purple
-  //   ).animate(
-  //     CurvedAnimation(
-  //       parent: controller,
-  //       curve: Curves.linear
-  //     )
-  // );
-    
+    super.initState();    
     getTeams()
     .whenComplete((){
       Navigator.of(context).pushAndRemoveUntil(
@@ -92,7 +141,6 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
 
   @override
   void dispose() {
-    // controller.dispose();
     super.dispose();
   }
 
@@ -101,6 +149,8 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
     final User user = Provider.of<User>(context);
     user.members = members;
     user.teams = teams;
+    user.serverId = diagnosticId;
+    user.sessionId = sessionId;
     return Material(
       child: Center(
         child: Column(

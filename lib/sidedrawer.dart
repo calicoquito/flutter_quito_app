@@ -1,8 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:provider/provider.dart';
-import 'package:quito_1/openscreen.dart';
-import 'package:quito_1/profile_dialog.dart';
+import 'package:http/http.dart' as http;
+import 'helperclasses/profile_dialog.dart';
 import 'chatscreen.dart';
 import 'helperclasses/user.dart';
 import 'settings.dart';
@@ -40,7 +41,7 @@ class SideDrawer extends StatelessWidget{
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context)=> ChatScreen(user:Provider.of<User>(context))
+                    builder: (context)=> ChatScreen(user: Provider.of<User>(context))
                   )
                 );
               },
@@ -60,8 +61,13 @@ class SideDrawer extends StatelessWidget{
             ListTile(
               leading: Icon(Icons.exit_to_app),
               title: Text('Logout'),
-              onTap: ()async{
+              onTap: () async {
                 await user.logout();
+                await http.post(
+                  'http://mattermost.alteroo.com/api/v4/users/${user.userId}/sessions/revoke',
+                  headers: {'Accept':'application/json', 'Authorization':'Bearer ${user.mattermostToken}'},
+                  body: jsonEncode({'session_id':'${user.sessionId}'})
+                );
                 Navigator.of(context).pushNamedAndRemoveUntil('/', (route)=>false);
               },
             )

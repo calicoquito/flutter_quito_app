@@ -52,7 +52,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
       socket.listen((data){
         final jsonData = jsonDecode(data);
         int newSeq = jsonData['seq'];
-        if(seq!=newSeq){
+        if(seq<newSeq){
           if (jsonData['event']=='posted'){
             final postData = jsonData['data'];
             final post = jsonDecode(postData['post']);
@@ -97,7 +97,6 @@ class OpenChatScreenState extends State<OpenChatScreen>{
         headers: {'Authorization':'Bearer ${widget.user.mattermostToken}', 'Accept':'application/json'}
       );
       final jsonData = jsonDecode(resp.body);
-      print(resp.body.substring(500));
       
       final order = jsonData['order'].reversed.toList();
       final posts = jsonData['posts'];
@@ -161,7 +160,7 @@ class OpenChatScreenState extends State<OpenChatScreen>{
       Timer(
         Duration(milliseconds: 100),
         (){
-          scrollController.jumpTo(scrollController.position.maxScrollExtent);
+          scrollController.animateTo(scrollController.position.maxScrollExtent, duration: Duration(seconds: 1), curve: Curves.ease);
         }
       );
     }

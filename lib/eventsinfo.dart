@@ -122,8 +122,6 @@ class EventsInfoState extends State<EventsInfo> {
           "Authorization": "Bearer ${widget.user.ploneToken}",
         },
         body: jsonEncode(jsonstr));
-    print(resp.statusCode);
-    print(resp.body);
     return "Success!";
   }
 
