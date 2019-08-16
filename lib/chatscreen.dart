@@ -52,6 +52,7 @@ class ChatScreenState extends State<ChatScreen>{
         });
         
         channels.forEach((channel){
+
           if(channel['display_name']==""){
             final titleIds = channel['name'].split('_');
             if(titleIds[0]==widget.user.userId && titleIds.length ==3){
@@ -60,7 +61,6 @@ class ChatScreenState extends State<ChatScreen>{
                   title: widget.user.members[titleIds[2]], 
                   channelId: channel['id'], 
                   type: 'direct',
-                  subtitle: 'Yo'
                 ));
               });
             }
@@ -70,7 +70,6 @@ class ChatScreenState extends State<ChatScreen>{
                   title: widget.user.members[titleIds[0]], 
                   channelId: channel['id'], 
                   type: 'direct',
-                  subtitle: 'Hi'
                 ));
               });
             }
@@ -82,7 +81,6 @@ class ChatScreenState extends State<ChatScreen>{
                 channelId: channel['id'], 
                 type: 'group', 
                 project: widget.user.projects[channel['name']],
-                subtitle: 'bye',
               ));
             });
           }
@@ -149,35 +147,28 @@ class ChatScreenState extends State<ChatScreen>{
           )
         ],
       ),
-      body: RefreshIndicator(
-        key: refreshIndicatorKey,
-        onRefresh: () async {
-          chats.clear();
-          return getChannels();
+      body: isLoading ? Center(child: CircularProgressIndicator(),): 
+       chats.length==0
+      ? Center(child: Text('No Chats'),)
+      :ListView.builder(
+        itemCount: chats.length,
+        itemBuilder: (context, index){
+          return Slidable(
+            actionExtentRatio: 0.2,
+            child: chats[index],
+            delegate: SlidableDrawerDelegate(),
+            actions: <Widget>[
+              IconSlideAction(
+                caption: 'Delete',
+                icon: Icons.delete_sweep,
+                color: Theme.of(context).primaryColor,
+                onTap: (){
+                  print('deleted');
+                },
+              )
+            ],
+          );
         },
-        child: isLoading ? Center(child: CircularProgressIndicator(),): 
-         chats.length==0
-        ? Center(child: Text('No Chats'),)
-        :ListView.builder(
-          itemCount: chats.length,
-          itemBuilder: (context, index){
-            return Slidable(
-              actionExtentRatio: 0.2,
-              child: chats[index],
-              delegate: SlidableDrawerDelegate(),
-              actions: <Widget>[
-                IconSlideAction(
-                  caption: 'Delete',
-                  icon: Icons.delete_sweep,
-                  color: Theme.of(context).primaryColor,
-                  onTap: (){
-                    print('deleted');
-                  },
-                )
-              ],
-            );
-          },
-        ),
       ),
     );
   }

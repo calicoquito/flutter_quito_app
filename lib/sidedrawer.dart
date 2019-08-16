@@ -1,10 +1,9 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-import 'profile_dialog.dart';
+import 'helperclasses/profile_dialog.dart';
 import 'chatscreen.dart';
 import 'helperclasses/user.dart';
 import 'settings.dart';
@@ -64,14 +63,12 @@ class SideDrawer extends StatelessWidget{
               title: Text('Logout'),
               onTap: () async {
                 await user.logout();
-                final resp = await http.post(
+                await http.post(
                   'http://mattermost.alteroo.com/api/v4/users/${user.userId}/sessions/revoke',
                   headers: {'Accept':'application/json', 'Authorization':'Bearer ${user.mattermostToken}'},
                   body: jsonEncode({'session_id':'${user.sessionId}'})
                 );
-                print(resp.body);
                 Navigator.of(context).pushNamedAndRemoveUntil('/', (route)=>false);
-                print('log out');
               },
             )
           ]

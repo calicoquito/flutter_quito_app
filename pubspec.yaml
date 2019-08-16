@@ -32,8 +32,8 @@ dependencies:
   shared_preferences:
   cached_network_image:
   flutter_cache_manager:
-  flushbar: '1.6.0'
-
+  flushbar:
+  # if you are running a flutter version less than 1.6, change the flushbar version to 1.5.3
 
 dev_dependencies:
   flutter_test:

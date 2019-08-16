@@ -18,13 +18,12 @@ class Saver {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String stringdata = json.encode(data);
     prefs.setString(name, stringdata);
-    //print(data);
     return "Success!";
   }
 
   static Future<bool> getSignInState() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('isSignedIn');
+    return prefs.getBool('isSignedIn')??false;
   }
 
   static Future setSignInState(bool state)async{
