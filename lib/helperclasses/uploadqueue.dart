@@ -1,8 +1,8 @@
-//import 'package:workmanager/workmanager.dart';
 import 'package:quito_1/helperclasses/netmanager.dart';
 import 'package:quito_1/helperclasses/saver.dart';
 import 'package:quito_1/helperclasses/urls.dart';
-import 'package:http/http.dart' as http;
+//import 'package:flutter_uploader/flutter_uploader.dart';
+import 'user.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -15,6 +15,8 @@ enum uploadtype {
 }
 
 class UploadQueue {
+  static User user;
+
   static Future<bool> connection() async {
     try {
       final result = await InternetAddress.lookup(Urls.main);
@@ -70,23 +72,18 @@ class UploadQueue {
     return uploaded;
   }
 
-  // static repeatcheck() async {
-  //   Workmanager.registerPeriodicTask(
-  //     "2",
-  //     "simplePeriodicTask",
-  //     backoffPolicy: BackoffPolicy.exponential,
-  //     initialDelay: Duration(milliseconds: 2),
-  //     constraints: Constraints(
-  //       networkType: NetworkType.connected,
-  //     ),
-  //   );
 
-  // Workmanager.executeTask((backgroundTask) {
-  //   uploadAll();
-  //   //print("Native called background task: $backgroundTask"); //simpleTask will be emitted here.
-  //   //return Future.value(true);
-  // });
-  //} 
+//  static uploader() async {
+//    final taskId = await uploader.enqueue(
+//        url: "your upload link", //required: url to upload to
+////        files: [FileItem(filename: filename, savedDir: savedDir, fieldname:"file")], // required: list of files that you want to upload
+//        method: UploadMethod.POST, // HTTP method  (POST or PUT or PATCH)
+//        headers: {"apikey": "api_123456", "userkey": "userkey_123456"},
+//        data: {"name": "john"}, // any data you want to send in upload request
+//        showNotification: false, // send local notification (android only) for upload status
+//        tag: "upload 1"); // unique tag for upload task
+//    );
+//  }
 
   static Future<String> uploadAll() async {
     print('yo yo');

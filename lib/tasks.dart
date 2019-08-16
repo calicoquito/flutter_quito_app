@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:quito_1/taskedit.dart';
 import 'dart:convert';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/saver.dart';
@@ -135,7 +136,12 @@ class TaskListState extends State<TaskList> {
                   caption: 'Edit',
                   color: Colors.blue,
                   icon: Icons.edit,
-                  //onTap: () => _showSnackBar('Archive'),
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return Taskedit(url: url);
+                    }));
+                  },
                 ),
               ],
               secondaryActions: <Widget>[

@@ -64,7 +64,7 @@ class TaskeditState extends State<Taskedit> {
     return Scaffold(
       appBar: AppBar(
           title: Text(
-        'Task Info',
+        'Task Edit',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
       body: ListView(

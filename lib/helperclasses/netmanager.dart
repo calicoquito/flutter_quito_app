@@ -180,18 +180,18 @@ class NetManager {
 
   
   static Future<int> uploadProject(String url, Map json) async {
-    var response = await http.post(url,
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": "Bearer ${user.ploneToken}",
-        },
-        body: jsonEncode(json));
-    print(response.statusCode);
-    if (response.statusCode != 204) {
-      UploadQueue.add(uploadtype.addproject, url, json);
-    }
-    return response.statusCode;
+    // var response = await http.post(url,
+    //     headers: {
+    //       "Accept": "application/json",
+    //       "Content-Type": "application/json",
+    //       "Authorization": "Bearer ${user.ploneToken}",
+    //     },
+    //     body: jsonEncode(json));
+    // print(response.statusCode);
+    //if (response.statusCode != 204) {
+      //UploadQueue.addproject( url, json);
+    // }
+    // return response.statusCode;
   }
 
   static Future<int> editProject(String url, Map json) async {

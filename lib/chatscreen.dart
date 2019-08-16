@@ -76,11 +76,11 @@ class ChatScreenState extends State<ChatScreen>{
     }
     catch(err){
       print(err);
-      // Flushbar(
-      //   flushbarPosition: FlushbarPosition.BOTTOM,
-      //   message: 'No Internet',
-      //   duration: Duration(seconds: 3),
-      // )..show(context);
+      Flushbar(
+        flushbarPosition: FlushbarPosition.BOTTOM,
+        message: 'No Internet',
+        duration: Duration(seconds: 3),
+      )..show(context);
     }
     finally{
       setState(() {
