@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:quito_1/taskedit.dart';
 import 'dart:convert';
+import 'helperclasses/netmanager.dart';
+import 'helperclasses/saver.dart';
 import 'helperclasses/user.dart';
 import 'task.dart';
 import 'taskdata.dart';
 import 'dart:math';
-
 
 class TaskList extends StatefulWidget {
   final String url;
@@ -46,26 +48,32 @@ class TaskListState extends State<TaskList> {
     getSWData();
   }
 
-  Future<String> getSWData() async {
-    print(url);
-    var response = await http.get(url,
-      headers: {
-        "Accept": "application/json",
-        "Authorization": "Bearer ${widget.user.ploneToken}",
-      });
-    var resBody = json.decode(response.body);
-    print(widget.user.ploneToken);
-    print(resBody['items']);
+  Future getSWData() async {
+    data = await NetManager.getTasksData(url);
+    for (var i = 0; i == data.length; i++) {
+      setval.add(false);
+    }
     setState(() {
-      data = resBody["items"];
-      print(response.body);
-      print(data);
+      data = data;
       for (var i in data) {
         setval.add(false);
+        // if (data[i]['additiional_files'] == null) {
+        //   data[i]['additiional_files'] = Random().nextInt(15);
+        // }
       }
     });
-    print(data);
-    return "Success!";
+  }
+
+  Future delete(int index) async {
+    var response = await NetManager.delete(data[index]["@id"]);
+    if (response == 204) {
+      data.removeAt(index);
+      getSWData().whenComplete(() {
+        setState(() {
+          data = data;
+        });
+      });
+    }
   }
 
   @override
@@ -102,6 +110,8 @@ class TaskListState extends State<TaskList> {
                                       color: Colors.white, fontSize: 20)),
                               radius: 48.0,
                               backgroundColor:
+                                  // data[index]['additiional_files'] == null ?
+                                  // Colors.primaries[data[index]['additiional_files']]  :
                                   Colors.primaries[Random().nextInt(15)],
                             ),
                             title: Text("Task Name: ${data[index]["title"]}"),
@@ -126,7 +136,12 @@ class TaskListState extends State<TaskList> {
                   caption: 'Edit',
                   color: Colors.blue,
                   icon: Icons.edit,
-                  //onTap: () => _showSnackBar('Archive'),
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return Taskedit(url: url);
+                    }));
+                  },
                 ),
               ],
               secondaryActions: <Widget>[
@@ -134,9 +149,8 @@ class TaskListState extends State<TaskList> {
                   caption: 'Delete',
                   color: Colors.red,
                   icon: Icons.delete,
-                  onTap: () {
-                    data.removeAt(index);
-                    //delete(index);
+                  onTap: () async {
+                    delete(index);
                   },
                 ),
               ],

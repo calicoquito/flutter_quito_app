@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:quito_1/helperclasses/netmanager.dart';
+import 'package:quito_1/helperclasses/uploadqueue.dart';
 import 'helperclasses/saver.dart';
 import 'openscreen.dart';
 import 'signinscreen.dart';
 import 'helperclasses/user.dart';
+
 
 
 /// This [StatefulWidget] is used to navigate the user to the 
@@ -15,12 +18,14 @@ import 'helperclasses/user.dart';
 ///
 
 class Router extends StatefulWidget{
+
   @override
   RouterState createState() => RouterState();
 }
 
 class RouterState extends State<Router> {
   bool isSignedIn = false;
+
 
   void getSignInStatus(){
     Saver.getSignInState()
@@ -31,6 +36,7 @@ class RouterState extends State<Router> {
     });
   }
 
+
   @override
   void initState() {
     super.initState();
@@ -40,10 +46,13 @@ class RouterState extends State<Router> {
   @override
   Widget build(BuildContext context) {
     final User user = Provider.of<User>(context);
-    if(isSignedIn){
-      return OpenScreen(user: user,);
-    }
-    else{
+    if (isSignedIn == true) {
+      UploadQueue.uploadAll();
+      NetManager.user = user;
+      return OpenScreen(
+        user: user,
+      );
+    } else {
       return SignInScreen();
     }
   }

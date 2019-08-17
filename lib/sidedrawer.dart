@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:provider/provider.dart';
+
 import 'package:http/http.dart' as http;
 import 'helperclasses/profile_dialog.dart';
+
 import 'chatscreen.dart';
 import 'helperclasses/user.dart';
 import 'settings.dart';

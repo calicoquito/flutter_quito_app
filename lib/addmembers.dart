@@ -1,8 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:quito_1/helperclasses/netmanager.dart';
 
 import 'helperclasses/urls.dart';
 import 'helperclasses/user.dart';
@@ -21,17 +20,17 @@ class AddMembersPageState extends State<AddMembersPage>
   TabController controller;
 
   final String url = Urls.users;
-  List data;
+  List data = List();
   List<bool> setval = List();
-  List select_users = List();
-  List select_gorups;
+  List selectusers = List();
+  List selectgorups;
   List newdata = List();
 
   @override
   void initState() {
     super.initState();
     controller = TabController(vsync: this, length: 2);
-    getSWData();
+    getData();
   }
 
   @override
@@ -56,27 +55,21 @@ class AddMembersPageState extends State<AddMembersPage>
     for (int i = 0; i < setval.length; i++) {
       if (setval[i] == true) {
         Map user = data[i];
-        select_users.add(user);
+        String username = user["username"];
+        selectusers.add(username);
       }
     }
-    Navigator.pop(context, select_users);
+    Navigator.pop(context, selectusers);
   }
 
-  Future<String> getSWData() async {
-    var response = await http.get(url, headers: {
-        "Accept": "application/json",
-        "Authorization": 'Bearer ${widget.user.ploneToken}'
-      });
-
-    print(response.statusCode);
+  Future<String> getData() async {
+    data = await NetManager.getUsersData();
     setState(() {
-      var resBody = json.decode(response.body);
-      data = resBody;
-      for (var i in data) {
+      data = data;
+    });
+      for (var i = 0; i < data.length; i++) {
         setval.add(false);
       }
-    });
-
     return "Success!";
   }
 

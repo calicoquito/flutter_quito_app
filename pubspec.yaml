@@ -30,11 +30,13 @@ dependencies:
   image_cropper:
   connectivity:
   shared_preferences:
-  cached_network_image:
   flutter_cache_manager:
-  flushbar:
-  # if you are running a flutter version less than 1.6, change the flushbar version to 1.5.3
+  cached_network_image:
+  flushbar: '1.5.3'
+  #flutter_uploader:
 
+
+    
 dev_dependencies:
   flutter_test:
     sdk: flutter

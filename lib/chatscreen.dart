@@ -99,9 +99,11 @@ class ChatScreenState extends State<ChatScreen>{
       print(err);
       Flushbar(
         flushbarPosition: FlushbarPosition.BOTTOM,
+
         message: 'An error has occurred. Reload',
         duration: Duration(seconds: 3),
       )..show(context); 
+
     }
     finally{
       setState(() {
