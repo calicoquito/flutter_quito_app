@@ -9,6 +9,7 @@ import 'helperclasses/jsons.dart';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/uploadqueue.dart';
 import 'helperclasses/user.dart';
+import 'helperclasses/usersmanager.dart';
 import 'userinfo.dart';
 
 class EventsInfoEdit extends StatefulWidget {
@@ -28,6 +29,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   List setval = List();
   List assignedMembers;
   List members = [];
+  List displayMembers = List();
 
   File photo;
   Map data = Map();
@@ -51,6 +53,12 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     setState(() {
       photo = data['image'] == null ? null : file;
     });
+
+      displayMembers = await UsersManager.getmatchingusers(data["members"]);
+    setState(() {
+      displayMembers = displayMembers;
+    });
+
     return "Success!";
   }
 
@@ -183,45 +191,45 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                 ),
               )),
         ),
-        Container(
-          height: 100.0,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: assignedMembers == null ? 0 : assignedMembers.length,
-            itemBuilder: (context, index) {
-              return Container(
-                  child: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Column(
-                        children: <Widget>[
-                          FlatButton(
-                            child: CircleAvatar(
-                              radius: 20.0,
-                              backgroundImage:
-                                  assignedMembers[index]["portrait"] == null
-                                      ? AssetImage(
-                                          'assets/images/default-image.jpg')
-                                      : NetworkImage(
-                                          assignedMembers[index]["portrait"]),
-                              backgroundColor: Colors.transparent,
+          Container(
+            height: 100.0,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: displayMembers == null ? 0 : displayMembers.length,
+              itemBuilder: (context, index) {
+                return Container(
+                    child: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Column(
+                          children: <Widget>[
+                            FlatButton(
+                              child: CircleAvatar(
+                                radius: 20.0,
+                                backgroundImage:
+                                    displayMembers[index]["portrait"] == null
+                                        ? AssetImage(
+                                            'assets/images/default-image.jpg')
+                                        : NetworkImage(
+                                            displayMembers[index]["portrait"]),
+                                backgroundColor: Colors.transparent,
+                              ),
+                              onPressed: () => Navigator.push(context,
+                                      MaterialPageRoute(builder: (context) {
+                                    return UserInfo(
+                                        userinfo: displayMembers[index]);
+                                  })),
                             ),
-                            onPressed: () => Navigator.push(context,
-                                    MaterialPageRoute(builder: (context) {
-                                  return UserInfo(
-                                      userinfo: assignedMembers[index]);
-                                })),
-                          ),
-                          Text(
-                            "${assignedMembers[index]["fullname"]}",
-                            textAlign: TextAlign.center,
-                            softWrap: true,
-                            maxLines: 2,
-                          ),
-                        ],
-                      )));
-            },
+                            Text(
+                              "${displayMembers[index]["fullname"]}",
+                              textAlign: TextAlign.center,
+                              softWrap: true,
+                              maxLines: 2,
+                            ),
+                          ],
+                        )));
+              },
+            ),
           ),
-        ),
         inputWidget(icon: Icon(Icons.title), txt: jsonstr.keys.elementAt(1)),
         inputWidget(
             icon: Icon(Icons.import_contacts), txt: jsonstr.keys.elementAt(2)),

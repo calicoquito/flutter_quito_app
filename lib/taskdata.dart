@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:quito_1/userinfo.dart';
 
 import 'helperclasses/user.dart';
+import 'helperclasses/usersmanager.dart';
 
 class TaskData extends StatefulWidget {
   final String url;
@@ -25,6 +26,7 @@ class TaskDataState extends State<TaskData> {
   String title;
   String details;
   List assignedMembers = List();
+  List displayMembers = List();
 
   @override
   void initState() {
@@ -40,11 +42,9 @@ class TaskDataState extends State<TaskData> {
     var resBody = json.decode(response.body);
     setState(() {
       data = resBody;
-          if (data["members"] != null) {
-      assignedMembers = data["members"].isEmpty
-          ? null
-          : data["members"];
-    }
+      if (data["members"] != null) {
+        assignedMembers = data["members"].isEmpty ? null : data["members"];
+      }
       title = data["title"] == null ? "Tile: " : "Title: ${data["title"]}";
       description = data["description"] == null
           ? "Description: "
@@ -53,7 +53,17 @@ class TaskDataState extends State<TaskData> {
       print(data["members"]);
       print('${data["title"]}, ${data["description"]}, ${data["detail"]}');
     });
+
+    displayMembers = await UsersManager.getmatchingusers(data["members"]);
+    setState(() {
+      displayMembers = displayMembers;
+    });
+
+
     return "Success!";
+
+
+
   }
 
   @override
@@ -97,7 +107,7 @@ class TaskDataState extends State<TaskData> {
             height: 100.0,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: assignedMembers == null ? 0 : assignedMembers.length,
+              itemCount: displayMembers == null ? 0 : displayMembers.length,
               itemBuilder: (context, index) {
                 return Container(
                     child: Padding(
@@ -108,21 +118,21 @@ class TaskDataState extends State<TaskData> {
                               child: CircleAvatar(
                                 radius: 20.0,
                                 backgroundImage:
-                                    assignedMembers[index]["portrait"] == null
+                                    displayMembers[index]["portrait"] == null
                                         ? AssetImage(
                                             'assets/images/default-image.jpg')
                                         : NetworkImage(
-                                            assignedMembers[index]["portrait"]),
+                                            displayMembers[index]["portrait"]),
                                 backgroundColor: Colors.transparent,
                               ),
                               onPressed: () => Navigator.push(context,
                                       MaterialPageRoute(builder: (context) {
                                     return UserInfo(
-                                        userinfo: assignedMembers[index]);
+                                        userinfo: displayMembers[index]);
                                   })),
                             ),
                             Text(
-                              "${assignedMembers[index]["fullname"]}",
+                              "${displayMembers[index]["fullname"]}",
                               textAlign: TextAlign.center,
                               softWrap: true,
                               maxLines: 2,

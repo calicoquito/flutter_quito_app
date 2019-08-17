@@ -13,14 +13,18 @@ class UsersManager {
   static Future<List<Map>> getmatchingusers(List usernames) async {
     List users = await NetManager.getUsersData();
     List<Map> matchingusers = List();
-
-    for ( String username in usernames) {
-      for (Map userinfo in users) {
-        if (username == userinfo["username"]) {
-          matchingusers.add(userinfo);
+    try {
+      for (String username in usernames) {
+        for (Map userinfo in users) {
+          if (username == userinfo["username"]) {
+            matchingusers.add(userinfo);
+          }
         }
       }
+    } catch (err) {
+      print('no users found');
     }
+
     return matchingusers;
   }
 }
