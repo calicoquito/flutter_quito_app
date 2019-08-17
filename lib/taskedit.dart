@@ -6,36 +6,65 @@ import 'helperclasses/user.dart';
 import 'dart:convert';
 import 'addmembers.dart';
 import 'helperclasses/jsons.dart';
+import 'package:http/http.dart' as http;
 
 import 'userinfo.dart';
 
-class Task extends StatefulWidget {
+class Taskedit extends StatefulWidget {
   final User user;
   String url;
-  Task({@required this.url, this.user});
+  Taskedit({@required this.url, this.user});
   @override
-  TaskState createState() => TaskState(url: url, user: user);
+  TaskeditState createState() => TaskeditState(url: url, user: user);
 }
 
-class TaskState extends State<Task> {
+class TaskeditState extends State<Taskedit> {
   final User user;
   String url;
-  TaskState({@required this.url, this.user});
-  //TextEditingController controller = TextEditingController();
+  TaskeditState({@required this.url, this.user});
   String textString = "";
   bool isSwitched = false;
   List setval;
   List assignedMembers = [];
   List displayMembers = List();
+  Map data = Map();
+  String title;
+  String description;
 
   Map taskjson = Jsons.taskjson;
+
+  Future<String> getSWData() async {
+    var response = await http.get(url, headers: {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${widget.user.ploneToken}",
+    });
+    var resBody = json.decode(response.body);
+    setState(() {
+      data = resBody;
+      if (data["members"] != null) {
+        assignedMembers = data["members"].isEmpty ? null : data["members"];
+      }
+      title = data["title"] == null ? "Tile: " : "Title: ${data["title"]}";
+      description = data["description"] == null
+          ? "Description: "
+          : "Description: ${data["description"]}";
+      //details = data["detail"]["data"] == null ? "Details: " : "Details: ${data["detail"]["data"]}";
+      print(data["members"]);
+      print('${data["title"]}, ${data["description"]}, ${data["detail"]}');
+    });
+    return "Success!";
+  }
+
+  editTask() {
+    NetManager.uploadTask(url, taskjson);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
           title: Text(
-        'Task Info',
+        'Task Edit',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
       body: ListView(
@@ -47,7 +76,9 @@ class TaskState extends State<Task> {
 
               ///controller: controller,
               decoration: InputDecoration(
-                  labelText: "Title...",
+                  helperText: "Title...",
+                  hintText: title == null ? "" : title,
+                  //labelText: "Title...",
                   contentPadding: EdgeInsets.all(14.0),
                   border: OutlineInputBorder()),
               onChanged: (string) {
@@ -66,7 +97,9 @@ class TaskState extends State<Task> {
               autocorrect: true,
               //controller: controller,
               decoration: InputDecoration(
-                  labelText: "Description...",
+                  helperText: "Description...",
+                  hintText: description == null ? "" : description,
+                  //labelText: "Description...",
                   contentPadding: EdgeInsets.all(14.0),
                   border: OutlineInputBorder()),
               onChanged: (string) {
@@ -87,7 +120,9 @@ class TaskState extends State<Task> {
               //controller: controller,
               textAlign: TextAlign.justify,
               decoration: InputDecoration(
-                  labelText: "Task Details...",
+                  helperText: "Task Details...",
+                  hintText: description == null ? "" : description,
+                  //labelText: "Task Details...",
                   contentPadding: EdgeInsets.all(14.0),
                   border: OutlineInputBorder()),
               onChanged: (string) {
@@ -171,7 +206,7 @@ class TaskState extends State<Task> {
           color: Colors.white,
         ),
         onPressed: () {
-          NetManager.uploadTask(url, taskjson);
+          editTask();
           Navigator.of(context, rootNavigator: true).pop(context);
         },
       ),

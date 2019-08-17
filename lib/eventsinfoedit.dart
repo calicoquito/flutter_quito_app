@@ -1,36 +1,40 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'addmembers.dart';
+import 'helperclasses/imgmanager.dart';
+import 'helperclasses/jsons.dart';
+import 'helperclasses/netmanager.dart';
+import 'helperclasses/uploadqueue.dart';
 import 'helperclasses/user.dart';
+import 'helperclasses/usersmanager.dart';
 import 'userinfo.dart';
 
 class EventsInfoEdit extends StatefulWidget {
   final String url;
   final User user;
   EventsInfoEdit({@required this.url, this.user});
-  EventsInfoEditState createState() => EventsInfoEditState(url: url, user: user);
+  EventsInfoEditState createState() =>
+      EventsInfoEditState(url: url, user: user);
 }
 
 class EventsInfoEditState extends State<EventsInfoEdit> {
   final String url;
   final User user;
   EventsInfoEditState({@required this.url, this.user});
-  //TextEditingController controller = TextEditingController();
   String textString = "";
   bool isSwitched = false;
   List setval = List();
   List assignedMembers;
   List members = [];
+  List displayMembers = List();
 
-  var photo = null;
+  File photo;
   Map data = Map();
   File croppedFile;
+  bool uploaded;
 
   @override
   void initState() {
@@ -39,149 +43,41 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     getdata();
   }
 
-  Map jsonstr = {
-    "@type": "project",
-    "title": "Project by api 4",
-    "description": "Project for tessting purposes",
-    "contributors": [],
-    "start": "2019-06-12T17:20:00+00:00",
-    "end": "2020-06-17T19:00:00+00:00",
-    "whole_day": false,
-    "open_end": false,
-    "sync_uid": null,
-    "contact_name": "",
-    "contact_email": "",
-    "contact_phone": "",
-    "event_url": null,
-    "location": "Office Quito",
-    "recurrence": null,
-    "image": {
-      "filename": "test.jpg",
-      "content-type": "image/jpeg",
-      "data": "",
-      "encoding": "base64"
-    },
-    "image_caption": "Image captions",
-    "text": {
-      "content-type": "text/html",
-      "data":
-          "<h1><em><strong>This event is just for test that starts at 12 today and goes on until I feel like it should stop</strong></em></h1>",
-      "encoding": "utf-8"
-    },
-    "changeNote": null
-  };
-
-  Future<void> _optionsDialogBox() {
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: new SingleChildScrollView(
-              child: new ListBody(
-                children: <Widget>[
-                  GestureDetector(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text('Take a photo'),
-                        Icon(Icons.camera)
-                      ],
-                    ),
-                    onTap: () {
-                      openimg(ImageSource.camera);
-                    },
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                  ),
-                  GestureDetector(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text('Select from gallery'),
-                        Icon(Icons.image)
-                      ],
-                    ),
-                    onTap: () {
-                      openimg(ImageSource.gallery);
-                    },
-                  ),
-                ],
-              ),
-            ),
-          );
-        });
-  }
+  Map jsonstr = Jsons.projectsjson;
 
   Future<String> getdata() async {
-    var resp = await http.get(url, headers: {
-      "Accept": "application/json",
-      "Authorization": "Bearer ${widget.user.ploneToken}",
-    });
-    print(resp.statusCode);
-    data = json.decode(resp.body);
-    if (data["contributors"] != null){
-    assignedMembers = data["contributors"].isEmpty ? null 
-    : json.decode(data["contributors"][0]);}
+    Map netdata = await NetManager.getProjectEditData(url);
+    data = netdata["data"];
+    var file = netdata["file"];
+    assignedMembers = netdata["assignedMembers"];
     setState(() {
-      photo = data['image'] == null? null
-          : Image.network(data['image']['download']);
+      photo = data['image'] == null ? null : file;
+    });
+
+      displayMembers = await UsersManager.getmatchingusers(data["members"]);
+    setState(() {
+      displayMembers = displayMembers;
     });
 
     return "Success!";
   }
 
-  Future openimg(ImageSource source) async {
-    var file = await ImagePicker.pickImage(source: source);
-    if (file != null){
-      cropImage(file);
-      file = photo;
-    }
-      var base64Image = file != null ? base64Encode(file.readAsBytesSync()) : "";
-      jsonstr["image"]["data"] = base64Image;
-    
-  }
-
-  Future cropImage(File imageFile) async {
-    croppedFile = await ImageCropper.cropImage(
-      toolbarColor: Color(0xff7e1946),
-      statusBarColor: Colors.blueGrey,
-      toolbarWidgetColor: Colors.white,
-      sourcePath: imageFile.path,
-      ratioX: 1.0,
-      ratioY: 1.0,
-      maxWidth: 512,
-      maxHeight: 512,
-    );
-    setState(() {
-      photo = Image.file(croppedFile);
-    });
-    Navigator.of(context, rootNavigator: true).pop(context);
-  }
-
   Future<String> uploadPatch() async {
-    var file = photo == null ? File('assets/images/default-image.jpg'): photo;
-    String imgstring = croppedFile == null ? "" 
-    : base64Encode(croppedFile.readAsBytesSync());
+    var file = photo == null ? File('assets/images/default-image.jpg') : photo;
+    String imgstring =
+        croppedFile == null ? "" : base64Encode(croppedFile.readAsBytesSync());
     jsonstr["image"]["data"] = data["image"] != null
-        ? base64Encode(file.readAsBytesSync()) : imgstring;
-    var resp = await http.patch(url,
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": "Bearer ${widget.user.ploneToken}",
-        },
-        body: jsonEncode(jsonstr));
-    print(resp.statusCode);
+        ? base64Encode(file.readAsBytesSync())
+        : imgstring;
+    int respcode = await NetManager.editProject(url, jsonstr); // NEW
+    if (respcode != 204){
+      //UploadQueue.addproject(url, jsonstr);
+    }
     return "Success!";
   }
 
   Widget inputWidget(
-      {icon: Icon, use_switch = "", txt: Text, drop: DropdownButton}) {
-    setState(() {
-      jsonstr[txt] = data[txt];
-    });
-
+      {icon: Icon, useswitch = "", txt: Text, drop: DropdownButton}) {
     String diplaytxt = txt.replaceAll(new RegExp(r'_'), ' ');
     diplaytxt = '${diplaytxt[0].toUpperCase()}${diplaytxt.substring(1)}';
     double width = MediaQuery.of(context).size.width;
@@ -189,30 +85,26 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
       diplaytxt,
       style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
     );
-    var text = TextFormField(
-      initialValue: jsonstr[txt].runtimeType == String ? jsonstr[txt] : '',
+    var text = TextField(
       autocorrect: true,
-      //controller: controller,
       textAlign: TextAlign.justify,
       decoration: InputDecoration(
-        labelText: diplaytxt,
+        helperText: diplaytxt,
+        hintText: data[txt].runtimeType == String ? data[txt] : "",
         contentPadding: EdgeInsets.all(14.0),
       ),
-      onFieldSubmitted: (string) {
+      onChanged: (string) {
         setState(() {
+          print(jsonstr[txt]);
           jsonstr[txt] = string;
-          //print(jsonstr);
         });
       },
-      onEditingComplete: () {
-        //controller.clear();
-      },
     );
-    var switch_true = Switch(
-        value: jsonstr[use_switch] == true ? true : false,
+    var switchtrue = Switch(
+        value: jsonstr[useswitch] == true ? true : false,
         onChanged: (value) {
           setState(() {
-            jsonstr[use_switch] = value;
+            jsonstr[useswitch] = value;
           });
         });
     return Container(
@@ -228,7 +120,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                   Padding(
                       padding: EdgeInsets.only(left: 4.0, right: 8.0),
                       child: icon),
-                  use_switch == ""
+                  useswitch == ""
                       ? Container(
                           width: width * .7,
                           child: text,
@@ -237,7 +129,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                           width: width * .7,
                           child: padtext,
                         ),
-                  use_switch == "" ? Text("") : switch_true
+                  useswitch == "" ? Text("") : switchtrue
                 ],
               ),
             ],
@@ -266,9 +158,14 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                     size: 80.0,
                     color: Colors.white,
                   )
-                : photo,
-            onPressed: () {
-              _optionsDialogBox();
+                : Image.file(photo),
+            onPressed: () async {
+              File newimg = await ImgManager.optionsDialogBox(context);
+              if (newimg != null) {
+                setState(() {
+                  photo = newimg;
+                });
+              }
             },
           ),
         ),
@@ -294,52 +191,56 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                 ),
               )),
         ),
-        Container(
-          height: 100.0,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: assignedMembers == null ? 0 : assignedMembers.length,
-            itemBuilder: (context, index) {
-              return Container(
-                  child: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Column(
-                        children: <Widget>[
-                          FlatButton(
-                            child: CircleAvatar(
-                              radius: 20.0,
-                              backgroundImage:  assignedMembers[index]["portrait"] == null ? 
-                                AssetImage('assets/images/default-image.jpg') :
-                                NetworkImage(assignedMembers[index]["portrait"]),
-                              backgroundColor: Colors.transparent,
+          Container(
+            height: 100.0,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: displayMembers == null ? 0 : displayMembers.length,
+              itemBuilder: (context, index) {
+                return Container(
+                    child: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Column(
+                          children: <Widget>[
+                            FlatButton(
+                              child: CircleAvatar(
+                                radius: 20.0,
+                                backgroundImage:
+                                    displayMembers[index]["portrait"] == null
+                                        ? AssetImage(
+                                            'assets/images/default-image.jpg')
+                                        : NetworkImage(
+                                            displayMembers[index]["portrait"]),
+                                backgroundColor: Colors.transparent,
+                              ),
+                              onPressed: () => Navigator.push(context,
+                                      MaterialPageRoute(builder: (context) {
+                                    return UserInfo(
+                                        userinfo: displayMembers[index]);
+                                  })),
                             ),
-                            onPressed: () => Navigator.push(context,
-                                    MaterialPageRoute(builder: (context) {
-                                  return UserInfo(userinfo: assignedMembers[index]);
-                                })),
-                          ),
-                          Text(
-                            "${assignedMembers[index]["fullname"]}",
-                            textAlign: TextAlign.center,
-                            softWrap: true,
-                            maxLines: 2,
-                          ),
-                        ],
-                      )));
-            },
+                            Text(
+                              "${displayMembers[index]["fullname"]}",
+                              textAlign: TextAlign.center,
+                              softWrap: true,
+                              maxLines: 2,
+                            ),
+                          ],
+                        )));
+              },
+            ),
           ),
-        ),
         inputWidget(icon: Icon(Icons.title), txt: jsonstr.keys.elementAt(1)),
         inputWidget(
             icon: Icon(Icons.import_contacts), txt: jsonstr.keys.elementAt(2)),
         inputWidget(
             icon: Icon(Icons.access_time),
             txt: jsonstr.keys.elementAt(6),
-            use_switch: jsonstr.keys.elementAt(6)),
+            useswitch: jsonstr.keys.elementAt(6)),
         inputWidget(
             icon: Icon(Icons.timer_off),
             txt: jsonstr.keys.elementAt(7),
-            use_switch: jsonstr.keys.elementAt(7)),
+            useswitch: jsonstr.keys.elementAt(7)),
         inputWidget(icon: Icon(Icons.contacts), txt: jsonstr.keys.elementAt(9)),
         inputWidget(icon: Icon(Icons.email), txt: jsonstr.keys.elementAt(10)),
         inputWidget(icon: Icon(Icons.phone), txt: jsonstr.keys.elementAt(11)),
@@ -349,7 +250,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           uploadPatch();
-          Navigator.of(context, rootNavigator: true).pop(context);
+          Navigator.pop(context, uploaded);
         },
         tooltip: 'Create Project',
         child: Icon(Icons.check),

@@ -1,7 +1,5 @@
-import 'dart:io';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'helperclasses/saver.dart';
+import 'package:quito_1/helperclasses/netmanager.dart';
 import 'helperclasses/urls.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
@@ -9,10 +7,8 @@ import 'package:provider/provider.dart';
 import 'helperclasses/user.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'membersview.dart';
-import 'dart:convert';
 import 'eventsinfo.dart';
 import 'eventsinfoedit.dart';
 import 'tasks.dart';
@@ -49,8 +45,8 @@ class OpenScreenState extends State<OpenScreen> {
   bool isLoading = true;
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   final User user;
-  OpenScreenState({this.user});
   final String url = Urls.projects;
+  OpenScreenState({this.user});
   List data = List();
   Widget appBarTitle = Text('Projects');
   Icon actionIcon = Icon(Icons.search);
@@ -167,88 +163,23 @@ class OpenScreenState extends State<OpenScreen> {
   }
 
   Future getSWData() async {
-    try {
-      var response = await http.get(url, headers: {
-        "Accept": "application/json",
-        "Authorization": 'Bearer ${widget.user.ploneToken}'
-      });
-      var resBody = json.decode(response.body);
-      data = resBody["items"];
-      for (var i in data) {
-        i = i as Map;
-      }
 
-      List filterProjects = List();
-      Map projectsData = Map();
-      Future<String> getimglink(int i) async {
-        try {
-          var resp = await http.get(data[i]["@id"], headers: {
-            "Accept": "application/json",
-            "Authorization": 'Bearer ${widget.user.ploneToken}'
-          });
-          respBody = json.decode(resp.body);
-          if (respBody != null) {
-            String imageLink = respBody["image"]["scales"]["thumb"]["download"];
-            if (respBody['members'].contains(widget.user.username)) {
-              data[i].putIfAbsent('id', () => respBody['id']);
-              data[i].putIfAbsent('thumbnail', () => imageLink);
-              filterProjects.add(data[i]);
-              projectsData.putIfAbsent(respBody['id'], () => data[i]);
-            }
-            return imageLink;
-          }
-        } catch (err) {
-          print(err);
-          Flushbar(
-            flushbarPosition:FlushbarPosition.BOTTOM,
-            duration: Duration(seconds: 3),
-            message: "Error Fetching project data",
-          )..show(context);
-        }
-      }
+    data = await NetManager.getProjectsData();
+    setState(() {
+      data = data;
+      print(data);
+    });
 
-      for (var i = 0; i < data.length; i++) {
-        var imgs = await getimglink(i);
-        if (imgs != null) {
-          data[i] = data[i];
-          data[i]['image'] = imgs;
-        }
-      }
-      // set data state and save json for online use when this try block works
-      setState(() {
-        data = filterProjects;
-        Saver.setData(data: filterProjects, name: "projectsdata");
-        projects = projectsData;
-      });
-
-      return "Success!";
-    } 
-    catch (err) {
-      print(err);
-      //data is empty so get saved data when try block fails
-      data = await Saver.getData(name: "projectsdata");
-      setState(() {
-        data = data;
-      });
-    }    
   }
 
   Future delete(int index) async {
-    String url = data[index]["@id"];
-    try {
-      var resp = await http.delete(
-        url,
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": 'Bearer ${widget.user.ploneToken}'
-        },
-      );
-      return "Success!";
-    } catch (err) {
-      // internet is not conected if this block fails
-      internet = false;
-      print(err);
+    print(index);
+    print(data);
+    print(data[index]);
+    var response = await NetManager.delete(data[index]["@id"]);
+    if (response == 204) {
+      data.removeAt(index);
+      getSWData();
     }
   }
 
@@ -270,6 +201,7 @@ class OpenScreenState extends State<OpenScreen> {
                     ListTile(
                       contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
                       onTap: () {
+                        print(index);
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
                           return TaskList(
@@ -326,11 +258,16 @@ class OpenScreenState extends State<OpenScreen> {
                   caption: 'Edit',
                   color: Colors.blue,
                   icon: Icons.edit,
-                  onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return EventsInfoEdit(
-                            url: data[index]["@id"], user: user);
-                      })),
+                  onTap: () async {
+                    bool uploaded = await Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return EventsInfoEdit(
+                          url: data[index]["@id"], user: user);
+                    }));
+                    if (uploaded == true) {
+                      getSWData();
+                    }
+                  },
                 ),
               ],
               secondaryActions: <Widget>[
@@ -338,8 +275,7 @@ class OpenScreenState extends State<OpenScreen> {
                   caption: 'Delete',
                   color: Colors.red,
                   icon: Icons.delete,
-                  onTap: () {
-                    data.removeAt(index);
+                  onTap: () async{
                     delete(index);
                   },
                 ),
