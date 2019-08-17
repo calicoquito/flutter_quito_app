@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'helperclasses/user.dart';
+import 'user.dart';
 
 class ProfileDialog extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     final User user = Provider.of<User>(context);
     return Dialog(
-      backgroundColor: Color(0xff003366),
+      backgroundColor: Colors.white,
       child: Container(
         height: MediaQuery.of(context).size.height*0.2,
         child: Column(

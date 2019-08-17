@@ -21,9 +21,9 @@ dependencies:
     sdk: flutter
   cupertino_icons:
   http: 
-  provider: 
-  firebase_messaging: 
-  cloud_firestore:
+  provider:
+  firebase_core:
+  firebase_messaging:
   flutter_svg:
   image_picker:
   flutter_slidable: "^0.4.9"
@@ -34,6 +34,7 @@ dependencies:
   cached_network_image:
   flushbar: '1.5.3'
   #flutter_uploader:
+
 
     
 dev_dependencies:

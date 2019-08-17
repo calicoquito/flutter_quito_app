@@ -7,26 +7,40 @@ import 'openscreen.dart';
 import 'signinscreen.dart';
 import 'helperclasses/user.dart';
 
-class Router extends StatefulWidget {
+
+
+/// This [StatefulWidget] is used to navigate the user to the 
+/// appropriate opening page as it is used to decide if the user
+/// is logged in or not. If logged in, the user will be sent to
+/// the home screen[OpenScreen] and if not, the user will be sent to the 
+/// sign in screen[SignInScreen]
+///
+///
+
+class Router extends StatefulWidget{
+
   @override
-  _RouterState createState() => _RouterState();
+  RouterState createState() => RouterState();
 }
 
-class _RouterState extends State<Router> {
+class RouterState extends State<Router> {
   bool isSignedIn = false;
+
+
+  void getSignInStatus(){
+    Saver.getSignInState()
+    .then((state){
+      setState(() {
+       isSignedIn = state;
+      });
+    });
+  }
+
 
   @override
   void initState() {
     super.initState();
     getSignInStatus();
-  }
-
-  void getSignInStatus() {
-    Saver.getSignInState().then((state) {
-      setState(() {
-        isSignedIn = state;
-      });
-    });
   }
 
   @override

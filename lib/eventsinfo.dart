@@ -38,10 +38,12 @@ class EventsInfoState extends State<EventsInfo> {
     var base64Image =
         photo != null ? base64Encode(photo.readAsBytesSync()) : "";
     jsonstr["image"]["data"] = base64Image;
+
     int respcode = await NetManager.uploadProject(url, jsonstr);  // NEW
     if (respcode != 204){
       //UploadQueue.addproject(url, jsonstr);
     }
+
     return "Success!";
   }
 

@@ -19,6 +19,7 @@ class MessageState extends State<Message>{
   @override
   void initState(){
     super.initState();
+    color = Scaffold.of(context).widget.backgroundColor;
   }
 
   @override
@@ -33,7 +34,7 @@ class MessageState extends State<Message>{
         if(!isPressed){
           setState(() {
             isPressed=true;
-            color= Colors.blueAccent[100].withOpacity(0.5);
+            color = Colors.blue[300];
             elevation=0.0;
           });
         }
@@ -42,7 +43,7 @@ class MessageState extends State<Message>{
         if(isPressed){
           setState(() {
             isPressed =false;
-            color=Colors.transparent;
+            color= Scaffold.of(context).widget.backgroundColor;
             elevation=1.0;
           });
         }
@@ -53,31 +54,27 @@ class MessageState extends State<Message>{
           alignment: widget.type == 'incoming' ? Alignment.centerLeft : Alignment.centerRight,
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth:MediaQuery.of(context).size.width*0.5),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Card(
-                color: color,
-                child: ListTile(
-                  leading: CircleAvatar(child: Icon(Icons.person),),
-                  title:  widget.type == 'incoming' ?
-                   Text(
-                    widget.username,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16  ,
-                      color: Theme.of(context).primaryColor
-                    ),
-                    softWrap: true,
-                  ) : null,
-                  subtitle: Text(
-                    widget.message,
-                    overflow: TextOverflow.fade,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                    softWrap: true,
+            child: Card(
+              color: Colors.white,
+              child: ListTile(
+                title:  widget.type == 'incoming' ?
+                 Text(
+                  widget.username,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16  ,
+                    color: Theme.of(context).primaryColor
                   ),
+                  softWrap: true,
+                ) : null,
+                subtitle: Text(
+                  widget.message,
+                  overflow: TextOverflow.fade,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                  softWrap: true,
                 ),
               ),
             ),

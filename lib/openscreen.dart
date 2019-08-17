@@ -42,6 +42,7 @@ class OpenScreen extends StatefulWidget {
 }
 
 class OpenScreenState extends State<OpenScreen> {
+  bool isLoading = true;
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   final User user;
   final String url = Urls.projects;
@@ -57,6 +58,7 @@ class OpenScreenState extends State<OpenScreen> {
 
   int count = 1;
   List holder = List();
+  WebSocket socket;
 
   get stringdata => null;
   void setsearchdata() {
@@ -69,13 +71,47 @@ class OpenScreenState extends State<OpenScreen> {
     count += 1;
   }
 
+  void listenForMessages() async{
+    try{
+      socket = await WebSocket.connect(
+        'ws://mattermost.alteroo.com/api/v4/websocket',
+        headers: {'Authorization': 'Bearer ${widget.user.mattermostToken}'}
+      );
+      int seq = -1;
+      socket.listen((data){
+        final jsonData = jsonDecode(data);
+        int newSeq = jsonData['seq'];
+        if(seq<newSeq){
+          if(jsonData['event']=='posted'){
+            final postData = jsonData['data'];
+            final post = jsonDecode(postData['post']);
+            Flushbar(
+              backgroundColor: Theme.of(context).primaryColor,
+              duration: Duration(seconds: 3),
+              flushbarPosition: FlushbarPosition.TOP,
+              messageText: ListTile(
+                title: Text('Channel'),
+                subtitle: Text(post['message']),
+              ) 
+            )..show(context);
+          }
+        }
+        else{
+          seq = newSeq;
+        }
+      });
+    }
+    catch(err){
+      print(err);
+    }
+    
+  }
+
   //Configures the actions taken by the app on notification received
   void firebaseMessagingInit() async {
     firebaseMessaging.configure(onLaunch: (notification) async {
-      print('onLaunch');
       print(notification);
     }, onMessage: (notification) async {
-      print('onMessage');
       print(notification);
       Flushbar(
         flushbarPosition: FlushbarPosition.TOP,
@@ -100,7 +136,6 @@ class OpenScreenState extends State<OpenScreen> {
         ),
       )..show(context);
     }, onResume: (notification) async {
-      print('onResume');
       print(notification);
     });
   }
@@ -112,16 +147,29 @@ class OpenScreenState extends State<OpenScreen> {
     firebaseMessaging.getToken().then((token) {
       //print(token);
     });
+    listenForMessages();
     firebaseMessagingInit();
-    getSWData();
+    getSWData()
+    .then((_){
+      setState((){
+        isLoading = false;
+      });
+    });
+  }
+
+  void dispose(){
+    socket.close();
+    super.dispose();
   }
 
   Future getSWData() async {
+
     data = await NetManager.getProjectsData();
     setState(() {
       data = data;
       print(data);
     });
+
   }
 
   Future delete(int index) async {
@@ -280,7 +328,11 @@ class OpenScreenState extends State<OpenScreen> {
             onRefresh: () async {
               getSWData();
             },
-            child: lst(Icon(Icons.person), data)),
+            child: isLoading ?
+              Center(child: CircularProgressIndicator(),)
+            : data.length ==0 ?
+              Center(child: Text('Start something new today'),)
+            :lst(Icon(Icons.person), data)),
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(

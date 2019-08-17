@@ -15,6 +15,8 @@ class User{
   String _mattermostToken = 'null';
   String _userId= 'null';
   String _email = 'null';
+  String _serverId = 'null';
+  String _sessionId = 'null';
   Map _projects = Map();
   Map _members = Map(); // Map<String, String>
   List _teams= List(); // List<Map<String, String>>
@@ -29,17 +31,19 @@ class User{
     initialize();
   }
 
-  void initialize() async{
-    _email = await _fetchEmail();
-    _username = await _fetchUsername();
-    _password = await _fetchPassword();
-    _ploneToken = await _fetchPloneToken();
-    _mattermostToken = await _fetchMattermostToken();
-    _userId = await _fetchUserId();
-    _isSignedIn = await _fetchSignInStatus();
-    _members = await _fetchMembers();
-    _projects = await _fetchProjects();
-    _teams = await _fetchTeams();
+  void initialize(){
+    _fetchEmail();
+    _fetchUsername();
+    _fetchPassword();
+    _fetchPloneToken();
+    _fetchMattermostToken();
+    _fetchUserId();
+    _fetchServerId();
+    _fetchSessionId();
+    _fetchSignInStatus();
+    _fetchMembers();
+    _fetchProjects();
+    _fetchTeams();
   }
 
   Future<String> _fetchUsername() async {
@@ -152,6 +156,43 @@ class User{
     Saver.setData(name: 'userId', data: userId);
   }
 
+  Future<void> _fetchServerId() async{
+    final result = await Saver.getData(name: 'serverId');
+    if(result==null){
+      return _serverId;
+    }
+    else{
+      _serverId = result;
+       return _serverId;
+    }
+  }
+
+  get serverId => _serverId;
+
+  set serverId(String serverId){
+    _serverId = serverId;
+    Saver.setData(name:'serverId', data: serverId);
+  }
+
+  
+  Future<void> _fetchSessionId() async{
+    final result = await Saver.getData(name: 'sessionId');
+    if(result==null){
+      return _sessionId;
+    }
+    else{
+      _sessionId = result;
+       return _sessionId;
+    }
+  }
+
+  get sessionId => _sessionId;
+
+  set sessionId(String sessionId){
+    _sessionId = sessionId;
+    Saver.setData(name:'sessionId', data: sessionId);
+  }
+
   Future _fetchProjects() async {
    final result = await Saver.getData(name: 'projects');
     if(result==null){
@@ -199,7 +240,9 @@ class User{
     }
   }
 
-  get teams => _teams;
+  get teams{ 
+    return _teams;
+  }
 
   set teams(List teams) {
     _teams = teams;
@@ -231,19 +274,11 @@ class User{
     Saver.setData(name: 'email', data: 'null');
     Saver.setData(name: 'mattermostToken', data: 'null');
     Saver.setData(name: 'ploneToken', data: 'null');
+    Saver.setData(name: 'userId', data: 'null');
+    Saver.setData(name: 'serverId', data: 'null');
     Saver.setData(name: 'teams', data: null);
     Saver.setData(name: 'projects', data: null);
     Saver.setData(name: 'members', data: null);
     Saver.setSignInState(false);
-  }
-
-  static Future <bool> signedin()async{
-    var username = await Saver.getData(name: 'username');
-    if (username.isNotEmpty){
-    return true;
-    }else{
-      return false;
-    }
-
   }
 }
