@@ -83,6 +83,7 @@ class OpenScreenState extends State<OpenScreen> {
       );
       int seq = -1;
       socket.listen((data){
+        print(projects);
         final jsonData = jsonDecode(data);
         int newSeq = jsonData['seq'];
         if(seq<newSeq){
@@ -96,6 +97,9 @@ class OpenScreenState extends State<OpenScreen> {
               messageText: ListTile(
                 title: Text('Channel'),
                 subtitle: Text(post['message']),
+                onTap: (){
+                  
+                },
               ) 
             )..show(context);
           }
