@@ -11,16 +11,16 @@ import 'userinfo.dart';
 
 class Task extends StatefulWidget {
   final User user;
-  String url;
-  Task({@required this.url, this.user});
+  final String projecturl;
+  Task(this.user, this.projecturl);
   @override
-  TaskState createState() => TaskState(url: url, user: user);
+  TaskState createState() => TaskState(user, projecturl);
 }
 
 class TaskState extends State<Task> {
   final User user;
-  String url;
-  TaskState({@required this.url, this.user});
+  final String projecturl;
+  TaskState(this.user, this.projecturl);
   //TextEditingController controller = TextEditingController();
   String textString = "";
   bool isSwitched = false;
@@ -108,14 +108,14 @@ class TaskState extends State<Task> {
                   onPressed: () async {
                     assignedMembers = await Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
-                      return AddMembersPage(user: user);
+                      return AddMembersPage(user, datatype.task, projecturl);
                     }));
                     print(assignedMembers);
                     displayMembers =
                         await UsersManager.getmatchingusers(assignedMembers);
                     setState(() {
                       displayMembers = displayMembers;
-                      taskjson["members"] = json.encode(assignedMembers);
+                      taskjson["members"] = [assignedMembers.join(',')];
                     });
                   },
                   child: Icon(
@@ -171,7 +171,7 @@ class TaskState extends State<Task> {
           color: Colors.white,
         ),
         onPressed: () {
-          NetManager.uploadTask(url, taskjson);
+          NetManager.uploadTask(projecturl, taskjson);
           Navigator.of(context, rootNavigator: true).pop(context);
         },
       ),

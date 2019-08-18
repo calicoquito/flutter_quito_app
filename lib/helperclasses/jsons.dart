@@ -4,7 +4,7 @@ class Jsons{
     "@type": "project",
     "title": "Untitled",
     "description": "No description",
-    "contributors": [],
+    "members": [],
     "start": "2019-06-12T17:20:00+00:00",
     "end": "2020-06-17T19:00:00+00:00",
     "whole_day": false,
@@ -42,7 +42,8 @@ class Jsons{
       "encoding": "utf-8"
     },
     "additional_files": null,
-    "contributors": [],
+    "members": [],
+    "details": "check this?",
     "complete": false
   };
 

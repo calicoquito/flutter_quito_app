@@ -7,7 +7,6 @@ import 'addmembers.dart';
 import 'helperclasses/imgmanager.dart';
 import 'helperclasses/jsons.dart';
 import 'helperclasses/netmanager.dart';
-import 'helperclasses/uploadqueue.dart';
 import 'helperclasses/user.dart';
 import 'helperclasses/usersmanager.dart';
 import 'userinfo.dart';
@@ -27,7 +26,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   String textString = "";
   bool isSwitched = false;
   List setval = List();
-  List assignedMembers;
+  List<String> assignedMembers;
   List members = [];
   List displayMembers = List();
 
@@ -39,7 +38,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   @override
   void initState() {
     super.initState();
-    print(url);
+    //print(url);
     getdata();
   }
 
@@ -49,12 +48,14 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     Map netdata = await NetManager.getProjectEditData(url);
     data = netdata["data"];
     var file = netdata["file"];
-    assignedMembers = netdata["assignedMembers"];
+    //assignedMembers = netdata["assignedMembers"];
     setState(() {
       photo = data['image'] == null ? null : file;
     });
+    //print('${data["members"]}');
 
-      displayMembers = await UsersManager.getmatchingusers(data["members"]);
+    displayMembers = await UsersManager.getmatchingusers(data['members']);
+    print(data["members"]);
     setState(() {
       displayMembers = displayMembers;
     });
@@ -70,7 +71,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
         ? base64Encode(file.readAsBytesSync())
         : imgstring;
     int respcode = await NetManager.editProject(url, jsonstr); // NEW
-    if (respcode != 204){
+    if (respcode != 204) {
       //UploadQueue.addproject(url, jsonstr);
     }
     return "Success!";
@@ -95,7 +96,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
       ),
       onChanged: (string) {
         setState(() {
-          print(jsonstr[txt]);
+          //print(jsonstr[txt]);
           jsonstr[txt] = string;
         });
       },
@@ -154,11 +155,12 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
             color: Colors.black54,
             child: photo == null
                 ? Icon(
-                    Icons.add_a_photo,
-                    size: 80.0,
-                    color: Colors.white,
-                  )
-                : Image.file(photo),
+                      Icons.add_a_photo,
+                      size: 80.0,
+                      color: Colors.white,
+                    )
+                : 
+                Image.file(photo),
             onPressed: () async {
               File newimg = await ImgManager.optionsDialogBox(context);
               if (newimg != null) {
@@ -177,12 +179,13 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                 onPressed: () async {
                   assignedMembers = await Navigator.push(context,
                       MaterialPageRoute(builder: (context) {
-                    return AddMembersPage(user: user);
+                    return AddMembersPage(user, datatype.project, url);
                   }));
+                  displayMembers =
+                      await UsersManager.getmatchingusers(assignedMembers);
                   setState(() {
-                    jsonstr["contributors"] = json.encode(assignedMembers);
-
-                    print(jsonstr["contributors"]);
+                    jsonstr["members"] = assignedMembers == null ? null : [assignedMembers.join(',')];
+                    displayMembers = displayMembers;
                   });
                 },
                 child: Icon(
@@ -191,45 +194,45 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                 ),
               )),
         ),
-          Container(
-            height: 100.0,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: displayMembers == null ? 0 : displayMembers.length,
-              itemBuilder: (context, index) {
-                return Container(
-                    child: Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Column(
-                          children: <Widget>[
-                            FlatButton(
-                              child: CircleAvatar(
-                                radius: 20.0,
-                                backgroundImage:
-                                    displayMembers[index]["portrait"] == null
-                                        ? AssetImage(
-                                            'assets/images/default-image.jpg')
-                                        : NetworkImage(
-                                            displayMembers[index]["portrait"]),
-                                backgroundColor: Colors.transparent,
-                              ),
-                              onPressed: () => Navigator.push(context,
-                                      MaterialPageRoute(builder: (context) {
-                                    return UserInfo(
-                                        userinfo: displayMembers[index]);
-                                  })),
+        Container(
+          height: 100.0,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: displayMembers == null ? 0 : displayMembers.length,
+            itemBuilder: (context, index) {
+              return Container(
+                  child: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Column(
+                        children: <Widget>[
+                          FlatButton(
+                            child: CircleAvatar(
+                              radius: 20.0,
+                              backgroundImage:
+                                  displayMembers[index]["portrait"] == null
+                                      ? AssetImage(
+                                          'assets/images/default-image.jpg')
+                                      : NetworkImage(
+                                          displayMembers[index]["portrait"]),
+                              backgroundColor: Colors.transparent,
                             ),
-                            Text(
-                              "${displayMembers[index]["fullname"]}",
-                              textAlign: TextAlign.center,
-                              softWrap: true,
-                              maxLines: 2,
-                            ),
-                          ],
-                        )));
-              },
-            ),
+                            onPressed: () => Navigator.push(context,
+                                    MaterialPageRoute(builder: (context) {
+                                  return UserInfo(
+                                      userinfo: displayMembers[index]);
+                                })),
+                          ),
+                          Text(
+                            "${displayMembers[index]["fullname"]}",
+                            textAlign: TextAlign.center,
+                            softWrap: true,
+                            maxLines: 2,
+                          ),
+                        ],
+                      )));
+            },
           ),
+        ),
         inputWidget(icon: Icon(Icons.title), txt: jsonstr.keys.elementAt(1)),
         inputWidget(
             icon: Icon(Icons.import_contacts), txt: jsonstr.keys.elementAt(2)),

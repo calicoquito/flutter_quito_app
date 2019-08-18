@@ -5,11 +5,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quito_1/helperclasses/jsons.dart';
-
+import 'helperclasses/usersmanager.dart';
 import 'addmembers.dart';
 import 'helperclasses/imgmanager.dart';
 import 'helperclasses/netmanager.dart';
-import 'helperclasses/uploadqueue.dart';
 import 'helperclasses/urls.dart';
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
@@ -32,6 +31,8 @@ class EventsInfoState extends State<EventsInfo> {
   File croppedFile;
   bool uploaded;
   List assignedMembers = [];
+  List displayMembers = List();
+
   Map jsonstr = Jsons.projectsjson;
 
   Future<String> uploadImg() async {
@@ -39,14 +40,13 @@ class EventsInfoState extends State<EventsInfo> {
         photo != null ? base64Encode(photo.readAsBytesSync()) : "";
     jsonstr["image"]["data"] = base64Image;
 
-    int respcode = await NetManager.uploadProject(url, jsonstr);  // NEW
-    if (respcode != 204){
+    int respcode = await NetManager.uploadProject(url, jsonstr); // NEW
+    if (respcode != 204) {
       //UploadQueue.addproject(url, jsonstr);
     }
 
     return "Success!";
   }
-
 
   Widget inputWidget(
       {icon: Icon, useswitch = "", txt: Text, drop: DropdownButton}) {
@@ -131,12 +131,11 @@ class EventsInfoState extends State<EventsInfo> {
                     color: Colors.white,
                   )
                 : Image.file(photo),
-            onPressed: ()async{
+            onPressed: () async {
               File newimg = await ImgManager.optionsDialogBox(context);
-              setState((){
+              setState(() {
                 photo = newimg;
               });
-              
             },
           ),
         ),
@@ -148,18 +147,15 @@ class EventsInfoState extends State<EventsInfo> {
                 onPressed: () async {
                   assignedMembers = await Navigator.push(context,
                       MaterialPageRoute(builder: (context) {
-                    return AddMembersPage(user: user);
+                    return AddMembersPage(user, datatype.project, url);
                   }));
-
-                  setState(() {
-                    assignedMembers =
-                        assignedMembers == null ? [] : assignedMembers;
-                    jsonstr["contributors"] = json.encode(assignedMembers);
-
-                    for (var i in assignedMembers) {
-                      jsonstr["contributors"].add(json.encode(i));
-                    }
-                  });
+                    print(assignedMembers);
+                    displayMembers =
+                        await UsersManager.getmatchingusers(assignedMembers);
+                    setState(() {
+                      displayMembers = displayMembers;
+                      jsonstr["members"] = [assignedMembers.join(',')];
+                    });
                 },
                 child: Icon(
                   Icons.group_add,
@@ -171,7 +167,7 @@ class EventsInfoState extends State<EventsInfo> {
           height: 100.0,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: assignedMembers == null ? 0 : assignedMembers.length,
+            itemCount: displayMembers == null ? 0 : displayMembers.length,
             itemBuilder: (context, index) {
               return Container(
                   child: Padding(
@@ -182,21 +178,21 @@ class EventsInfoState extends State<EventsInfo> {
                             child: CircleAvatar(
                               radius: 20.0,
                               backgroundImage:
-                                  assignedMembers[index]["portrait"] == null
+                                  displayMembers[index]["portrait"] == null
                                       ? AssetImage(
                                           'assets/images/default-image.jpg')
                                       : NetworkImage(
-                                          assignedMembers[index]["portrait"]),
+                                          displayMembers[index]["portrait"]),
                               backgroundColor: Colors.transparent,
                             ),
                             onPressed: () => Navigator.push(context,
                                     MaterialPageRoute(builder: (context) {
                                   return UserInfo(
-                                      userinfo: assignedMembers[index]);
+                                      userinfo: displayMembers[index]);
                                 })),
                           ),
                           Text(
-                            "${assignedMembers[index]["fullname"]}",
+                            "${displayMembers[index]["fullname"]}",
                             textAlign: TextAlign.center,
                             softWrap: true,
                             maxLines: 2,
