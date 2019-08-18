@@ -8,13 +8,15 @@ import 'urls.dart';
 
 class NetManager {
   static User user;
+  static Map projects = Map();
+  static Map<String, dynamic> channels = Map();
+  
 
   static Future<List> getProjectsData() async {
-    print('Bearer ${user.ploneToken}');
     String url = Urls.projects;
     List data = List();
-    Map projects = Map();
-
+    List filterProjects = List();
+    Map projectsData = Map();
     try {
       var response = await http.get(url, headers: {
         "Accept": "application/json",
@@ -28,8 +30,6 @@ class NetManager {
         i = i as Map;
       }
 
-      List filterProjects = List();
-      Map projectsData = Map();
       Future getimglink(int i) async {
         try {
           var resp = await http.get(data[i]["@id"], headers: {
@@ -65,7 +65,7 @@ class NetManager {
       Saver.setData(data: data, name: "projectsdata");
       projects = projectsData;
 
-      return data;
+      return filterProjects;
     } catch (err) {
       print(err);
       //data is empty so get saved data when try block fails
@@ -261,5 +261,37 @@ class NetManager {
       print(err);
     }
     return resp.statusCode;
+  }
+
+// Gets the Mattermost channels which will be used to create each chat
+  static Future<Map> getChannels() async{
+    try{
+      List teamEndpoints = user.teams.map((team){
+        return 'http://mattermost.alteroo.com/api/v4/users/${user.userId}/teams/${team['id']}/channels';
+      }).toList();
+
+      List<Future> requests = teamEndpoints.map((endpoint){
+        return http.get(
+          endpoint,
+          headers: {'Authorization':'Bearer ${user.mattermostToken}'}
+        );
+      }).toList();
+      
+      final responses = await Future.wait(requests).catchError((err){print('Error awaiting all responses');});
+      responses.forEach((resp){
+        final json = jsonDecode(resp.body);
+        final channelsList = json.where((channel){
+          bool isMember = projects.keys.toList().contains(channel['name']);
+          return isMember;
+        }).toList();
+        channelsList.forEach((channel){
+          channels.putIfAbsent(channel['id'], ()=>channel);
+        });
+      });
+    }
+    catch(err){
+      print(err);
+    }
+    return channels;
   }
 }

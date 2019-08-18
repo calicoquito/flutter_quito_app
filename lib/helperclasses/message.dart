@@ -1,30 +1,25 @@
 import 'package:flutter/material.dart';
 
 class Message extends StatefulWidget{
-  final String username;
-  final String message;
-  final String type;
+  final String username; // the sender of the message 
+  final String message; // the text content of the message
+  final String type; // the type of message, incoming or outgoing
   @override
   Message({Key key, this.message, this.username, this.type}):super(key:key);
 
   @override
-  MessageState createState() => MessageState();
+  _MessageState createState() => _MessageState();
 }
 
-class MessageState extends State<Message>{
-  Color color;
-  double elevation;
-  bool isPressed=false;
+class _MessageState extends State<Message>{
+  Color color; //  the color of the widget to indicate being selected or not
+  double elevation; // the elevation of the widget material
+  bool isPressed=false; 
 
   @override
   void initState(){
     super.initState();
     color = Scaffold.of(context).widget.backgroundColor;
-  }
-
-  @override
-  void dispose(){
-    super.dispose();  
   }
 
   @override
@@ -55,19 +50,36 @@ class MessageState extends State<Message>{
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth:MediaQuery.of(context).size.width*0.5),
             child: Card(
-              color: Colors.white,
-              child: ListTile(
-                title:  widget.type == 'incoming' ?
-                 Text(
-                  widget.username,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16  ,
-                    color: Theme.of(context).primaryColor
-                  ),
-                  softWrap: true,
-                ) : null,
-                subtitle: Text(
+              color: widget.type =='incoming' ? Colors.blue : Colors.green,
+              child:  Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: widget.type == 'incoming' 
+                ?Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      widget.username,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Theme.of(context).primaryColor
+                      ),
+                      softWrap: true,
+                    ),
+                    Text(
+                      'widget.messagejkb;kadb;kbdaaibiuviuvjhjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjviuvkviuvuivijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj',
+                      overflow: TextOverflow.fade,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      softWrap: true,
+                    ),
+                  ],
+                )
+                :Text(
                   widget.message,
                   overflow: TextOverflow.fade,
                   style: TextStyle(
@@ -76,7 +88,7 @@ class MessageState extends State<Message>{
                   ),
                   softWrap: true,
                 ),
-              ),
+              )
             ),
           ),
         ),

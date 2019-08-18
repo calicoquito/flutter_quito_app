@@ -1,7 +1,7 @@
 import 'saver.dart';
 
 /*
- * This is used to pass the user's
+ * This singleton is used to pass the user's
  * information down the widget tree as the user 
  * traverses the app
  */
@@ -11,15 +11,27 @@ class User{
   bool _isSignedIn = false;
   String _username = 'null';
   String _password = 'null';
-  String _ploneToken = 'null';
-  String _mattermostToken = 'null';
-  String _userId= 'null';
+  String _ploneToken = 'null'; // used to authorize all plone requests
+  String _mattermostToken = 'null'; // used to authorize all mattermot requests
+  String _userId= 'null'; // the user's mattermost id
   String _email = 'null';
-  String _serverId = 'null';
-  String _sessionId = 'null';
+  String _serverId = 'null'; // the mattermost server id
+  String _sessionId = 'null'; // the current logged-in session id
+  
+  // all the projects the user is involved in and indexed by their project id
+  // This project id is the same as the mattermost channel id for which the project corresponsed to
   Map _projects = Map();
+  
+  // All the members in the same team as the user
   Map _members = Map(); // Map<String, String>
+
+  // a list of all the mattermost team the user is included in. 
+  // This should most of the times be 1
   List _teams= List(); // List<Map<String, String>>
+
+  // all the channels/projects the user is included in and indexed by their channel name
+  // instead of the channel id/project id
+  Map _channels = Map(); // Map<String, dynamic>
 
 
   static final User _user = User._internal();
@@ -44,7 +56,12 @@ class User{
     _fetchMembers();
     _fetchProjects();
     _fetchTeams();
+    _fetchChannels();
   }
+
+  // Saver is the class that is used to manage storing  and retreiving 
+  // data to and from local storage using SharedPreferences
+  // See saver.dart as lib/helperclasses/saver.dart for more.
 
   Future<String> _fetchUsername() async {
     final result = await Saver.getData(name: 'username');
@@ -249,6 +266,26 @@ class User{
     Saver.setData(name: 'teams', data: teams);
   }
 
+  Future _fetchChannels() async {
+    final result = await Saver.getData(name: 'channels');
+    if(result==null){
+      return channels;
+    }
+    else{
+      _channels = result;
+       return _channels;
+    }
+  }
+
+  get channels{ 
+    return _channels;
+  }
+
+  set channels(Map channels) {
+    _channels = channels;
+    Saver.setData(name: 'channels', data: channels);
+  }
+
   Future<bool> _fetchSignInStatus() async{
     final result = await Saver.getSignInState();
     if(result==null){
@@ -266,19 +303,20 @@ class User{
     await Saver.setSignInState(true);
     _isSignedIn = true;
   }
-
+  //sets all the fields to null to remove the data from local storage
   Future<void> logout() async{
     _isSignedIn = false;
-    Saver.setData(name: 'username', data: 'null');
-    Saver.setData(name: 'password', data: 'null');
-    Saver.setData(name: 'email', data: 'null');
-    Saver.setData(name: 'mattermostToken', data: 'null');
-    Saver.setData(name: 'ploneToken', data: 'null');
-    Saver.setData(name: 'userId', data: 'null');
-    Saver.setData(name: 'serverId', data: 'null');
+    Saver.setData(name: 'username', data: null);
+    Saver.setData(name: 'password', data: null);
+    Saver.setData(name: 'email', data: null);
+    Saver.setData(name: 'mattermostToken', data: null);
+    Saver.setData(name: 'ploneToken', data: null);
+    Saver.setData(name: 'userId', data: null);
+    Saver.setData(name: 'serverId', data: null);
     Saver.setData(name: 'teams', data: null);
     Saver.setData(name: 'projects', data: null);
     Saver.setData(name: 'members', data: null);
+    Saver.setData(name: 'channels', data: null);
     Saver.setSignInState(false);
   }
 }

@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:quito_1/helperclasses/netmanager.dart';
+import 'package:quito_1/openchatscreen.dart';
 import 'helperclasses/urls.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +17,6 @@ import 'eventsinfo.dart';
 import 'eventsinfoedit.dart';
 import 'tasks.dart';
 import 'dart:async';
-
 import 'package:cached_network_image/cached_network_image.dart';
 /*
   The OpenScreen Widget defines the screen a user see immediately after
@@ -34,7 +37,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 */
 
 class OpenScreen extends StatefulWidget {
-  final User user;
+  final User user; // the current logged in user's data
 
   const OpenScreen({Key key, this.user}) : super(key: key);
   @override
@@ -42,11 +45,16 @@ class OpenScreen extends StatefulWidget {
 }
 
 class OpenScreenState extends State<OpenScreen> {
-  bool isLoading = true;
-  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  OpenScreenState({this.user});
+
+  bool isLoading = true; // checks wether the app is still fetching data 
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging(); // used to receive push notification top the app
+  Map projects = Map(); // the projects that the user is involved in 
+  Map<String, dynamic> channels = Map(); // the channel for each chat the user is involved in
+
+
   final User user;
   final String url = Urls.projects;
-  OpenScreenState({this.user});
   List data = List();
   Widget appBarTitle = Text('Projects');
   Icon actionIcon = Icon(Icons.search);
@@ -54,8 +62,7 @@ class OpenScreenState extends State<OpenScreen> {
   var respBody;
   bool internet = true;
   List saveimage = List();
-  Map projects = Map();
-
+  
   int count = 1;
   List holder = List();
   WebSocket socket;
@@ -71,6 +78,12 @@ class OpenScreenState extends State<OpenScreen> {
     count += 1;
   }
 
+  /*
+   * this is a temporary substitute for the push notifications and it is
+   * not currently functional. 
+   * This method displays a clickable Flushbar with the data regarding new messages 
+   * for the user
+   */
   void listenForMessages() async{
     try{
       socket = await WebSocket.connect(
@@ -79,25 +92,57 @@ class OpenScreenState extends State<OpenScreen> {
       );
       int seq = -1;
       socket.listen((data){
-        print(projects);
         final jsonData = jsonDecode(data);
         int newSeq = jsonData['seq'];
         if(seq<newSeq){
           if(jsonData['event']=='posted'){
             final postData = jsonData['data'];
             final post = jsonDecode(postData['post']);
-            Flushbar(
-              backgroundColor: Theme.of(context).primaryColor,
-              duration: Duration(seconds: 3),
-              flushbarPosition: FlushbarPosition.TOP,
-              messageText: ListTile(
-                title: Text('Channel'),
-                subtitle: Text(post['message']),
-                onTap: (){
-                  
+            if(channels.containsKey(post['channel_id'])){
+              Flushbar(
+                onTap: (flushbar){
+                  flushbar.dismiss();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder:(context)=> OpenChatScreen(
+                        title: postData['channel_display_name'],
+                        user: user,
+                        channelId: post['channel_id'],
+                        project: projects[postData['channel_name']],
+                      )
+                    )
+                  );
                 },
-              ) 
-            )..show(context);
+                titleText: Text(
+                  postData['channel_display_name'],
+                  overflow: TextOverflow.fade,
+                ),
+                backgroundColor: Colors.blue,
+                padding: EdgeInsets.all(8),
+                duration: Duration(seconds: 8),
+                flushbarPosition: FlushbarPosition.TOP,
+                messageText: ListTile(
+                  leading: CircleAvatar(
+                    child: projects[postData['channel_name']]['thumbnail']==null
+                    ?Icon(Icons.chat) 
+                    :null,
+                    backgroundImage: projects[postData['channel_name']]['thumbnail']==null
+                    ?null
+                    :NetworkImage(
+                      projects[postData['channel_name']]['thumbnail']
+                    ) ,
+                  ),
+                  title: Text(
+                    user.members[post['user_id']],
+                    overflow: TextOverflow.fade,
+                  ),
+                  subtitle: Text(
+                    post['message'],
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ) 
+              )..show(context);
+            }
           }
         }
         else{
@@ -111,7 +156,8 @@ class OpenScreenState extends State<OpenScreen> {
     
   }
 
-  //Configures the actions taken by the app on notification received
+  // Configures the actions taken by the app on notification received
+  // Currently not funtional
   void firebaseMessagingInit() async {
     firebaseMessaging.configure(onLaunch: (notification) async {
       print(notification);
@@ -144,34 +190,13 @@ class OpenScreenState extends State<OpenScreen> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    //Gets Firebase Cloud Messaging device token for push notifications
-    firebaseMessaging.getToken().then((token) {
-      //print(token);
-    });
-    listenForMessages();
-    firebaseMessagingInit();
-    getSWData()
-    .then((_){
-      setState((){
-        isLoading = false;
-      });
-    });
-  }
-
-  void dispose(){
-    socket.close();
-    super.dispose();
-  }
-
   Future getSWData() async {
-
+    NetManager.user= user;
     data = await NetManager.getProjectsData();
+    channels = await NetManager.getChannels();
+    projects = NetManager.projects;
     setState(() {
       data = data;
-      print(data);
     });
 
   }
@@ -188,9 +213,35 @@ class OpenScreenState extends State<OpenScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    //Initializes Firebase Cloud Messaging for push notifications
+    //Not currently funcional
+    firebaseMessagingInit();
+
+    getSWData()
+    .then((_){
+      setState((){
+        isLoading = false; //Tells when to stop displaying the progres indicator
+      });
+    });
+
+    // listened fot channel/chat messages
+    listenForMessages();
+  }
+
+  void dispose(){
+    socket.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final User user = Provider.of<User>(context);
-    user.projects = projects;
+    user.projects = NetManager.projects;
+    user.channels = NetManager.channels;
+
     Widget lst(Icon ico, List data) {
       return ListView.builder(
           itemCount: data == null ? 0 : data.length,

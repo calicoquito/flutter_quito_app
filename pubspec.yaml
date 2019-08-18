@@ -32,7 +32,7 @@ dependencies:
   shared_preferences:
   flutter_cache_manager:
   cached_network_image:
-  flushbar: '1.5.3'
+  flushbar:
   #flutter_uploader:
 
 
