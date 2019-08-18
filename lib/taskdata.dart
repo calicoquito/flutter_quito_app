@@ -51,7 +51,7 @@ class TaskDataState extends State<TaskData> {
           : "Description: ${data["description"]}";
       //details = data["detail"]["data"] == null ? "Details: " : "Details: ${data["detail"]["data"]}";
       print(data["members"]);
-      print('${data["title"]}, ${data["description"]}, ${data["detail"]}');
+      print('${data["title"]}, ${data["description"]}, ${data["details"]}');
     });
 
     displayMembers = await UsersManager.getmatchingusers(data["members"]);
