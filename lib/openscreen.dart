@@ -62,7 +62,7 @@ class OpenScreenState extends State<OpenScreen> {
   int count = 1;
   List holder = List();
   WebSocket socket;
-
+  List completelist = List();
   get stringdata => null;
   void setsearchdata() {
     if (count == 1) {
@@ -166,6 +166,9 @@ class OpenScreenState extends State<OpenScreen> {
       data = data;
       //print(data);
     });
+    for (var project in data) {
+      await gettasksdata(project['@id']);
+    }
   }
 
   Future getLargeImage(int index) async {
@@ -173,6 +176,18 @@ class OpenScreenState extends State<OpenScreen> {
     return Image.network(
       link,
     );
+  }
+
+  gettasksdata(String url) async {
+    int complete = 0;
+    var list = await NetManager.getTasksData(url);
+    for (var task in list) {
+      Map taskinfo = await NetManager.getTask(task['@id']);
+      if (taskinfo["complete"] == true) {
+        complete += 1;
+      }
+    }
+    completelist.add([complete, list.length]);
   }
 
   Future delete(int index) async {
@@ -185,14 +200,15 @@ class OpenScreenState extends State<OpenScreen> {
 
   @override
   Widget build(BuildContext context) {
-    
     final User user = Provider.of<User>(context);
     user.projects = projects;
     Widget lst(Icon ico, List data) {
       return ListView.builder(
+        
           itemCount: data == null ? 0 : data.length,
           itemBuilder: (BuildContext context, int index) {
             int complete = Random().nextInt(10);
+            completelist[index] = completelist[index] == null ? [0,0] : completelist[index];
             return Slidable(
               delegate: SlidableDrawerDelegate(),
               actionExtentRatio: 0.25,
@@ -267,33 +283,31 @@ class OpenScreenState extends State<OpenScreen> {
                           ),
                         ),
                       ),
-
                       trailing: GestureDetector(
-                          onTap: () {
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (context) {
-                              return Members(
-                                  url: data[index]["@id"], user: user);
-                            }));
-                          },
-                      
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 10.0),
-                        child: CircularPercentIndicator(
-                            radius: 30.0,
-                            lineWidth: 3.0,
-                            animation:true,
-                            percent: complete * .1,
-                            center: new Text("$complete"),
-                            progressColor: Color(0xff7e1946)),
-                      ),),
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return Members(url: data[index]["@id"], user: user);
+                          }));
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 10.0),
+                          child: CircularPercentIndicator(
+                              radius: 30.0,
+                              lineWidth: 3.0,
+                              animation: true,
+                              percent: completelist[index][0] * .1,
+                              center: new Text("${(completelist[index][0])}"),
+                              progressColor: Color(0xff7e1946)),
+                        ),
+                      ),
                       title: Text("${data[index]["title"]} ",
-                      maxLines:1,
-                      overflow: TextOverflow.ellipsis,
-                      style:
-                              TextStyle(fontSize: 18.0,
-                                  color: Colors.grey[800],
-                               fontWeight:FontWeight.w500)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 18.0,
+                              color: Colors.grey[800],
+                              fontWeight: FontWeight.w500)),
                       subtitle: Text("Event type: ${data[index]["@type"]}",
                           style:
                               TextStyle(fontSize: 15.0, color: Colors.black54)),

@@ -21,7 +21,7 @@ class TaskListState extends State<TaskList> {
   final User user;
   TaskListState(this.user, this.projecturl);
   List data = List();
-  List<bool> setval = List();
+  List<bool> switchlist = List();
   Widget appBarTitle = Text('Tasks');
   Icon actionIcon = Icon(Icons.search);
 
@@ -47,19 +47,23 @@ class TaskListState extends State<TaskList> {
 
   Future getSWData() async {
     data = await NetManager.getTasksData(projecturl);
-    for (var i = 0; i == data.length; i++) {
-      setval.add(false);
+    print(data);
+    for (var task in data) {
+      var taskinfo = await NetManager.getTask(task['@id']);
+      print(taskinfo["complete"]);
+      print(task);
+      switchlist.add(taskinfo["complete"] == true ? true : false);
+      // if (data[i]['additiional_files'] == null) {
+      //   data[i]['additiional_files'] = Random().nextInt(15);
+      // }
     }
     setState(() {
       data = data;
-      for (var i in data) {
-        setval.add(false);
-        // if (data[i]['additiional_files'] == null) {
-        //   data[i]['additiional_files'] = Random().nextInt(15);
-        // }
-      }
+      switchlist = switchlist;
     });
   }
+  
+
 
   Future delete(int index) async {
     var response = await NetManager.delete(data[index]["@id"]);
@@ -120,10 +124,16 @@ class TaskListState extends State<TaskList> {
                               style: TextStyle(
                                   fontSize: 15.0, color: Colors.black54)),
                           trailing: Switch(
-                              value: setval[index],
-                              onChanged: (value) {
+                              value: switchlist[index],
+                              onChanged: (value) async {
+                                Map task = await NetManager.getTask(
+                                    data[index]["@id"]);
+                                    print(task);
+                                    task["complete"] = value;
+                                await NetManager.editTask(
+                                    data[index]["@id"], task);
                                 setState(() {
-                                  setval[index] = value;
+                                  switchlist[index] = value;
                                 });
                               }),
                         ),

@@ -156,7 +156,7 @@ class NetManager {
       });
       var resBody = json.decode(response.body);
       // print(user.ploneToken);
-      // print(resBody['items']);
+      print(resBody['items']);
       data = resBody["items"];
       // print(data);
       for (var i = 0; i == data.length; i++) {
@@ -167,7 +167,7 @@ class NetManager {
       //data is empty so get saved data when try block fails
       data = await Saver.getData(name: "$url-tasksdata");
       data = data;
-      for (var i = 0; i == data.length; i++) {
+      for (var i in data) {
         setval.add(false);
       }
       print(data);
@@ -195,7 +195,6 @@ class NetManager {
   }
 
 
-  
   static Future<int> uploadProject(String url, Map json) async {
     var response = await http.post(url,
         headers: {
@@ -244,6 +243,24 @@ class NetManager {
 
   static Future<int> editTask(String url, Map json) async {
     print(json);
+    var response = await http.patch(url,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${user.ploneToken}",
+        },
+        body: jsonEncode(json));
+    print(response.statusCode);
+    if (response.statusCode != 201) {
+      UploadQueue.add(uploadtype.edittask, url, json);
+    }
+    return response.statusCode;
+  }
+
+  static Future<int> editTaskComplete(String url, bool value) async {
+    Map json = {
+          "complete": value,
+    };
     var response = await http.patch(url,
         headers: {
           "Accept": "application/json",

@@ -36,6 +36,7 @@ class Jsons{
     "@type": "task",
     "title": "Untitled",
     "description": "No description",
+    "complete": false,
     "task_detail": {
       "content-type": "text/html",
       "data": "<h2>None</h2>",
@@ -43,8 +44,6 @@ class Jsons{
     },
     "additional_files": null,
     "members": [],
-    "task_detail": "check this?",
-    "complete": false
   };
 
 }

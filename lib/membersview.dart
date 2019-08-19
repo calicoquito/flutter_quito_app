@@ -5,6 +5,7 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'helperclasses/netmanager.dart';
 import 'helperclasses/usersmanager.dart';
 import 'helperclasses/user.dart';
 import 'userinfo.dart';
@@ -22,11 +23,12 @@ class MembersState extends State<Members> {
   MembersState({@required this.url, this.user});
   List data = List();
   List newdata = List();
-
+  List completelist = List();
   @override
   void initState() {
     super.initState();
     getData();
+    gettasksdata(url);
   }
 
   Future<String> getData() async {
@@ -50,6 +52,19 @@ class MembersState extends State<Members> {
     });
     return "Success!";
   }
+
+  gettasksdata(String url) async {
+    int complete = 0;
+    var list = await NetManager.getTasksData(url);
+    for (var task in list) {
+      Map taskinfo = await NetManager.getTask(task['@id']);
+      if (taskinfo["complete"] == true) {
+        complete += 1;
+      }
+    }
+    completelist.add([complete, list.length]);
+  }
+
 
   Widget inputWidget(List data) {
     return ListView.builder(
@@ -107,8 +122,8 @@ class MembersState extends State<Members> {
                 radius: height*0.2,
                 lineWidth: 5.0,
                 animation:true,
-                percent: percent * .01,
-                center: new Text("$percent%"),
+                percent: 9 * .1,
+                center: new Text("20%"),
                 progressColor: Color(0xff7e1946)),
           ),
           Container(
