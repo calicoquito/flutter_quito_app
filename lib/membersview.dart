@@ -90,20 +90,21 @@ class MembersState extends State<Members> {
 
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
     var percent = Random().nextInt(100);
     return Scaffold(
       appBar: AppBar(
           title: Text(
-        'Assigned Members',
+        'Project Details',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
       body: Container(
           child: Column(
         children: <Widget>[
           Container(
-            height: 150.0,
+            height: height*0.25,
             child: CircularPercentIndicator(
-                radius: 100.0,
+                radius: height*0.2,
                 lineWidth: 5.0,
                 animation:true,
                 percent: percent * .01,
@@ -111,7 +112,7 @@ class MembersState extends State<Members> {
                 progressColor: Color(0xff7e1946)),
           ),
           Container(
-            height: 100,
+            height: height*0.6,
             child: inputWidget(data),
           )
         ],

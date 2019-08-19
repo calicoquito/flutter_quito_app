@@ -87,9 +87,6 @@ class TaskListState extends State<TaskList> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      Divider(
-                        height: 10.0,
-                      ),
                       Card(
                         child: ListTile(
                           contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
@@ -110,11 +107,18 @@ class TaskListState extends State<TaskList> {
                                 // Colors.primaries[data[index]['additiional_files']]  :
                                 Colors.primaries[Random().nextInt(15)],
                           ),
-                          title: Text("Task Name: ${data[index]["title"]}"),
-                          subtitle: Text(
-                              "Task Data: To do ${data[index]["description"]} ",
+                          title: Text(" ${data[index]["title"]}",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  fontSize: 10.0, color: Colors.black54)),
+                                  fontSize: 18.0,
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.w800)),
+                          subtitle: Text("${data[index]["description"]} ",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 15.0, color: Colors.black54)),
                           trailing: Switch(
                               value: setval[index],
                               onChanged: (value) {

@@ -27,6 +27,7 @@ class MyApp extends StatelessWidget {
           title: 'Quito',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
+            fontFamily: 'Nunito',
               primaryColor: Color(0xff7e1946),
               primarySwatch: MaterialColor(0xff7e1946, {
                 50: Color.fromRGBO(112, 25, 70, 0.1),

@@ -288,9 +288,12 @@ class OpenScreenState extends State<OpenScreen> {
                             progressColor: Color(0xff7e1946)),
                       ),),
                       title: Text("${data[index]["title"]} ",
+                      maxLines:1,
+                      overflow: TextOverflow.ellipsis,
                       style:
-                              TextStyle(fontSize: 20.0, color: Colors.black87,
-                               fontWeight:FontWeight.w300)),
+                              TextStyle(fontSize: 18.0,
+                                  color: Colors.grey[800],
+                               fontWeight:FontWeight.w500)),
                       subtitle: Text("Event type: ${data[index]["@type"]}",
                           style:
                               TextStyle(fontSize: 15.0, color: Colors.black54)),

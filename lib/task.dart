@@ -91,7 +91,7 @@ class TaskState extends State<Task> {
                   border: OutlineInputBorder()),
               onChanged: (string) {
                 setState(() {
-                  taskjson["detail"] = string;
+                  taskjson["task_detail"]["data"] = "<h2>$string</h2>";
                 });
               },
               onEditingComplete: () {

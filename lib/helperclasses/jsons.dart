@@ -38,12 +38,12 @@ class Jsons{
     "description": "No description",
     "task_detail": {
       "content-type": "text/html",
-      "data": "<h2>Talk to some people to volunteer on the the project</h2>",
+      "data": "<h2>None</h2>",
       "encoding": "utf-8"
     },
     "additional_files": null,
     "members": [],
-    "details": "check this?",
+    "task_detail": "check this?",
     "complete": false
   };
 
