@@ -52,7 +52,7 @@ class TaskListState extends State<TaskList> {
     }
     setState(() {
       data = data;
-      for (var i = 0; i == data.length; i++) {
+      for (var i in data) {
         setval.add(false);
         // if (data[i]['additiional_files'] == null) {
         //   data[i]['additiional_files'] = Random().nextInt(15);
@@ -92,37 +92,37 @@ class TaskListState extends State<TaskList> {
                       ),
                       Card(
                         child: ListTile(
-                            contentPadding:
-                                EdgeInsets.only(top: 4.0, left: 4.0),
-                            onTap: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) {
-                                return TaskData(url: data[index]["@id"], user: widget.user);
-                              }));
-                            },
-                            leading: CircleAvatar(
-                              child: Text(
-                                  "${data[index]["title"].split('')[0]}",
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 20)),
-                              radius: 48.0,
-                              backgroundColor:
-                                  // data[index]['additiional_files'] == null ?
-                                  // Colors.primaries[data[index]['additiional_files']]  :
-                                  Colors.primaries[Random().nextInt(15)],
-                            ),
-                            title: Text("Task Name: ${data[index]["title"]}"),
-                            subtitle: Text(
-                                "Task Data: To do ${data[index]["description"]} ",
+                          contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
+                          onTap: () {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return TaskData(
+                                  url: data[index]["@id"], user: widget.user);
+                            }));
+                          },
+                          leading: CircleAvatar(
+                            child: Text("${data[index]["title"].split('')[0]}",
                                 style: TextStyle(
-                                    fontSize: 10.0, color: Colors.black54)),
-                            trailing: Checkbox(
-                                value: setval[index],
-                                onChanged: (bool value) {
-                                  setState(() {
-                                    setval[index] = value;
-                                  });
-                                })),
+                                    color: Colors.white, fontSize: 20)),
+                            radius: 48.0,
+                            backgroundColor:
+                                // data[index]['additiional_files'] == null ?
+                                // Colors.primaries[data[index]['additiional_files']]  :
+                                Colors.primaries[Random().nextInt(15)],
+                          ),
+                          title: Text("Task Name: ${data[index]["title"]}"),
+                          subtitle: Text(
+                              "Task Data: To do ${data[index]["description"]} ",
+                              style: TextStyle(
+                                  fontSize: 10.0, color: Colors.black54)),
+                          trailing: Switch(
+                              value: setval[index],
+                              onChanged: (value) {
+                                setState(() {
+                                  setval[index] = value;
+                                });
+                              }),
+                        ),
                       ),
                     ],
                   ),
@@ -202,7 +202,7 @@ class TaskListState extends State<TaskList> {
         child: Icon(Icons.add, color: Colors.white),
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return Task( widget.user,projecturl);
+            return Task(widget.user, projecturl);
           }));
         },
       ),

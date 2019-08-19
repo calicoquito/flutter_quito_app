@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
-
+import 'dart:math';
+import 'package:percent_indicator/percent_indicator.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:quito_1/helperclasses/netmanager.dart';
 import 'helperclasses/urls.dart';
@@ -169,7 +170,9 @@ class OpenScreenState extends State<OpenScreen> {
 
   Future getLargeImage(int index) async {
     String link = await NetManager.getLargeImage(index, data[index]["@id"]);
-    return Image.network( link,);
+    return Image.network(
+      link,
+    );
   }
 
   Future delete(int index) async {
@@ -182,12 +185,14 @@ class OpenScreenState extends State<OpenScreen> {
 
   @override
   Widget build(BuildContext context) {
+    
     final User user = Provider.of<User>(context);
     user.projects = projects;
     Widget lst(Icon ico, List data) {
       return ListView.builder(
           itemCount: data == null ? 0 : data.length,
           itemBuilder: (BuildContext context, int index) {
+            int complete = Random().nextInt(10);
             return Slidable(
               delegate: SlidableDrawerDelegate(),
               actionExtentRatio: 0.25,
@@ -245,45 +250,50 @@ class OpenScreenState extends State<OpenScreen> {
                             },
                           );
                         },
-                        child: ClipRRect(
-                          borderRadius: new BorderRadius.circular(5.0),
-                          child: data[index]["image"] == null
-                              ? Image.asset('assets/images/default-image.jpg')
-                              : CachedNetworkImage(
-                                  imageUrl: data[index]["image"],
-                                  placeholder: (context, url) =>
-                                      CircularProgressIndicator(),
-                                ),
+                        child: GestureDetector(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 10.0),
+                            child: ClipRRect(
+                              borderRadius: new BorderRadius.circular(5.0),
+                              child: data[index]["image"] == null
+                                  ? Image.asset(
+                                      'assets/images/default-image.jpg')
+                                  : CachedNetworkImage(
+                                      imageUrl: data[index]["image"],
+                                      placeholder: (context, url) =>
+                                          CircularProgressIndicator(),
+                                    ),
+                            ),
+                          ),
                         ),
                       ),
-                      trailing: PopupMenuButton<int>(
-                        itemBuilder: (context) => [
-                              PopupMenuItem(
-                                value: 1,
-                                child: FlatButton(
-                                  child: Text("Team Members"),
-                                  onPressed: () {
-                                    Navigator.push(context,
-                                        MaterialPageRoute(builder: (context) {
-                                      return Members(
-                                          url: data[index]["@id"], user: user);
-                                    }));
-                                  },
-                                ),
-                              ),
-                              PopupMenuItem(
-                                value: 2,
-                                child: FlatButton(
-                                  child: Text("Move to Top"),
-                                  onPressed: () {},
-                                ),
-                              ),
-                            ],
-                      ),
-                      title: Text("${data[index]["title"]} "),
+
+                      trailing: GestureDetector(
+                          onTap: () {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return Members(
+                                  url: data[index]["@id"], user: user);
+                            }));
+                          },
+                      
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 10.0),
+                        child: CircularPercentIndicator(
+                            radius: 30.0,
+                            lineWidth: 3.0,
+                            animation:true,
+                            percent: complete * .1,
+                            center: new Text("$complete"),
+                            progressColor: Color(0xff7e1946)),
+                      ),),
+                      title: Text("${data[index]["title"]} ",
+                      style:
+                              TextStyle(fontSize: 20.0, color: Colors.black87,
+                               fontWeight:FontWeight.w300)),
                       subtitle: Text("Event type: ${data[index]["@type"]}",
                           style:
-                              TextStyle(fontSize: 10.0, color: Colors.black54)),
+                              TextStyle(fontSize: 15.0, color: Colors.black54)),
                     ),
                     Divider(
                       height: 1.0,
@@ -370,7 +380,7 @@ class OpenScreenState extends State<OpenScreen> {
                 ? Center(
                     child: CircularProgressIndicator(),
                   )
-                : data.length == 0 || data.length == null
+                : data == null
                     ? Center(
                         child: Text('Start something  today'),
                       )
