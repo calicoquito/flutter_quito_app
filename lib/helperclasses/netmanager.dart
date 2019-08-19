@@ -65,7 +65,7 @@ class NetManager {
       Saver.setData(data: data, name: "projectsdata");
       projects = projectsData;
 
-      return filterProjects;
+      return data;
     } catch (err) {
       print(err);
       //data is empty so get saved data when try block fails

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quito_1/helperclasses/netmanager.dart';
 import 'package:quito_1/helperclasses/uploadqueue.dart';
+import 'package:quito_1/homepages.dart';
 import 'helperclasses/saver.dart';
 import 'openscreen.dart';
 import 'signinscreen.dart';
@@ -49,7 +50,7 @@ class RouterState extends State<Router> {
     if (isSignedIn == true) {
       UploadQueue.uploadAll();
       NetManager.user = user;
-      return OpenScreen(
+      return HomePages(
         user: user,
       );
     } else {

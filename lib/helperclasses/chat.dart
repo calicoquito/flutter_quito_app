@@ -124,32 +124,36 @@ class ChatState extends State<Chat> {
 
   @override
   Widget build(BuildContext context){
-    return Card(
-      child: ListTile(
-        selected: isSelected,
-        onLongPress: handleLongPress,
-        onTap: handleTap,
-        leading: CircleAvatar(
-          child: (widget.project['thumbnail']==null) 
-          ? (widget.type =='direct' ? Icon(Icons.person) : Icon(Icons.group))
-          : null,
-          backgroundImage: widget.project['thumbnail']==null
-          ? null
-          : NetworkImage(
-            widget.project['thumbnail']
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8.0,2.0,8.0,0.0),
+      child: Card(
+        color: Colors.blue,
+        child: ListTile(
+          selected: isSelected,
+          onLongPress: handleLongPress,
+          onTap: handleTap,
+          leading: CircleAvatar(
+            child: (widget.project['thumbnail']==null) 
+            ? (widget.type =='direct' ? Icon(Icons.person) : Icon(Icons.group))
+            : null,
+            backgroundImage: widget.project['thumbnail']==null
+            ? null
+            : NetworkImage(
+              widget.project['thumbnail']
+            ),
           ),
-        ),
-        title: Text(widget.title),
-        trailing: trailing,
-        subtitle: Text.rich(
-           TextSpan(
-            children: [
-              TextSpan(
-                text: '$sender: ',
-                style: TextStyle(fontWeight: FontWeight.bold)
-              ),
-              TextSpan(text: lastMessage)
-            ]
+          title: Text(widget.title),
+          trailing: trailing,
+          subtitle: Text.rich(
+             TextSpan(
+              children: [
+                TextSpan(
+                  text: '$sender: ',
+                  style: TextStyle(fontWeight: FontWeight.bold)
+                ),
+                TextSpan(text: lastMessage)
+              ]
+            ),
           ),
         ),
       ),

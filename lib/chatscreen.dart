@@ -23,7 +23,7 @@ class ChatScreen extends StatefulWidget{
   _ChatScreenState createState()=> _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen>{
+class _ChatScreenState extends State<ChatScreen> with AutomaticKeepAliveClientMixin<ChatScreen>{
   List<Chat> chats = List(); // this list of chat widgets to be render on the screen
   bool isLoading = true; // tells whether the screen is still loading 
   final refreshIndicatorKey = GlobalKey<RefreshIndicatorState>(); // used to handle refreshing the page
@@ -167,7 +167,8 @@ class _ChatScreenState extends State<ChatScreen>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xffefefef),
+     // backgroundColor: Color(0xffefefef),
+     backgroundColor: Colors.cyan[100],
       appBar: AppBar(
         title: Text('Chats'),
         actions: <Widget>[
@@ -208,4 +209,7 @@ class _ChatScreenState extends State<ChatScreen>{
       )
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

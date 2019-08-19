@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:quito_1/helperclasses/netmanager.dart';
 import 'package:quito_1/openchatscreen.dart';
+import 'helperclasses/curlyline.dart';
 import 'helperclasses/urls.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +45,7 @@ class OpenScreen extends StatefulWidget {
   OpenScreenState createState() => OpenScreenState(user: user);
 }
 
-class OpenScreenState extends State<OpenScreen> {
+class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMixin<OpenScreen> {
   OpenScreenState({this.user});
 
   bool isLoading = true; // checks wether the app is still fetching data 
@@ -249,11 +250,12 @@ class OpenScreenState extends State<OpenScreen> {
             return Slidable(
               delegate: SlidableDrawerDelegate(),
               actionExtentRatio: 0.25,
-              child: Center(
+              child: Card(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     ListTile(
+                      
                       contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
                       onTap: () {
                         print(index);
@@ -340,6 +342,7 @@ class OpenScreenState extends State<OpenScreen> {
     }
 
     return Scaffold(
+      backgroundColor: Colors.cyan[100],
       drawer: SideDrawer(),
       appBar: AppBar(title: appBarTitle, actions: <Widget>[
         IconButton(
@@ -378,16 +381,28 @@ class OpenScreenState extends State<OpenScreen> {
           },
         ),
       ]),
-      body: Container(
-        child: RefreshIndicator(
-            onRefresh: () async {
-              getSWData();
-            },
-            child: isLoading ?
-              Center(child: CircularProgressIndicator(),)
-            : data.length ==0 ?
-              Center(child: Text('Start something new today'),)
-            :lst(Icon(Icons.person), data)),
+      body: Stack(
+        children: <Widget>[
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Center(child: Text('Start something new today'),),
+              CurlyLine()
+            ],
+          ),
+          Container(
+            child: RefreshIndicator(
+                onRefresh: () async {
+                  getSWData();
+                },
+                child: isLoading ?
+                  Center(child: CircularProgressIndicator(),)
+                : data.length ==0 ?
+                  Center(child: Text('Start something new today'),)
+                :lst(Icon(Icons.person), data)),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(
@@ -402,4 +417,7 @@ class OpenScreenState extends State<OpenScreen> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
