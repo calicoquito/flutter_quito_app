@@ -27,10 +27,10 @@ class OpenChatScreen extends StatefulWidget{
   OpenChatScreen({Key key, this.title, @required this.channelId, this.user, this.project}) : super(key:key);
 
   @override
-  OpenChatScreenState createState() => OpenChatScreenState(); 
+  _OpenChatScreenState createState() => _OpenChatScreenState(); 
 }
 
-class OpenChatScreenState extends State<OpenChatScreen>{
+class _OpenChatScreenState extends State<OpenChatScreen>{
   TextEditingController controller = TextEditingController();
   ScrollController scrollController = ScrollController();
   final refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
@@ -244,60 +244,58 @@ class OpenChatScreenState extends State<OpenChatScreen>{
           messages.clear();
           return getMessages();
         },
-        child: Container(
-          child: Column(
-            children: <Widget>[
-              //This is the area where the chat messages will be displayed
-              Flexible(
-                child: isLoading ? Center(child: CircularProgressIndicator(),):
-                messages.length==0 
-                ?Center(child: Text('No messages'))
-                :ListView.builder(
-                  controller: scrollController,
-                  itemCount: messages.length,
-                  itemBuilder: (context, index){
-                    return messages[index];
-                  },
-                )
-              ),
+        child: Column(
+          children: <Widget>[
+            //This is the area where the chat messages will be displayed
+            Flexible(
+              child: isLoading ? Center(child: CircularProgressIndicator(),):
+              messages.length==0 
+              ?Center(child: Text('No messages'))
+              :ListView.builder(
+                controller: scrollController,
+                itemCount: messages.length,
+                itemBuilder: (context, index){
+                  return messages[index];
+                },
+              )
+            ),
 
-              //This is the bar at the bottom of the page where text is written to be sent
-              Container(
-                width: MediaQuery.of(context).size.width,
-                height: 50,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Expanded( 
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextField(
-                          controller: controller,
-                          expands: true,
-                          maxLines: null,
-                          autocorrect: true,
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(horizontal:10),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
-                            filled: true,
-                            fillColor: Color(0xffffffff),
-                            hasFloatingPlaceholder: false,
-                            labelText: "Type..."
-                          ),
+            //This is the bar at the bottom of the page where text is written to be sent
+            Container(
+              width: MediaQuery.of(context).size.width,
+              height: 50,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded( 
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        controller: controller,
+                        expands: true,
+                        maxLines: null,
+                        autocorrect: true,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(horizontal:10),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
+                          filled: true,
+                          fillColor: Color(0xffffffff),
+                          hasFloatingPlaceholder: false,
+                          labelText: "Type..."
                         ),
                       ),
                     ),
-                    //This button sends the message
-                    IconButton(
-                      color: Theme.of(context).primaryColor,
-                      icon: Icon(Icons.send),
-                      onPressed: handleSend
-                    )
-                  ],
-                ),
+                  ),
+                  //This button sends the message
+                  IconButton(
+                    color: Theme.of(context).primaryColor,
+                    icon: Icon(Icons.send),
+                    onPressed: handleSend
+                  )
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
