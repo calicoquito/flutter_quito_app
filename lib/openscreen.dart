@@ -42,11 +42,11 @@ class OpenScreen extends StatefulWidget {
 
   const OpenScreen({Key key, this.user}) : super(key: key);
   @override
-  OpenScreenState createState() => OpenScreenState(user: user);
+  _OpenScreenState createState() => _OpenScreenState(user: user);
 }
 
-class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMixin<OpenScreen> {
-  OpenScreenState({this.user});
+class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMixin<OpenScreen> {
+  _OpenScreenState({this.user});
 
   bool isLoading = true; // checks wether the app is still fetching data 
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging(); // used to receive push notification top the app
@@ -237,6 +237,7 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
     final User user = Provider.of<User>(context);
     user.projects = NetManager.projects;
     user.channels = NetManager.channels;
+    user.channelsByName = NetManager.channelsByName;
 
     Widget lst(Icon ico, List data) {
       return ListView.builder(
@@ -245,61 +246,63 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
             return Slidable(
               delegate: SlidableDrawerDelegate(),
               actionExtentRatio: 0.25,
-              child: Card(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    ListTile(
-                      
-                      contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
-                      onTap: () {
-                        //print(index);
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return TaskList( user, data[index]["@id"],);
-                        }));
-                      },
-                      leading: data[index]["image"] == null
-                          ? Image.asset('assets/images/default-image.jpg')
-                          : CachedNetworkImage(
-                              imageUrl: data[index]["image"],
-                              placeholder: (context, url) =>
-                                  CircularProgressIndicator(),
-                              width: 80.0,
-                            ),
-                      trailing: PopupMenuButton<int>(
-                        itemBuilder: (context) => [
-                              PopupMenuItem(
-                                value: 1,
-                                child: FlatButton(
-                                  child: Text("Team Members"),
-                                  onPressed: () {
-                                    Navigator.push(context,
-                                        MaterialPageRoute(builder: (context) {
-                                      return Members(
-                                          url: data[index]["@id"], user: user);
-                                    }));
-                                  },
-                                ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8.0,1,8,1),
+                child: Card(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      ListTile(
+                        contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
+                        onTap: () {
+                          //print(index);
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return TaskList( user, data[index]["@id"],projectName: data[index]['id'],);
+                          }));
+                        },
+                        leading: data[index]["image"] == null
+                            ? Image.asset('assets/images/default-image.jpg')
+                            : CachedNetworkImage(
+                                imageUrl: data[index]["image"],
+                                placeholder: (context, url) =>
+                                    CircularProgressIndicator(),
+                                width: 80.0,
                               ),
-                              PopupMenuItem(
-                                value: 2,
-                                child: FlatButton(
-                                  child: Text("Move to Top"),
-                                  onPressed: () {},
+                        trailing: PopupMenuButton<int>(
+                          itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 1,
+                                  child: FlatButton(
+                                    child: Text("Team Members"),
+                                    onPressed: () {
+                                      Navigator.push(context,
+                                          MaterialPageRoute(builder: (context) {
+                                        return Members(
+                                            url: data[index]["@id"], user: user);
+                                      }));
+                                    },
+                                  ),
                                 ),
-                              ),
-                            ],
+                                PopupMenuItem(
+                                  value: 2,
+                                  child: FlatButton(
+                                    child: Text("Move to Top"),
+                                    onPressed: () {},
+                                  ),
+                                ),
+                              ],
+                        ),
+                        title: Text("${data[index]["title"]} "),
+                        subtitle: Text("Event type: ${data[index]["@type"]}",
+                            style:
+                                TextStyle(fontSize: 10.0, color: Colors.black54)),
                       ),
-                      title: Text("${data[index]["title"]} "),
-                      subtitle: Text("Event type: ${data[index]["@type"]}",
-                          style:
-                              TextStyle(fontSize: 10.0, color: Colors.black54)),
-                    ),
-                    Divider(
-                      height: 1.0,
-                    ),
-                  ],
+                      Divider(
+                        height: 1.0,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               actions: <Widget>[

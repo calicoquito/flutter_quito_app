@@ -10,6 +10,7 @@ class NetManager {
   static User user;
   static Map projects = Map();
   static Map<String, dynamic> channels = Map();
+  static Map<String, dynamic> channelsByName = Map();
   
 
   static Future<List> getProjectsData() async {
@@ -286,6 +287,7 @@ class NetManager {
         }).toList();
         channelsList.forEach((channel){
           channels.putIfAbsent(channel['id'], ()=>channel);
+          channelsByName.putIfAbsent(channel['name'], ()=>channel);
         });
       });
     }
