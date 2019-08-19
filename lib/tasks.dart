@@ -12,17 +12,17 @@ import 'taskdata.dart';
 import 'dart:math';
 
 class TaskList extends StatefulWidget {
-  final String url;
   final User user;
-  const TaskList({@required this.url, this.user});
+  final String projecturl;
+  const TaskList(this.user, this.projecturl);
   @override
-  TaskListState createState() => TaskListState(url: url, user: user);
+  TaskListState createState() => TaskListState(user, projecturl);
 }
 
 class TaskListState extends State<TaskList> {
-  final String url;
+  final String projecturl;
   final User user;
-  TaskListState({@required this.url, this.user});
+  TaskListState(this.user, this.projecturl);
   List data = List();
   List<bool> setval = List();
   Widget appBarTitle = Text('Tasks');
@@ -49,7 +49,7 @@ class TaskListState extends State<TaskList> {
   }
 
   Future getSWData() async {
-    data = await NetManager.getTasksData(url);
+    data = await NetManager.getTasksData(projecturl);
     for (var i = 0; i == data.length; i++) {
       setval.add(false);
     }
@@ -100,7 +100,7 @@ class TaskListState extends State<TaskList> {
                             onTap: () {
                               Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {
-                                return TaskData(url: url, user: widget.user);
+                                return TaskData(url: data[index]["@id"], user: widget.user);
                               }));
                             },
                             leading: CircleAvatar(
@@ -139,7 +139,7 @@ class TaskListState extends State<TaskList> {
                   onTap: () {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
-                      return Taskedit(url: url);
+                      return Taskedit(data[index]["@id"], user, projecturl);
                     }));
                   },
                 ),
@@ -205,7 +205,7 @@ class TaskListState extends State<TaskList> {
         child: Icon(Icons.add, color: Colors.white),
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return Task(url: url, user: widget.user);
+            return Task( widget.user,projecturl);
           }));
         },
       ),

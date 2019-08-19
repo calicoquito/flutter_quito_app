@@ -88,15 +88,14 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
   void listenForMessages() async{
     try{
       socket = await WebSocket.connect(
-        'ws://mattermost.alteroo.com/api/v4/websocket',
-        headers: {'Authorization': 'Bearer ${widget.user.mattermostToken}'}
-      );
+          'ws://mattermost.alteroo.com/api/v4/websocket',
+          headers: {'Authorization': 'Bearer ${widget.user.mattermostToken}'});
       int seq = -1;
-      socket.listen((data){
+      socket.listen((data) {
         final jsonData = jsonDecode(data);
         int newSeq = jsonData['seq'];
-        if(seq<newSeq){
-          if(jsonData['event']=='posted'){
+        if (seq < newSeq) {
+          if (jsonData['event'] == 'posted') {
             final postData = jsonData['data'];
             final post = jsonDecode(postData['post']);
             if(channels.containsKey(post['channel_id'])){
@@ -145,16 +144,13 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
               )..show(context);
             }
           }
-        }
-        else{
+        } else {
           seq = newSeq;
         }
       });
-    }
-    catch(err){
+    } catch (err) {
       print(err);
     }
-    
   }
 
   // Configures the actions taken by the app on notification received
@@ -199,13 +195,12 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
     setState(() {
       data = data;
     });
-
   }
 
   Future delete(int index) async {
-    print(index);
-    print(data);
-    print(data[index]);
+    // print(index);
+    // print(data);
+    // print(data[index]);
     var response = await NetManager.delete(data[index]["@id"]);
     if (response == 204) {
       data.removeAt(index);
@@ -258,13 +253,10 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
                       
                       contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
                       onTap: () {
-                        print(index);
+                        //print(index);
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                          return TaskList(
-                            url: data[index]["@id"],
-                            user: user,
-                          );
+                          return TaskList( user, data[index]["@id"],);
                         }));
                       },
                       leading: data[index]["image"] == null
@@ -332,7 +324,7 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
                   caption: 'Delete',
                   color: Colors.red,
                   icon: Icons.delete,
-                  onTap: () async{
+                  onTap: () async {
                     delete(index);
                   },
                 ),
