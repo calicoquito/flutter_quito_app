@@ -102,7 +102,7 @@ class NetManager {
 
 
   static Future<List> getUsersData() async {
-    List data = List();
+    List  data = List();
     List<bool> setval = List();
     String url = Urls.users;
     try {
@@ -110,12 +110,10 @@ class NetManager {
         "Accept": "application/json",
         "Authorization": 'Bearer ${user.ploneToken}'
       });
-      print(response.statusCode);
-      print(response.body);
       var resBody = json.decode(response.body);
-      print(resBody);
+
       data = resBody;
-      print("hey hey hey $data");
+
       for (var i = 0; i == data.length; i++) {
         setval.add(false);
       }
@@ -139,10 +137,10 @@ class NetManager {
         "Authorization": "Bearer ${user.ploneToken}",
       });
       var resBody = json.decode(response.body);
-      print(user.ploneToken);
-      print(resBody['items']);
+      // print(user.ploneToken);
+      // print(resBody['items']);
       data = resBody["items"];
-      print(data);
+      // print(data);
       for (var i = 0; i == data.length; i++) {
         setval.add(false);
       }
@@ -160,7 +158,8 @@ class NetManager {
     return data;
   }
 
-  static Future<Map> getTask(String url, Map data) async {
+  static Future<Map> getTask(String url) async {
+    Map data;
     try {
       var response = await http.get(url, headers: {
         "Accept": "application/json",
@@ -180,18 +179,18 @@ class NetManager {
 
   
   static Future<int> uploadProject(String url, Map json) async {
-    // var response = await http.post(url,
-    //     headers: {
-    //       "Accept": "application/json",
-    //       "Content-Type": "application/json",
-    //       "Authorization": "Bearer ${user.ploneToken}",
-    //     },
-    //     body: jsonEncode(json));
-    // print(response.statusCode);
-    //if (response.statusCode != 204) {
-      //UploadQueue.addproject( url, json);
-    // }
-    // return response.statusCode;
+    var response = await http.post(url,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${user.ploneToken}",
+        },
+        body: jsonEncode(json));
+    print(response.statusCode);
+    if (response.statusCode != 204) {
+      
+    }
+    return response.statusCode;
   }
 
   static Future<int> editProject(String url, Map json) async {

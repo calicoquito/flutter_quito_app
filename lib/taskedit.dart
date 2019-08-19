@@ -12,16 +12,18 @@ import 'userinfo.dart';
 
 class Taskedit extends StatefulWidget {
   final User user;
-  String url;
-  Taskedit({@required this.url, this.user});
+  final String taskurl;
+  final String projecturl;
+  Taskedit( this.taskurl, this.user, this.projecturl);
   @override
-  TaskeditState createState() => TaskeditState(url: url, user: user);
+  TaskeditState createState() => TaskeditState(taskurl, user, projecturl);
 }
 
 class TaskeditState extends State<Taskedit> {
   final User user;
-  String url;
-  TaskeditState({@required this.url, this.user});
+  String taskurl;
+  final String projecturl;
+  TaskeditState(this.taskurl, this.user, this.projecturl);
   String textString = "";
   bool isSwitched = false;
   List setval;
@@ -31,32 +33,48 @@ class TaskeditState extends State<Taskedit> {
   String title;
   String description;
 
-  Map taskjson = Jsons.taskjson;
+  //Map taskjson = Jsons.taskjson;
+
+  @override
+  void initState() {
+    super.initState();
+    getSWData();
+  }
 
   Future<String> getSWData() async {
-    var response = await http.get(url, headers: {
+    var response = await http.get(taskurl, headers: {
       "Accept": "application/json",
       "Authorization": "Bearer ${widget.user.ploneToken}",
     });
     var resBody = json.decode(response.body);
+    displayMembers = await UsersManager.getmatchingusers(assignedMembers);
     setState(() {
       data = resBody;
       if (data["members"] != null) {
         assignedMembers = data["members"].isEmpty ? null : data["members"];
       }
-      title = data["title"] == null ? "Tile: " : "Title: ${data["title"]}";
+      title = data["title"] == null ? "" : "${data["title"]}";
       description = data["description"] == null
-          ? "Description: "
-          : "Description: ${data["description"]}";
+          ? ""
+          : " ${data["description"]}";
       //details = data["detail"]["data"] == null ? "Details: " : "Details: ${data["detail"]["data"]}";
       print(data["members"]);
       print('${data["title"]}, ${data["description"]}, ${data["detail"]}');
+
     });
+
+
+    displayMembers = await UsersManager.getmatchingusers(data['members']);
+    print(data["members"]);
+    setState(() {
+      displayMembers = displayMembers;
+    });
+
     return "Success!";
   }
 
   editTask() {
-    NetManager.uploadTask(url, taskjson);
+    NetManager.editTask(taskurl, data);
   }
 
   @override
@@ -83,7 +101,7 @@ class TaskeditState extends State<Taskedit> {
                   border: OutlineInputBorder()),
               onChanged: (string) {
                 setState(() {
-                  taskjson["title"] = string;
+                  data["title"] = string;
                 });
               },
               onEditingComplete: () {
@@ -104,7 +122,7 @@ class TaskeditState extends State<Taskedit> {
                   border: OutlineInputBorder()),
               onChanged: (string) {
                 setState(() {
-                  taskjson["description"]["data"] = "<h2>$string<h2>";
+                  data["description"]["data"] = "<h2>$string<h2>";
                 });
               },
               onEditingComplete: () {
@@ -127,7 +145,7 @@ class TaskeditState extends State<Taskedit> {
                   border: OutlineInputBorder()),
               onChanged: (string) {
                 setState(() {
-                  taskjson["detail"] = string;
+                  data["detail"] = string;
                 });
               },
               onEditingComplete: () {
@@ -143,14 +161,14 @@ class TaskeditState extends State<Taskedit> {
                   onPressed: () async {
                     assignedMembers = await Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
-                      return AddMembersPage(user: user);
+                      return AddMembersPage(user, datatype.task, projecturl);
                     }));
                     print(assignedMembers);
                     displayMembers =
                         await UsersManager.getmatchingusers(assignedMembers);
                     setState(() {
                       displayMembers = displayMembers;
-                      taskjson["members"] = json.encode(assignedMembers);
+                      data["members"] = assignedMembers == null ? null : [assignedMembers.join(',')];
                     });
                   },
                   child: Icon(
