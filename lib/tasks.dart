@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:quito_1/taskedit.dart';
-import 'dart:convert';
 import 'helperclasses/netmanager.dart';
-import 'helperclasses/saver.dart';
 import 'helperclasses/user.dart';
 import 'task.dart';
 import 'taskdata.dart';
@@ -55,7 +52,7 @@ class TaskListState extends State<TaskList> {
     }
     setState(() {
       data = data;
-      for (var i in data) {
+      for (var i = 0; i == data.length; i++) {
         setval.add(false);
         // if (data[i]['additiional_files'] == null) {
         //   data[i]['additiional_files'] = Random().nextInt(15);

@@ -74,6 +74,24 @@ class NetManager {
     return data;
   }
 
+  static Future getLargeImage(int index, String url)async{
+
+        try {
+          var resp = await http.get(url, headers: {
+            "Accept": "application/json",
+            "Authorization": 'Bearer ${user.ploneToken}'
+          });
+          var respBody = json.decode(resp.body);
+          if (respBody != null) {
+            String imageLink = respBody["image"]["scales"]["large"]["download"];
+            return imageLink;
+          }
+        } catch (err) {
+          print(err);
+        }
+      
+  }
+
 
 
   static Future getProjectEditData(String url) async {

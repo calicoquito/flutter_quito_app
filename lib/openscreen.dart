@@ -33,7 +33,7 @@ import 'package:cached_network_image/cached_network_image.dart';
   in user of the app
 
   The Scaffold's default FloatingActionButton is used to transfer a user 
-  the route from which one may create a new project.
+  the route from which one may create a  project.
 */
 
 class OpenScreen extends StatefulWidget {
@@ -53,7 +53,6 @@ class OpenScreenState extends State<OpenScreen> {
   List data = List();
   Widget appBarTitle = Text('Projects');
   Icon actionIcon = Icon(Icons.search);
-  List newdata = List();
   var respBody;
   bool internet = true;
   List saveimage = List();
@@ -69,7 +68,7 @@ class OpenScreenState extends State<OpenScreen> {
       holder = data;
     }
     setState(() {
-      data = newdata;
+      data = data;
     });
     count += 1;
   }
@@ -82,8 +81,8 @@ class OpenScreenState extends State<OpenScreen> {
       int seq = -1;
       socket.listen((data) {
         final jsonData = jsonDecode(data);
-        int newSeq = jsonData['seq'];
-        if (seq < newSeq) {
+        int Seq = jsonData['seq'];
+        if (seq < Seq) {
           if (jsonData['event'] == 'posted') {
             final postData = jsonData['data'];
             final post = jsonDecode(postData['post']);
@@ -98,7 +97,7 @@ class OpenScreenState extends State<OpenScreen> {
               ..show(context);
           }
         } else {
-          seq = newSeq;
+          seq = Seq;
         }
       });
     } catch (err) {
@@ -168,10 +167,12 @@ class OpenScreenState extends State<OpenScreen> {
     });
   }
 
+  Future getLargeImage(int index) async {
+    String link = await NetManager.getLargeImage(index, data[index]["@id"]);
+    return Image.network( link,);
+  }
+
   Future delete(int index) async {
-    // print(index);
-    // print(data);
-    // print(data[index]);
     var response = await NetManager.delete(data[index]["@id"]);
     if (response == 204) {
       data.removeAt(index);
@@ -197,20 +198,64 @@ class OpenScreenState extends State<OpenScreen> {
                     ListTile(
                       contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
                       onTap: () {
-                        //print(index);
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                          return TaskList( user, data[index]["@id"],);
+                          return TaskList(
+                            user,
+                            data[index]["@id"],
+                          );
                         }));
                       },
-                      leading: data[index]["image"] == null
-                          ? Image.asset('assets/images/default-image.jpg')
-                          : CachedNetworkImage(
-                              imageUrl: data[index]["image"],
-                              placeholder: (context, url) =>
-                                  CircularProgressIndicator(),
-                              width: 80.0,
-                            ),
+                      leading: GestureDetector(
+                        onTap: () async {
+                          var image = await getLargeImage(index);
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              // return object of type Dialog
+                              return AlertDialog(
+                                contentPadding: EdgeInsets.all(0),
+                                // title: Text("Alert Dialog title"),
+                                content: image == null
+                                    ? Image.asset(
+                                        'assets/images/default-image.jpg')
+                                    : image,
+                                actions: <Widget>[
+                                  // usually buttons at the bottom of the dialog
+                                  FlatButton(
+                                    child: Icon(Icons.close),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  FlatButton(
+                                    child: Icon(Icons.edit),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  FlatButton(
+                                    child: Icon(Icons.info),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius: new BorderRadius.circular(5.0),
+                          child: data[index]["image"] == null
+                              ? Image.asset('assets/images/default-image.jpg')
+                              : CachedNetworkImage(
+                                  imageUrl: data[index]["image"],
+                                  placeholder: (context, url) =>
+                                      CircularProgressIndicator(),
+                                ),
+                        ),
+                      ),
                       trailing: PopupMenuButton<int>(
                         itemBuilder: (context) => [
                               PopupMenuItem(
@@ -300,7 +345,7 @@ class OpenScreenState extends State<OpenScreen> {
                     }
                     text = text.toLowerCase();
                     setState(() {
-                      newdata = data.where((project) {
+                      data = data.where((project) {
                         var name = project["title"].toLowerCase();
                         return name.contains(text);
                       }).toList();
@@ -325,9 +370,9 @@ class OpenScreenState extends State<OpenScreen> {
                 ? Center(
                     child: CircularProgressIndicator(),
                   )
-                : data.length == 0
+                : data.length == 0 || data.length == null
                     ? Center(
-                        child: Text('Start something new today'),
+                        child: Text('Start something  today'),
                       )
                     : lst(Icon(Icons.person), data)),
       ),
