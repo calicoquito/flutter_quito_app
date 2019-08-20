@@ -23,7 +23,7 @@ class MembersState extends State<Members> {
   MembersState({@required this.url, this.user});
   List data = List();
   List newdata = List();
-  List completelist = List();
+  List completelist = [0,0];
   @override
   void initState() {
     super.initState();
@@ -62,7 +62,7 @@ class MembersState extends State<Members> {
         complete += 1;
       }
     }
-    completelist.add([complete, list.length]);
+    completelist[0] = [complete, list.length];
   }
 
 
@@ -106,7 +106,7 @@ class MembersState extends State<Members> {
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
-    var percent = Random().nextInt(100);
+    var percent = Random().nextInt(10);
     return Scaffold(
       appBar: AppBar(
           title: Text(
@@ -122,8 +122,8 @@ class MembersState extends State<Members> {
                 radius: height*0.2,
                 lineWidth: 5.0,
                 animation:true,
-                percent: 9 * .1,
-                center: new Text("20%"),
+                percent: percent * .1,
+                center: new Text("${percent*10}%"),
                 progressColor: Color(0xff7e1946)),
           ),
           Container(
