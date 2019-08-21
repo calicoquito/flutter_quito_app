@@ -2,14 +2,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:quito_1/helperclasses/netmanager.dart';
-import 'package:quito_1/openchatscreen.dart';
+import 'helperclasses/netmanager.dart';
+import 'openchatscreen.dart';
 import 'helperclasses/curlyline.dart';
 import 'helperclasses/urls.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'helperclasses/user.dart';
+import 'quitologosliver.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -355,7 +356,7 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
                       hintText: "Search...",
                       hintStyle: TextStyle(color: Colors.white)),
                   onChanged: (text) {
-                    if (data.length < holder.length) {
+                    if (data.length<holder.length) {
                       data = holder;
                     }
                     text = text.toLowerCase();

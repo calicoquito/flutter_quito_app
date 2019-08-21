@@ -69,7 +69,7 @@ class _MessageState extends State<Message>{
                       softWrap: true,
                     ),
                     Text(
-                      'widget.messagejkb;kadb;kbdaaibiuviuvjhjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjviuvkviuvuivijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj',
+                      '${widget.message}',
                       overflow: TextOverflow.fade,
                       style: TextStyle(
                         fontSize: 16,

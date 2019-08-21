@@ -63,7 +63,7 @@ class NetManager {
       }
 
       // set data state and save json for online use when this try block works
-      data = data; //filterProjects;
+      data = filterProjects; //data
       Saver.setData(data: data, name: "projectsdata");
       projects = projectsData;
 
@@ -272,10 +272,15 @@ class NetManager {
       }).toList();
 
       List<Future> requests = teamEndpoints.map((endpoint){
-        return http.get(
-          endpoint,
-          headers: {'Authorization':'Bearer ${user.mattermostToken}'}
-        );
+        try{
+          return http.get(
+            endpoint,
+            headers: {'Authorization':'Bearer ${user.mattermostToken}'}
+          );
+        }
+        catch(err){
+          print(err);
+        }
       }).toList();
       
       final responses = await Future.wait(requests).catchError((err){print('Error awaiting all responses');});

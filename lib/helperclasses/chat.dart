@@ -125,9 +125,9 @@ class ChatState extends State<Chat> {
   @override
   Widget build(BuildContext context){
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8.0,2.0,8.0,0.0),
+      padding: const EdgeInsets.fromLTRB(8.0,0.0,8.0,0.0),
       child: Card(
-        color: Colors.blue,
+        color: Colors.grey[100],
         child: ListTile(
           selected: isSelected,
           onLongPress: handleLongPress,
