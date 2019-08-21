@@ -44,6 +44,8 @@ class Jsons{
     },
     "additional_files": null,
     "members": [],
+    "details": "check this?",
+    "complete": false
   };
 
 }

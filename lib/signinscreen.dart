@@ -26,19 +26,17 @@ import 'dart:convert';
 */
 
 class SignInScreen extends StatefulWidget {
-  SignInScreen({Key key}) : super(key: key);
   @override
-  SignInScreenState createState() => SignInScreenState();
+  _SignInScreenState createState() => _SignInScreenState();
 }
 
-class SignInScreenState extends State<SignInScreen>
-    with SingleTickerProviderStateMixin {
-  final TextEditingController usernameController = TextEditingController();
+// SingleTickerStateProviderMixin allows the widget to contain animations
+class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderStateMixin {
+  final TextEditingController usernameController = TextEditingController();  
   final TextEditingController passwordController = TextEditingController();
-  String usernameErrorString;
-  bool isLoading;
-  bool isTyping;
-  
+  String usernameErrorString; // display on invalid content to the TextFields
+  bool isLoading; // checks whether the screen is loading 
+  bool isTyping; // checks whether a user is typing or not
 
   void handleChange(String text) {
     setState(() {
@@ -64,11 +62,6 @@ class SignInScreenState extends State<SignInScreen>
     usernameErrorString = null;
     isLoading = false;
     isTyping = false;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   @override
@@ -149,6 +142,11 @@ class SignInScreenState extends State<SignInScreen>
                             ],
                           ),
                         ),
+
+                        // Checks and validates the user's credentials
+                        // Stores the relevant data if the credentials are correct
+                        // Moves to the SplashScreen
+                        // If not, informs the user the credentials are incorrect
                         onPressed: () async {
                           if (usernameController.text.isEmpty) {
                             setState(() {
@@ -198,7 +196,7 @@ class SignInScreenState extends State<SignInScreen>
                               user.email = mattermostJson['email'];
                               user.mattermostToken = responses[1].headers['token'];
 
-                              await user.login();
+                              await user.login(); // saves the above data to local storage for future use
                               
                               Navigator.of(context).push(
                                 MaterialPageRoute(
@@ -244,6 +242,7 @@ class SignInScreenState extends State<SignInScreen>
                     ),
                   ),
                   SizedBox(width: 20),
+                  // Not yet implemented
                   RichText(
                     text: TextSpan(
                       text: 'Forgot Password?',
@@ -276,10 +275,10 @@ class PasswordTextField extends StatefulWidget {
 
   final TextEditingController textEditingController;
   @override
-  PasswordTextFieldState createState() => PasswordTextFieldState();
+  _PasswordTextFieldState createState() => _PasswordTextFieldState();
 }
 
-class PasswordTextFieldState extends State<PasswordTextField> {
+class _PasswordTextFieldState extends State<PasswordTextField> {
   bool isPressed = false;
   Icon icon = Icon(
     Icons.visibility_off,

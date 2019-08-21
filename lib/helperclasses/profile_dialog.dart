@@ -17,7 +17,7 @@ class ProfileDialog extends StatelessWidget{
           children: <Widget>[
             Icon(
               Icons.person,
-              color:Colors.white,
+              color:Colors.blue,
               size: 50.0
             ),
             Text(
