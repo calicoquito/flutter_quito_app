@@ -18,8 +18,9 @@ class User{
   String _serverId = 'null'; // the mattermost server id
   String _sessionId = 'null'; // the current logged-in session id
   
-  // all the projects the user is involved in and indexed by their project id
-  // This project id is the same as the mattermost channel id for which the project corresponsed to
+  // all the projects the user is involved in and indexed by their project name
+  // This project name is the same as the mattermost channel name for which the project corresponsed to
+  // this is the plone data
   Map _projects = Map();
   
   // All the members in the same team as the user
@@ -29,9 +30,15 @@ class User{
   // This should most of the times be 1
   List _teams= List(); // List<Map<String, String>>
 
-  // all the channels/projects the user is included in and indexed by their channel name
-  // instead of the channel id/project id
+  // all the channels/projects the user is included in and indexed by their channel id
+  // instead of the channel name/project name
   Map _channels = Map(); // Map<String, dynamic>
+
+  // all the projects the user is involved in and indexed by their project name
+  // This project name is the same as the mattermost channel name for which the project corresponsed to
+  // this is the mattermost data
+
+  Map _channelsByName = Map();
 
 
   static final User _user = User._internal();
@@ -57,6 +64,7 @@ class User{
     _fetchProjects();
     _fetchTeams();
     _fetchChannels();
+    _fetchChannelsByName();
   }
 
   // Saver is the class that is used to manage storing  and retreiving 
@@ -286,6 +294,26 @@ class User{
     Saver.setData(name: 'channels', data: channels);
   }
 
+  Future _fetchChannelsByName() async {
+    final result = await Saver.getData(name: 'channelsByName');
+    if(result==null){
+      return channelsByName;
+    }
+    else{
+      _channelsByName = result;
+       return _channelsByName;
+    }
+  }
+
+  get channelsByName{ 
+    return _channelsByName;
+  }
+
+  set channelsByName(Map channelsByName) {
+    _channelsByName = channelsByName;
+    Saver.setData(name: 'channelsByName', data: channelsByName);
+  }
+
   Future<bool> _fetchSignInStatus() async{
     final result = await Saver.getSignInState();
     if(result==null){
@@ -317,6 +345,7 @@ class User{
     Saver.setData(name: 'projects', data: null);
     Saver.setData(name: 'members', data: null);
     Saver.setData(name: 'channels', data: null);
+    Saver.setData(name:'channelsByName', data: null);
     Saver.setSignInState(false);
   }
 }

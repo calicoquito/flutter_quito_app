@@ -62,6 +62,14 @@ class TaskeditState extends State<Taskedit> {
       details = details;
       displayMembers = displayMembers;
     });
+
+
+    displayMembers = await UsersManager.getmatchingusers(data['members']);
+    print(data["members"]);
+    setState(() {
+      displayMembers = displayMembers;
+    });
+
     return "Success!";
   }
 

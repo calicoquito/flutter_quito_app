@@ -35,8 +35,7 @@ class MyApp extends StatelessWidget {
               200: Color.fromRGBO(112, 25, 70, 0.3),
               300: Color.fromRGBO(112, 25, 70, 0.4),
               400: Color.fromRGBO(112, 25, 70, 0.5),
-              500: Color.fromRGBO(112, 25, 70,
-                  0.6), // creates a material color from these shades
+              500: Color.fromRGBO(112, 25, 70, 0.6), // creates a material color from these shades
               600: Color.fromRGBO(112, 25, 70, 0.7),
               700: Color.fromRGBO(112, 25, 70, 0.8),
               800: Color.fromRGBO(112, 25, 70, 0.9),

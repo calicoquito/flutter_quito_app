@@ -42,11 +42,11 @@ class OpenScreen extends StatefulWidget {
 
   const OpenScreen({Key key, this.user}) : super(key: key);
   @override
-  OpenScreenState createState() => OpenScreenState(user: user);
+  _OpenScreenState createState() => _OpenScreenState(user: user);
 }
 
-class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMixin<OpenScreen> {
-  OpenScreenState({this.user});
+class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMixin<OpenScreen> {
+  _OpenScreenState({this.user});
 
   bool isLoading = true; // checks wether the app is still fetching data 
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging(); // used to receive push notification top the app
@@ -93,8 +93,8 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
       int seq = -1;
       socket.listen((data) {
         final jsonData = jsonDecode(data);
-        int Seq = jsonData['seq'];
-        if (seq < Seq) {
+        int newSeq = jsonData['seq'];
+        if (seq < newSeq) {
           if (jsonData['event'] == 'posted') {
             final postData = jsonData['data'];
             final post = jsonDecode(postData['post']);
@@ -145,7 +145,7 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
             }
           }
         } else {
-          seq = Seq;
+          seq = newSeq;
         }
       });
     } catch (err) {
@@ -257,6 +257,7 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
     final User user = Provider.of<User>(context);
     user.projects = NetManager.projects;
     user.channels = NetManager.channels;
+    user.channelsByName = NetManager.channelsByName;
 
     Widget lst(Icon ico, List data) {
       return ListView.builder(

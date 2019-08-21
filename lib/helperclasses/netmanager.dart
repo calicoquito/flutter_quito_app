@@ -10,9 +10,11 @@ class NetManager {
   static User user;
   static Map projects = Map();
   static Map<String, dynamic> channels = Map();
+  static Map<String, dynamic> channelsByName = Map();
   
 
   static Future<List> getProjectsData() async {
+    //print('Bearer ${user.ploneToken}');
     String url = Urls.projects;
     List data = List();
     List filterProjects = List();
@@ -156,7 +158,6 @@ class NetManager {
       });
       var resBody = json.decode(response.body);
       // print(user.ploneToken);
-      print(resBody['items']);
       data = resBody["items"];
       // print(data);
       for (var i = 0; i == data.length; i++) {
@@ -320,6 +321,7 @@ class NetManager {
         }).toList();
         channelsList.forEach((channel){
           channels.putIfAbsent(channel['id'], ()=>channel);
+          channelsByName.putIfAbsent(channel['name'], ()=>channel);
         });
       });
     }

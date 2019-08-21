@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:quito_1/openchatscreen.dart';
 import 'package:quito_1/taskedit.dart';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
@@ -12,7 +13,9 @@ import 'dart:math';
 class TaskList extends StatefulWidget {
   final User user;
   final String projecturl;
-  const TaskList(this.user, this.projecturl);
+
+  final String projectName;
+  const TaskList(this.user, this.projecturl,{this.projectName});
   @override
   TaskListState createState() => TaskListState(user, projecturl);
 }
@@ -78,6 +81,7 @@ class TaskListState extends State<TaskList> {
 
   @override
   Widget build(BuildContext context) {
+    print(user.channelsByName);
     Widget lst(Icon ico, List data) {
       return ListView.builder(
           itemCount: data == null ? 0 : data.length,
@@ -303,6 +307,26 @@ class TaskListState extends State<TaskList> {
               });
             },
           ),
+          IconButton(
+            icon: Icon(
+              Icons.chat,
+              color: Colors.white,
+            ),
+            onPressed: (){
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context){
+                    return OpenChatScreen(
+                      title: user.channelsByName[widget.projectName]['display_name'],
+                      user: user,
+                      channelId: user.channelsByName[widget.projectName]['id'],
+                      project: user.projects[widget.projectName]
+                    );
+                  }
+                )
+              );
+            },
+          )
         ],
       ),
       body: Container(child: lst(Icon(Icons.person), data)),
