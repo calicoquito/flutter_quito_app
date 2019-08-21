@@ -1,4 +1,4 @@
-# flutter_quito_app
+# Quito
 
 This project is a Flutter application for the 2019 Calico Challenge Quito project. 
 
