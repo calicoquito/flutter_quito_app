@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:quito_1/helperclasses/netmanager.dart';
+import 'helperclasses/dialogmanager.dart';
 import 'helperclasses/urls.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
@@ -200,15 +201,16 @@ class OpenScreenState extends State<OpenScreen> {
 
   @override
   Widget build(BuildContext context) {
+    
     final User user = Provider.of<User>(context);
     user.projects = projects;
     Widget lst(Icon ico, List data) {
       return ListView.builder(
-        
           itemCount: data == null ? 0 : data.length,
           itemBuilder: (BuildContext context, int index) {
             int complete = Random().nextInt(10);
-            completelist[index] = completelist[index] == null ? [0,0] : completelist[index];
+            completelist[index] =
+                completelist[index] == null ? [0, 0] : completelist[index];
             return Slidable(
               delegate: SlidableDrawerDelegate(),
               actionExtentRatio: 0.25,
@@ -341,7 +343,10 @@ class OpenScreenState extends State<OpenScreen> {
                   color: Colors.red,
                   icon: Icons.delete,
                   onTap: () async {
-                    delete(index);
+                    await DialogManager.delete(context, "Are You Sure You Want to delete this project?");
+                    if (DialogManager.answer == true ) {
+                      delete(index);
+                    }
                   },
                 ),
               ],
