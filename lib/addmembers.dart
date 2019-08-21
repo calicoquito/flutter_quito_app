@@ -64,6 +64,7 @@ class AddMembersPageState extends State<AddMembersPage>
   }
 
   void addtolist() {
+    selectusers.add("admin");
     for (int i = 0; i < setval.length; i++) {
       if (setval[i] == true) {
         Map user = data[i];

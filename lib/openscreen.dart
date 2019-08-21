@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
-
+import 'dart:math';
+import 'package:percent_indicator/percent_indicator.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:quito_1/helperclasses/netmanager.dart';
 import 'package:quito_1/openchatscreen.dart';
@@ -34,7 +34,7 @@ import 'package:cached_network_image/cached_network_image.dart';
   in user of the app
 
   The Scaffold's default FloatingActionButton is used to transfer a user 
-  the route from which one may create a new project.
+  the route from which one may create a  project.
 */
 
 class OpenScreen extends StatefulWidget {
@@ -59,7 +59,6 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
   List data = List();
   Widget appBarTitle = Text('Projects');
   Icon actionIcon = Icon(Icons.search);
-  List newdata = List();
   var respBody;
   bool internet = true;
   List saveimage = List();
@@ -67,14 +66,14 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
   int count = 1;
   List holder = List();
   WebSocket socket;
-
+  List completelist = List();
   get stringdata => null;
   void setsearchdata() {
     if (count == 1) {
       holder = data;
     }
     setState(() {
-      data = newdata;
+      data = data;
     });
     count += 1;
   }
@@ -94,8 +93,8 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
       int seq = -1;
       socket.listen((data) {
         final jsonData = jsonDecode(data);
-        int newSeq = jsonData['seq'];
-        if (seq < newSeq) {
+        int Seq = jsonData['seq'];
+        if (seq < Seq) {
           if (jsonData['event'] == 'posted') {
             final postData = jsonData['data'];
             final post = jsonDecode(postData['post']);
@@ -146,7 +145,7 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
             }
           }
         } else {
-          seq = newSeq;
+          seq = Seq;
         }
       });
     } catch (err) {
@@ -197,12 +196,31 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
     setState(() {
       data = data;
     });
+    for (var project in data) {
+      await gettasksdata(project['@id']);
+    }
+  }
+
+  Future getLargeImage(int index) async {
+    String link = await NetManager.getLargeImage(index, data[index]["@id"]);
+    return Image.network(
+      link,
+    );
+  }
+
+  gettasksdata(String url) async {
+    int complete = 0;
+    var list = await NetManager.getTasksData(url);
+    for (var task in list) {
+      Map taskinfo = await NetManager.getTask(task['@id']);
+      if (taskinfo["complete"] == true) {
+        complete += 1;
+      }
+    }
+    completelist.add([complete, list.length]);
   }
 
   Future delete(int index) async {
-    // print(index);
-    // print(data);
-    // print(data[index]);
     var response = await NetManager.delete(data[index]["@id"]);
     if (response == 204) {
       data.removeAt(index);
@@ -242,8 +260,11 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
 
     Widget lst(Icon ico, List data) {
       return ListView.builder(
+        
           itemCount: data == null ? 0 : data.length,
           itemBuilder: (BuildContext context, int index) {
+            int complete = Random().nextInt(10);
+            completelist[index] = completelist[index] == null ? [0,0] : completelist[index];
             return Slidable(
               delegate: SlidableDrawerDelegate(),
               actionExtentRatio: 0.25,
@@ -255,48 +276,98 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
                       
                       contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
                       onTap: () {
-                        //print(index);
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                          return TaskList( user, data[index]["@id"],);
+                          return TaskList(
+                            user,
+                            data[index]["@id"],
+                          );
                         }));
                       },
-                      leading: data[index]["image"] == null
-                          ? Image.asset('assets/images/default-image.jpg')
-                          : CachedNetworkImage(
-                              imageUrl: data[index]["image"],
-                              placeholder: (context, url) =>
-                                  CircularProgressIndicator(),
-                              width: 80.0,
+                      leading: GestureDetector(
+                        onTap: () async {
+                          var image = await getLargeImage(index);
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              // return object of type Dialog
+                              return AlertDialog(
+                                contentPadding: EdgeInsets.all(0),
+                                // title: Text("Alert Dialog title"),
+                                content: image == null
+                                    ? Image.asset(
+                                        'assets/images/default-image.jpg')
+                                    : image,
+                                actions: <Widget>[
+                                  // usually buttons at the bottom of the dialog
+                                  FlatButton(
+                                    child: Icon(Icons.close),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  FlatButton(
+                                    child: Icon(Icons.edit),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  FlatButton(
+                                    child: Icon(Icons.info),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: GestureDetector(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 10.0),
+                            child: ClipRRect(
+                              borderRadius: new BorderRadius.circular(5.0),
+                              child: data[index]["image"] == null
+                                  ? Image.asset(
+                                      'assets/images/default-image.jpg')
+                                  : CachedNetworkImage(
+                                      imageUrl: data[index]["image"],
+                                      placeholder: (context, url) =>
+                                          CircularProgressIndicator(),
+                                    ),
                             ),
-                      trailing: PopupMenuButton<int>(
-                        itemBuilder: (context) => [
-                              PopupMenuItem(
-                                value: 1,
-                                child: FlatButton(
-                                  child: Text("Team Members"),
-                                  onPressed: () {
-                                    Navigator.push(context,
-                                        MaterialPageRoute(builder: (context) {
-                                      return Members(
-                                          url: data[index]["@id"], user: user);
-                                    }));
-                                  },
-                                ),
-                              ),
-                              PopupMenuItem(
-                                value: 2,
-                                child: FlatButton(
-                                  child: Text("Move to Top"),
-                                  onPressed: () {},
-                                ),
-                              ),
-                            ],
+                          ),
+                        ),
                       ),
-                      title: Text("${data[index]["title"]} "),
+                      trailing: GestureDetector(
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return Members(url: data[index]["@id"], user: user);
+                          }));
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 10.0),
+                          child: CircularPercentIndicator(
+                              radius: 30.0,
+                              lineWidth: 3.0,
+                              animation: true,
+                              percent: completelist[index][0] * .1,
+                              center: new Text("${(completelist[index][0])}"),
+                              progressColor: Color(0xff7e1946)),
+                        ),
+                      ),
+                      title: Text("${data[index]["title"]} ",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 18.0,
+                              color: Colors.grey[800],
+                              fontWeight: FontWeight.w500)),
                       subtitle: Text("Event type: ${data[index]["@type"]}",
                           style:
-                              TextStyle(fontSize: 10.0, color: Colors.black54)),
+                              TextStyle(fontSize: 15.0, color: Colors.black54)),
                     ),
                     Divider(
                       height: 1.0,
@@ -359,7 +430,7 @@ class OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMix
                     }
                     text = text.toLowerCase();
                     setState(() {
-                      newdata = data.where((project) {
+                      data = data.where((project) {
                         var name = project["title"].toLowerCase();
                         return name.contains(text);
                       }).toList();
