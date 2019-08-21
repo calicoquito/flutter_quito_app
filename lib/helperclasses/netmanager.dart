@@ -14,7 +14,6 @@ class NetManager {
   
 
   static Future<List> getProjectsData() async {
-    //print('Bearer ${user.ploneToken}');
     String url = Urls.projects;
     List data = List();
     List filterProjects = List();

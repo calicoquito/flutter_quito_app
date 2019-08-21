@@ -10,7 +10,6 @@ import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'helperclasses/user.dart';
-import 'quitologosliver.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -199,9 +198,6 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
   }
 
   Future delete(int index) async {
-    // print(index);
-    // print(data);
-    // print(data[index]);
     var response = await NetManager.delete(data[index]["@id"]);
     if (response == 204) {
       data.removeAt(index);
