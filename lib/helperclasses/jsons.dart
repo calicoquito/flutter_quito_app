@@ -36,9 +36,10 @@ class Jsons{
     "@type": "task",
     "title": "Untitled",
     "description": "No description",
+    "complete": false,
     "task_detail": {
       "content-type": "text/html",
-      "data": "<h2>Talk to some people to volunteer on the the project</h2>",
+      "data": "<h2>None</h2>",
       "encoding": "utf-8"
     },
     "additional_files": null,

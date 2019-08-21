@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:quito_1/helperclasses/usersmanager.dart';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
-import 'dart:convert';
 import 'addmembers.dart';
-import 'helperclasses/jsons.dart';
-import 'package:http/http.dart' as http;
 
 import 'userinfo.dart';
 
@@ -32,35 +29,38 @@ class TaskeditState extends State<Taskedit> {
   Map data = Map();
   String title;
   String description;
+  String details;
 
   //Map taskjson = Jsons.taskjson;
 
   @override
   void initState() {
     super.initState();
-    getSWData();
+    getData();
   }
 
-  Future<String> getSWData() async {
-    var response = await http.get(taskurl, headers: {
-      "Accept": "application/json",
-      "Authorization": "Bearer ${widget.user.ploneToken}",
-    });
-    var resBody = json.decode(response.body);
-    displayMembers = await UsersManager.getmatchingusers(assignedMembers);
-    setState(() {
-      data = resBody;
-      if (data["members"] != null) {
-        assignedMembers = data["members"].isEmpty ? null : data["members"];
-      }
-      title = data["title"] == null ? "" : "${data["title"]}";
-      description = data["description"] == null
-          ? ""
-          : " ${data["description"]}";
-      //details = data["detail"]["data"] == null ? "Details: " : "Details: ${data["detail"]["data"]}";
-      print(data["members"]);
-      print('${data["title"]}, ${data["description"]}, ${data["detail"]}');
+  Future<String> getData() async {
+    data = await NetManager.getTask(taskurl);
+    if (data["members"] != null) {
+      assignedMembers = data["members"].isEmpty ? null : data["members"];
+    }
+    title = data["title"] == null ? "" : "${data["title"]}";
+    description = data["description"] == null
+        ? ""
+        : " ${data["description"]}";
+    details = data["task_detail"]["data"] == null
+        ? ""
+        : "${data["task_detail"]["data"]}";
+    details = details.replaceAll(new RegExp(r'<h2>'), ' ');
+    details = details.replaceAll(new RegExp(r'</h2>'), ' ');
+    displayMembers = await UsersManager.getmatchingusers(data["members"]);
 
+    setState(() {
+      assignedMembers = assignedMembers;
+      title = title;
+      description = description;
+      details = details;
+      displayMembers = displayMembers;
     });
 
 
@@ -116,7 +116,7 @@ class TaskeditState extends State<Taskedit> {
               //controller: controller,
               decoration: InputDecoration(
                   helperText: "Description...",
-                  hintText: description == null ? "" : description,
+                  hintText: details == null ? "" : description,
                   //labelText: "Description...",
                   contentPadding: EdgeInsets.all(14.0),
                   border: OutlineInputBorder()),
@@ -139,7 +139,7 @@ class TaskeditState extends State<Taskedit> {
               textAlign: TextAlign.justify,
               decoration: InputDecoration(
                   helperText: "Task Details...",
-                  hintText: description == null ? "" : description,
+                  hintText: details == null ? "" : details,
                   //labelText: "Task Details...",
                   contentPadding: EdgeInsets.all(14.0),
                   border: OutlineInputBorder()),

@@ -32,7 +32,8 @@ dependencies:
   shared_preferences:
   flutter_cache_manager:
   cached_network_image:
-  flushbar:
+  flushbar: '1.5.3'
+  percent_indicator: "^2.1.1"
   #flutter_uploader:
 
 
