@@ -37,13 +37,11 @@ class TaskDataState extends State<TaskData> {
     if (data["members"] != null) {
       assignedMembers = data["members"].isEmpty ? null : data["members"];
     }
-    title = data["title"] == null ? "Tile: " : "Title: ${data["title"]}";
-    description = data["description"] == null
-        ? "Description: "
-        : "Description: ${data["description"]}";
+    title = data["title"] == null ? "" : "${data["title"]}";
+    description = data["description"] == null ? "" : data["description"];
     details = data["task_detail"]["data"] == null
-        ? "Details: "
-        : "Details: ${data["task_detail"]["data"]}";
+        ? ""
+        : "${data["task_detail"]["data"]}";
     details = details.replaceAll(new RegExp(r'<h2>'), ' ');
     details = details.replaceAll(new RegExp(r'</h2>'), ' ');
     displayMembers = await UsersManager.getmatchingusers(data["members"]);
@@ -69,19 +67,61 @@ class TaskDataState extends State<TaskData> {
       body: ListView(
         children: <Widget>[
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
-            child: Text(title == null ? "" : title),
+            padding: EdgeInsets.all(5),
+            child: Card(
+              child: Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        "Title:",
+                        style: TextStyle(
+                            fontSize: 16.0, fontWeight: FontWeight.w800),
+                      ),
+                      Text(title == null ? "" : title),
+                    ],
+                  )),
+            ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
-            child: Text(description == null ? "" : description),
+            padding: EdgeInsets.all(5),
+            child: Card(
+              child: Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        "Details:",
+                        style: TextStyle(
+                            fontSize: 16.0, fontWeight: FontWeight.w800),
+                      ),
+                      Text(details == null ? "" : details),
+                    ],
+                  )),
+            ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
-            child: Text(details == null ? "" : details),
+            padding: EdgeInsets.all(5),
+            child: Card(
+              child: Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        "Description:",
+                        style: TextStyle(
+                            fontSize: 16.0, fontWeight: FontWeight.w800),
+                      ),
+                      Text(description == null ? "" : description),
+                    ],
+                  )),
+            ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+            padding: EdgeInsets.all(5),
             child: ListTile(
               leading: Text("Set As Completed"),
               trailing: Switch(
@@ -94,6 +134,13 @@ class TaskDataState extends State<TaskData> {
                   }),
             ),
           ),
+          Padding(
+            padding: EdgeInsets.only(left: 15),
+            child: Text(
+              "Team:",
+              style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w800),
+            ),
+          ),
           Container(
             height: 100.0,
             child: ListView.builder(
@@ -102,7 +149,7 @@ class TaskDataState extends State<TaskData> {
               itemBuilder: (context, index) {
                 return Container(
                     child: Padding(
-                        padding: EdgeInsets.all(10),
+                        padding: EdgeInsets.all(5),
                         child: Column(
                           children: <Widget>[
                             FlatButton(
