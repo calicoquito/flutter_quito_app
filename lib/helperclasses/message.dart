@@ -50,7 +50,7 @@ class _MessageState extends State<Message>{
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth:MediaQuery.of(context).size.width*0.5),
             child: Card(
-              color: widget.type =='incoming' ? Colors.blue : Colors.green,
+              color: widget.type =='incoming' ? Colors.grey[200] : Colors.green[200],
               child:  Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: widget.type == 'incoming' 
@@ -69,7 +69,7 @@ class _MessageState extends State<Message>{
                       softWrap: true,
                     ),
                     Text(
-                      'widget.messagejkb;kadb;kbdaaibiuviuvjhjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjviuvkviuvuivijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj',
+                      '${widget.message}',
                       overflow: TextOverflow.fade,
                       style: TextStyle(
                         fontSize: 16,

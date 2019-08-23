@@ -28,6 +28,7 @@ class TaskListState extends State<TaskList> {
   List<bool> switchlist = List();
   Widget appBarTitle = Text('Tasks');
   Icon actionIcon = Icon(Icons.search);
+  bool isLoading = true;
 
   List newdata = List();
 
@@ -46,25 +47,34 @@ class TaskListState extends State<TaskList> {
   @override
   void initState() {
     super.initState();
+    isLoading = true;
     getSWData();
   }
 
   Future getSWData() async {
     data = await NetManager.getTasksData(projecturl);
-    print(data);
+    print('********TASKS.DART GETSWDATA************');
     for (var task in data) {
       var taskinfo = await NetManager.getTask(task['@id']);
-      print(taskinfo["complete"]);
-      print(task);
       switchlist.add(taskinfo["complete"] == true ? true : false);
       // if (data[i]['additiional_files'] == null) {
       //   data[i]['additiional_files'] = Random().nextInt(15);
       // }
     }
-    setState(() {
-      data = data;
-      switchlist = switchlist;
-    });
+    try{
+      if(this.mounted){
+        setState(() {
+          data = data;
+          switchlist = switchlist;
+          isLoading = false;
+        });
+      }
+      
+    }
+    catch(err){
+      print('*********TASKS.DART GETSWDATA*********');
+      print(err);
+    }
   }
 
   Future delete(int index) async {
@@ -266,9 +276,47 @@ class TaskListState extends State<TaskList> {
               });
             },
           ),
+          IconButton(
+            icon: Icon(
+              Icons.chat,
+              color: Colors.white,
+            ),
+            onPressed: (){
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context){
+                    return OpenChatScreen(
+                      title: user.channelsByName[widget.projectName]['display_name']?? 'Untitled',
+                      user: user,
+                      channelId: user.channelsByName[widget.projectName]['id'],
+                      project: user.projects[widget.projectName]
+                    );
+                  }
+                )
+              );
+            },
+          )
         ],
       ),
-      body: Container(child: lst(Icon(Icons.person), data)),
+      body: RefreshIndicator(
+        onRefresh: ()async{
+          await getSWData();
+        },
+        child: isLoading ?
+        Center(child: CircularProgressIndicator(),)
+        : Container(
+          child: data.isEmpty 
+            ?Center(
+              child:Text(
+                'No Tasks Yet',
+                style: TextStyle(
+                  fontSize: 16
+                ),
+              )
+            )
+            :lst(Icon(Icons.person), data) 
+        )
+      ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add, color: Colors.white),
         onPressed: () {

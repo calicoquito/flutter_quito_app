@@ -51,40 +51,42 @@ class _ChatScreenState extends State<ChatScreen> with AutomaticKeepAliveClientMi
           return isMember;
         });
         
-        
-        channels.forEach((channel){
-          if(channel['display_name']==""){
-            final titleIds = channel['name'].split('_');
-            if(titleIds[0]==widget.user.userId && titleIds.length ==3){
-              setState(() {
-                chats.add(Chat(
-                  title: widget.user.members[titleIds[2]], 
-                  channelId: channel['id'], 
-                  type: 'direct',
-                ));
-              });
+        if(this.mounted){
+          channels.forEach((channel){
+            if(channel['display_name']==""){
+              final titleIds = channel['name'].split('_');
+              if(titleIds[0]==widget.user.userId && titleIds.length ==3){
+                setState(() {
+                  chats.add(Chat(
+                    title: widget.user.members[titleIds[2]], 
+                    channelId: channel['id'], 
+                    type: 'direct',
+                  ));
+                });
+              }
+              else{
+                setState(() {
+                  chats.add(Chat(
+                    title: widget.user.members[titleIds[0]], 
+                    channelId: channel['id'], 
+                    type: 'direct',
+                  ));
+                });
+              }
             }
             else{
               setState(() {
                 chats.add(Chat(
-                  title: widget.user.members[titleIds[0]], 
+                  title: channel['display_name'], 
                   channelId: channel['id'], 
-                  type: 'direct',
+                  type: 'group', 
+                  project: widget.user.projects[channel['name']],
                 ));
               });
             }
-          }
-          else{
-            setState(() {
-              chats.add(Chat(
-                title: channel['display_name'], 
-                channelId: channel['id'], 
-                type: 'group', 
-                project: widget.user.projects[channel['name']],
-              ));
-            });
-          }
-        }); 
+          }); 
+        }
+        
       });
     }
     on SocketException catch(err){
@@ -137,9 +139,10 @@ class _ChatScreenState extends State<ChatScreen> with AutomaticKeepAliveClientMi
           }
         }
         else{
+          print(widget.user.projects[channel['name']]);
           setState(() {
             chats.add(Chat(
-              title: channel['display_name'], 
+              title: channel['display_name']??'Untitled', 
               channelId: channel['id'], 
               type: 'group', 
               project: widget.user.projects[channel['name']],
@@ -149,6 +152,7 @@ class _ChatScreenState extends State<ChatScreen> with AutomaticKeepAliveClientMi
       });
     }
     catch(err){
+      print('************GET CHANNELS***********');
       print(err);
     }
     finally{
@@ -165,10 +169,15 @@ class _ChatScreenState extends State<ChatScreen> with AutomaticKeepAliveClientMi
   }
 
   @override
+  void dispose() {
+    print('***********CHAT SCREEN DISPOSED***************');
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
      // backgroundColor: Color(0xffefefef),
-     backgroundColor: Colors.cyan[100],
       appBar: AppBar(
         title: Text('Chats'),
         actions: <Widget>[

@@ -23,10 +23,10 @@ class CurlyLinePainter extends CustomPainter{
     painter.style = PaintingStyle.stroke;
 
     path.moveTo(-dimension.width/16, dimension.height/60);
-    path.quadraticBezierTo(-dimension.width/3.5, dimension.height/3.5, dimension.width/2.5, dimension.height/2.4);
-    path.lineTo(dimension.width/2.5-10, dimension.height/2.4+5);
-    path.moveTo(dimension.width/2.5-8, dimension.height/2.4-10);
-    path.lineTo(dimension.width/2.5, dimension.height/2.4);
+    path.quadraticBezierTo(-dimension.width/3.5, dimension.height/3.5, dimension.width/2.6, dimension.height/2.5);
+    path.lineTo(dimension.width/2.6-10, dimension.height/2.5+5);
+    path.moveTo(dimension.width/2.6-8, dimension.height/2.5-10);
+    path.lineTo(dimension.width/2.6, dimension.height/2.5);
 
     // path.moveTo(-50, 20);
     // path.quadraticBezierTo(-150, 400, 300, 510);

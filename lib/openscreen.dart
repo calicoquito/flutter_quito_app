@@ -1,8 +1,12 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
-import 'package:percent_indicator/percent_indicator.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:percent_indicator/percent_indicator.dart';
+import 'helperclasses/netmanager.dart';
+import 'helperclasses/saver.dart';
+import 'openchatscreen.dart';
 import 'package:quito_1/helperclasses/netmanager.dart';
 import 'helperclasses/curlyline.dart';
 import 'helperclasses/dialogmanager.dart';
@@ -42,17 +46,18 @@ class OpenScreen extends StatefulWidget {
 
   const OpenScreen({Key key, this.user}) : super(key: key);
   @override
-  OpenScreenState createState() => OpenScreenState(user: user);
+  _OpenScreenState createState() => _OpenScreenState(user: user);
 }
 
-class OpenScreenState extends State<OpenScreen> {
-  bool isLoading = true; // checks wether the app is still fetching data
-  final FirebaseMessaging firebaseMessaging =
-      FirebaseMessaging(); // used to receive push notification top the app
-  Map projects = Map(); // the projects that the user is involved in
-  Map<String, dynamic> channels =
-      Map(); // the channel for each chat the user is involved in
-  OpenScreenState({Key key, this.user});
+class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMixin<OpenScreen> {
+  _OpenScreenState({this.user});
+
+  bool isLoading = true; // checks wether the app is still fetching data 
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging(); // used to receive push notification top the app
+  Map projects = Map(); // the projects that the user is involved in 
+  Map<String, dynamic> channels = Map(); // the channel for each chat the user is involved in
+
+  
   final User user;
   final String url = Urls.projects;
   List data = List();
@@ -64,103 +69,40 @@ class OpenScreenState extends State<OpenScreen> {
 
   get stringdata => null;
 
-  void listenForMessages() async {
-    try {
-      socket = await WebSocket.connect(
-          'ws://mattermost.alteroo.com/api/v4/websocket',
-          headers: {'Authorization': 'Bearer ${widget.user.mattermostToken}'});
-      int seq = -1;
-      socket.listen((data) {
-        final jsonData = jsonDecode(data);
-        int Seq = jsonData['seq'];
-        if (seq < Seq) {
-          if (jsonData['event'] == 'posted') {
-            final postData = jsonData['data'];
-            final post = jsonDecode(postData['post']);
-            Flushbar(
-                backgroundColor: Theme.of(context).primaryColor,
-                duration: Duration(seconds: 3),
-                flushbarPosition: FlushbarPosition.TOP,
-                messageText: ListTile(
-                  title: Text('Channel'),
-                  subtitle: Text(post['message']),
-                ))
-              ..show(context);
-          }
-        } else {
-          seq = Seq;
-        }
-      });
-    } catch (err) {
-      print(err);
-    }
-  }
-
-  //Configures the actions taken by the app on notification received
-  void firebaseMessagingInit() async {
-    firebaseMessaging.configure(onLaunch: (notification) async {
-      print(notification);
-    }, onMessage: (notification) async {
-      print(notification);
-      Flushbar(
-        flushbarPosition: FlushbarPosition.TOP,
-        backgroundColor: Theme.of(context).primaryColor,
-        duration: Duration(seconds: 3),
-        messageText: ListTile(
-          leading: CircleAvatar(
-            child: Icon(Icons.group),
-          ),
-          title: Text(
-            notification['notification']['title'],
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Colors.white,
-            ),
-          ),
-          subtitle: Text(
-            notification['notification']['body'],
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      )..show(context);
-    }, onResume: (notification) async {
-      print(notification);
-    });
-  }
 
   @override
   void initState() {
     super.initState();
-    //Gets Firebase Cloud Messaging device token for push notifications
-    firebaseMessaging.getToken().then((token) {
-      //print(token);
-    });
-    listenForMessages();
-    firebaseMessagingInit();
-    getSWData().then((_) {
-      setState(() {
-        isLoading = false;
+    getSWData()
+    .then((_){
+      setState((){
+        isLoading = false; //Tells when to stop displaying the progres indicator
       });
     });
+
+    // listened fot channel/chat messages
+    listenForMessages();
   }
 
-  void dispose() {
+  void dispose(){
     socket.close();
+    print('******** OPEN SCREEN DISPOSED**********');
     super.dispose();
   }
-
+  
   Future getSWData() async {
     NetManager.user = user;
     data = await NetManager.getProjectsData();
     channels = await NetManager.getChannels();
-    projects = NetManager.projects;
     if (data != null) {
       _onSelected(0);
     }
-    setState(() {
-      data = data;
-    });
+    if(this.mounted){
+      setState(() {
+        projects = NetManager.projects;
+        data = data;
+      });
+    }
   }
 
   Future getLargeImage(int index) async {
@@ -194,6 +136,7 @@ class OpenScreenState extends State<OpenScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     double height = MediaQuery.of(context).size.height;
     final User user = Provider.of<User>(context);
     user.projects = NetManager.projects;
@@ -292,25 +235,25 @@ class OpenScreenState extends State<OpenScreen> {
                               return TaskList(
                                 user,
                                 data[index]["@id"],
+                                projectName: data[index]['id'],
                               );
                             }));
                           },
                         ),
                       ),
-                      title: Text("${data[index]["title"]} ",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontSize: 18.0,
-                              color: Colors.grey[800],
-                              fontWeight: FontWeight.w500)),
-                      subtitle: Text("Event type: ${data[index]["@type"]}",
-                          style:
-                              TextStyle(fontSize: 15.0, color: Colors.black54)),
-                    ),
-                    Divider(
-                      height: 1.0,
-                    ),
+                    title: Text("${data[index]["title"]} ",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 18.0,
+                            color: Colors.grey[800],
+                            fontWeight: FontWeight.w500)),
+                    subtitle: Text("Event type: ${data[index]["@type"]}",
+                        style:
+                            TextStyle(fontSize: 15.0, color: Colors.black54)),
+                  ),
+                  Divider(
+                    height: 1.0,),
                   ],
                 ),
                 actions: <Widget>[
@@ -352,6 +295,7 @@ class OpenScreenState extends State<OpenScreen> {
       drawer: SideDrawer(),
       body: Stack(
         children: <Widget>[
+          data.isEmpty && !isLoading? 
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -361,11 +305,11 @@ class OpenScreenState extends State<OpenScreen> {
               ),
               CurlyLine()
             ],
-          ),
-          Container(
+          )
+          :Container(
             child: RefreshIndicator(
                 onRefresh: () async {
-                  getSWData();
+                  await getSWData();
                 },
                 child: isLoading
                     ? Center(
@@ -548,14 +492,16 @@ class OpenScreenState extends State<OpenScreen> {
                                                   return OpenChatScreen(
                                                       title: user.channelsByName[
                                                               data[_selectedIndex]
-                                                                  ["@id"]]
+                                                                  ["id"]]
                                                           ['display_name'],
                                                       user: user,
-                                                      channelId: user
-                                                              .channelsByName[
-                                                          _selectedIndex]['id'],
+                                                      channelId: user.channelsByName[
+                                                              data[_selectedIndex]
+                                                                  ["id"]]
+                                                          ['id'],
                                                       project: user.projects[
-                                                          _selectedIndex]);
+                                                              data[_selectedIndex]
+                                                                  ["id"]]);
                                                 }));
                                               },
                                             ),
@@ -589,4 +535,117 @@ class OpenScreenState extends State<OpenScreen> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  /*
+   * this is a temporary substitute for the push notifications and it is
+   * not currently functional. 
+   * This method displays a clickable Flushbar with the data regarding new messages 
+   * for the user
+   */
+  void listenForMessages() async{
+    try{
+      socket = await WebSocket.connect(
+          'ws://mattermost.alteroo.com/api/v4/websocket',
+          headers: {'Authorization': 'Bearer ${widget.user.mattermostToken}'});
+      int seq = -1;
+      socket.listen((data) {
+        final jsonData = jsonDecode(data);
+        int newSeq = jsonData['seq'];
+        if (seq < newSeq) {
+          if (jsonData['event'] == 'posted') {
+            final postData = jsonData['data'];
+            final post = jsonDecode(postData['post']);
+            if(channels.containsKey(post['channel_id'])){
+              Flushbar(
+                onTap: (flushbar){
+                  flushbar.dismiss();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder:(context)=> OpenChatScreen(
+                        title: postData['channel_display_name'],
+                        user: user,
+                        channelId: post['channel_id'],
+                        project: projects[postData['channel_name']],
+                      )
+                    )
+                  );
+                },
+                titleText: Text(
+                  postData['channel_display_name'],
+                  overflow: TextOverflow.fade,
+                ),
+                backgroundColor: Colors.blue,
+                padding: EdgeInsets.all(8),
+                duration: Duration(seconds: 8),
+                flushbarPosition: FlushbarPosition.TOP,
+                messageText: ListTile(
+                  leading: CircleAvatar(
+                    child: projects[postData['channel_name']]['thumbnail']==null
+                    ?Icon(Icons.chat) 
+                    :null,
+                    backgroundImage: projects[postData['channel_name']]['thumbnail']==null
+                    ?null
+                    :NetworkImage(
+                      projects[postData['channel_name']]['thumbnail']
+                    ) ,
+                  ),
+                  title: Text(
+                    user.members[post['user_id']],
+                    overflow: TextOverflow.fade,
+                  ),
+                  subtitle: Text(
+                    post['message'],
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ) 
+              )..show(context);
+            }
+          }
+        } else {
+          seq = newSeq;
+        }
+      });
+    } catch (err) {
+      print(err);
+    }
+  }
+
+
+  // Configures the actions taken by the app on notification received
+  // Currently not funtional due to the unresponsive mattermost push proxy
+  // void firebaseMessagingInit() async {
+  //   firebaseMessaging.configure(onLaunch: (notification) async {
+  //     print(notification);
+  //   }, onMessage: (notification) async {
+  //     print(notification);
+  //     Flushbar(
+  //       flushbarPosition: FlushbarPosition.TOP,
+  //       backgroundColor: Theme.of(context).primaryColor,
+  //       duration: Duration(seconds: 3),
+  //       messageText: ListTile(
+  //         leading: CircleAvatar(
+  //           child: Icon(Icons.group),
+  //         ),
+  //         title: Text(
+  //           notification['notification']['title'],
+  //           overflow: TextOverflow.ellipsis,
+  //           style: TextStyle(
+  //             color: Colors.white,
+  //           ),
+  //         ),
+  //         subtitle: Text(
+  //           notification['notification']['body'],
+  //           overflow: TextOverflow.ellipsis,
+  //           style: TextStyle(color: Colors.white),
+  //         ),
+  //       ),
+  //     )..show(context);
+  //   }, onResume: (notification) async {
+  //     print(notification);
+  //   });
+  // }
+
 }

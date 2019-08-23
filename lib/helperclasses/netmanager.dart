@@ -14,7 +14,6 @@ class NetManager {
   
 
   static Future<List> getProjectsData() async {
-    //print('Bearer ${user.ploneToken}');
     String url = Urls.projects;
     List data = List();
     List filterProjects = List();
@@ -26,7 +25,6 @@ class NetManager {
       });
 
       var resBody = json.decode(response.body);
-      print(response.statusCode);
       data = resBody["items"];
       for (var i in data) {
         i = i as Map;
@@ -39,7 +37,7 @@ class NetManager {
             "Authorization": 'Bearer ${user.ploneToken}'
           });
           var respBody = json.decode(resp.body);
-          if (respBody != null) {
+          if (respBody != null && respBody["image"]!=null) {
             String imageLink = respBody["image"]["scales"]["thumb"]["download"];
             if (respBody['members'].contains(user.username)) {
               data[i].putIfAbsent('id', () => respBody['id']);
@@ -49,7 +47,12 @@ class NetManager {
             }
             return imageLink;
           }
-        } catch (err) {
+          else{
+            return null;
+          }
+        } 
+        catch (err) {
+          print('***********GET IMAGE LINK************');
           print(err);
         }
       }
@@ -63,7 +66,7 @@ class NetManager {
       }
 
       // set data state and save json for online use when this try block works
-      data = data; //filterProjects;
+      data = filterProjects; //data
       Saver.setData(data: data, name: "projectsdata");
       projects = projectsData;
 
@@ -77,21 +80,21 @@ class NetManager {
   }
 
   static Future getLargeImage(int index, String url)async{
-
-        try {
-          var resp = await http.get(url, headers: {
-            "Accept": "application/json",
-            "Authorization": 'Bearer ${user.ploneToken}'
-          });
-          var respBody = json.decode(resp.body);
-          if (respBody != null) {
-            String imageLink = respBody["image"]["scales"]["large"]["download"];
-            return imageLink;
-          }
-        } catch (err) {
-          print(err);
-        }
-      
+    try {
+      var resp = await http.get(url, headers: {
+        "Accept": "application/json",
+        "Authorization": 'Bearer ${user.ploneToken}'
+      });
+      var respBody = json.decode(resp.body);
+      if (respBody != null) {
+        String imageLink = respBody["image"]["scales"]["large"]["download"];
+        return imageLink;
+      }
+    } 
+    catch (err) {
+      print('********GET LARGE IMAGE***********');
+      print(err);
+    }
   }
 
 
@@ -171,7 +174,6 @@ class NetManager {
       for (var i in data) {
         setval.add(false);
       }
-      print(data);
       return data;
     }
     return data;
@@ -185,8 +187,6 @@ class NetManager {
         "Authorization": "Bearer ${user.ploneToken}",
       });
       var resBody = json.decode(response.body);
-      print(resBody);
-
       data = resBody;
     } catch (err) {
       print(err);
@@ -306,10 +306,15 @@ class NetManager {
       }).toList();
 
       List<Future> requests = teamEndpoints.map((endpoint){
-        return http.get(
-          endpoint,
-          headers: {'Authorization':'Bearer ${user.mattermostToken}'}
-        );
+        try{
+          return http.get(
+            endpoint,
+            headers: {'Authorization':'Bearer ${user.mattermostToken}'}
+          );
+        }
+        catch(err){
+          print(err);
+        }
       }).toList();
       
       final responses = await Future.wait(requests).catchError((err){print('Error awaiting all responses');});

@@ -37,18 +37,6 @@ class SideDrawer extends StatelessWidget{
               ),
             ),
             ListTile(
-              leading: Icon(Icons.chat),
-              title: Text("Chat"),
-              onTap: (){
-                Navigator.of(context).pop();
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context)=> ChatScreen(user: Provider.of<User>(context))
-                  )
-                );
-              },
-            ),
-            ListTile(
               leading: Icon(Icons.settings),
               title: Text('Settings'),
               onTap: (){

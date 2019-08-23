@@ -1,3 +1,4 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -155,6 +156,18 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                             return;
                           }
 
+                          final connection = await Connectivity().checkConnectivity();
+                          if(connection == ConnectivityResult.none){
+                            Scaffold.of(context).showSnackBar(SnackBar(
+                              backgroundColor: Theme.of(context).backgroundColor,
+                              content: Text( 'Check internet connection',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ));
+                            return;
+                          }
+
                           setState(() {
                             isLoading = true;
                           });
@@ -204,16 +217,20 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                 )
                               );
 
-                              setState(() {
-                                usernameController.clear();
-                                passwordController.clear();
-                                isLoading = false;
-                              });
+                              if(this.mounted){
+                                setState(() {
+                                  usernameController.clear();
+                                  passwordController.clear();
+                                  isLoading = false;
+                                });
+                              }
                             } 
                             else {
-                              setState(() {
-                                isLoading = false;
-                              });
+                              if(this.mounted){
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              }
                               print('Username or password incorrect');
                               Scaffold.of(context).showSnackBar(SnackBar(
                                 backgroundColor: Theme.of(context).backgroundColor,
@@ -226,9 +243,11 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                             }
                           } 
                           catch (err) {
-                            setState(() {
-                              isLoading = false;
-                            });
+                            if(this.mounted){
+                              setState(() {
+                                isLoading = false;
+                              });
+                            }
                             Scaffold.of(context).showSnackBar(SnackBar(
                               backgroundColor: Theme.of(context).backgroundColor,
                               content: Text( 'Check internet connection',
