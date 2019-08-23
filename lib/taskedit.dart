@@ -77,7 +77,7 @@ class TaskeditState extends State<Taskedit> {
     NetManager.editTask(taskurl, data);
   }
 
-  @override
+   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -91,12 +91,9 @@ class TaskeditState extends State<Taskedit> {
             padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
             child: TextField(
               autocorrect: true,
-
-              ///controller: controller,
               decoration: InputDecoration(
                   helperText: "Title...",
                   hintText: title == null ? "" : title,
-                  //labelText: "Title...",
                   contentPadding: EdgeInsets.all(14.0),
                   border: OutlineInputBorder()),
               onChanged: (string) {
@@ -104,16 +101,12 @@ class TaskeditState extends State<Taskedit> {
                   data["title"] = string;
                 });
               },
-              onEditingComplete: () {
-                //controller.clear();
-              },
             ),
           ),
           Padding(
             padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
             child: TextField(
               autocorrect: true,
-              //controller: controller,
               decoration: InputDecoration(
                   helperText: "Description...",
                   hintText: details == null ? "" : description,
@@ -166,10 +159,14 @@ class TaskeditState extends State<Taskedit> {
                     print(assignedMembers);
                     displayMembers =
                         await UsersManager.getmatchingusers(assignedMembers);
-                    setState(() {
-                      displayMembers = displayMembers;
-                      data["members"] = assignedMembers == null ? null : [assignedMembers.join(',')];
-                    });
+                    if (displayMembers != null) {
+                      setState(() {
+                        displayMembers = displayMembers;
+                        data["members"] = assignedMembers == null
+                            ? null
+                            : List.from(assignedMembers);
+                      });
+                    }
                   },
                   child: Icon(
                     Icons.group_add,
@@ -200,10 +197,10 @@ class TaskeditState extends State<Taskedit> {
                                 backgroundColor: Colors.transparent,
                               ),
                               onPressed: () => Navigator.push(context,
-                                      MaterialPageRoute(builder: (context) {
-                                    return UserInfo(
-                                        userinfo: displayMembers[index]);
-                                  })),
+                                  MaterialPageRoute(builder: (context) {
+                                return UserInfo(
+                                    userinfo: displayMembers[index]);
+                              })),
                             ),
                             Text(
                               "${displayMembers[index]["fullname"]}",
