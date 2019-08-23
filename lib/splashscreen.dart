@@ -133,7 +133,7 @@ class SplashScreenState extends State<SplashScreen> {
     .whenComplete((){
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context)=>HomePages(user: widget.user,)
+          builder: (context)=>OpenScreen(user: widget.user,)
         ),
         (route)=>false
       );

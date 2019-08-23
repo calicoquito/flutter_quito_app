@@ -29,7 +29,6 @@ class TaskState extends State<Task> {
 
   Map taskjson = Jsons.taskjson;
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -43,7 +42,6 @@ class TaskState extends State<Task> {
             padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
             child: TextField(
               autocorrect: true,
-
               ///controller: controller,
               decoration: InputDecoration(
                   labelText: "Title...",
@@ -109,13 +107,14 @@ class TaskState extends State<Task> {
                         MaterialPageRoute(builder: (context) {
                       return AddMembersPage(user, datatype.task, projecturl);
                     }));
-                    print(assignedMembers);
                     displayMembers =
                         await UsersManager.getmatchingusers(assignedMembers);
-                    setState(() {
-                      displayMembers = displayMembers;
-                      taskjson["members"] = [assignedMembers.join(',')];
-                    });
+                    if (assignedMembers != null) {
+                      setState(() {
+                        displayMembers = displayMembers;
+                        taskjson["members"].addAll(assignedMembers);
+                      });
+                    }
                   },
                   child: Icon(
                     Icons.group_add,
@@ -146,10 +145,10 @@ class TaskState extends State<Task> {
                                 backgroundColor: Colors.transparent,
                               ),
                               onPressed: () => Navigator.push(context,
-                                      MaterialPageRoute(builder: (context) {
-                                    return UserInfo(
-                                        userinfo: displayMembers[index]);
-                                  })),
+                                  MaterialPageRoute(builder: (context) {
+                                return UserInfo(
+                                    userinfo: displayMembers[index]);
+                              })),
                             ),
                             Text(
                               "${displayMembers[index]["fullname"]}",

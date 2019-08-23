@@ -50,7 +50,7 @@ class RouterState extends State<Router> {
     if (isSignedIn == true) {
       UploadQueue.uploadAll();
       NetManager.user = user;
-      return HomePages(
+      return OpenScreen(
         user: user,
       );
     } else {

@@ -7,14 +7,13 @@ import 'package:quito_1/taskedit.dart';
 import 'helperclasses/dialogmanager.dart';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
-import 'task.dart';
+import 'taskcreate.dart';
 import 'taskdata.dart';
 import 'dart:math';
 
 class TaskList extends StatefulWidget {
   final User user;
   final String projecturl;
-
   final String projectName;
   const TaskList(this.user, this.projecturl,{this.projectName});
   @override
@@ -82,7 +81,6 @@ class TaskListState extends State<TaskList> {
 
   @override
   Widget build(BuildContext context) {
-    print(user.channelsByName);
     Widget lst(Icon ico, List data) {
       return ListView.builder(
           itemCount: data == null ? 0 : data.length,
@@ -184,7 +182,7 @@ class TaskListState extends State<TaskList> {
                                                   data[index]["@id"], task);
                                             }
                                           } else {
-                                            await DialogManager.complete(
+                                            await DialogManager.okay(
                                                 context,
                                                 "This Task Is Already Finished");
                                           }
@@ -194,59 +192,6 @@ class TaskListState extends State<TaskList> {
                               )),
                         ),
                       )
-
-                      // Card(
-                      //     child: Container(
-                      //   height: 100.0,
-                      //   child: ListTile(
-                      //     contentPadding: EdgeInsets.all(10),
-                      //     onTap: () {
-                      //       Navigator.push(context,
-                      //           MaterialPageRoute(builder: (context) {
-                      //         return TaskData(
-                      //             url: data[index]["@id"], user: widget.user);
-                      //       }));
-                      //     },
-                      //     // leading: CircleAvatar(
-                      //     //   child: Text("${data[index]["title"].split('')[0]}",
-                      //     //       style: TextStyle(
-                      //     //           color: Colors.white, fontSize: 20)),
-                      //     //   radius: 48.0,
-                      //     //   backgroundColor:
-                      //     //       // data[index]['additiional_files'] == null ?
-                      //     //       // Colors.primaries[data[index]['additiional_files']]  :
-                      //     //       Colors.primaries[Random().nextInt(15)],
-                      //     // ),
-
-                      //     title: Text(" ${data[index]["title"]}",
-                      //         maxLines: 1,
-                      //         overflow: TextOverflow.ellipsis,
-                      //         style: TextStyle(
-                      //             fontSize: 18.0,
-                      //             color: Colors.grey[800],
-                      //             fontWeight: FontWeight.w800)),
-                      //     subtitle: Text("${data[index]["description"]} ",
-                      //         maxLines: 1,
-                      //         overflow: TextOverflow.ellipsis,
-                      //         style: TextStyle(
-                      //             fontSize: 15.0, color: Colors.black54)),
-                      //     trailing: Container(
-                      //       child: Switch(
-                      //           value: switchlist[index],
-                      //           onChanged: (value) async {
-                      //             Map task = await NetManager.getTask(
-                      //                 data[index]["@id"]);
-                      //             print(task);
-                      //             task["complete"] = value;
-                      //             await NetManager.editTask(
-                      //                 data[index]["@id"], task);
-                      //             setState(() {
-                      //               switchlist[index] = value;
-                      //             });
-                      //           }),
-                      //     ),
-                      //   ),
-                      // )),
                     ],
                   ),
                 ),
@@ -281,7 +226,6 @@ class TaskListState extends State<TaskList> {
             );
           });
     }
-
     return Scaffold(
       appBar: AppBar(
         title: appBarTitle,
@@ -322,26 +266,6 @@ class TaskListState extends State<TaskList> {
               });
             },
           ),
-          IconButton(
-            icon: Icon(
-              Icons.chat,
-              color: Colors.white,
-            ),
-            onPressed: (){
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context){
-                    return OpenChatScreen(
-                      title: user.channelsByName[widget.projectName]['display_name'],
-                      user: user,
-                      channelId: user.channelsByName[widget.projectName]['id'],
-                      project: user.projects[widget.projectName]
-                    );
-                  }
-                )
-              );
-            },
-          )
         ],
       ),
       body: Container(child: lst(Icon(Icons.person), data)),
