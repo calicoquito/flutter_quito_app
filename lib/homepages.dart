@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:quito_1/chatscreen.dart';
-import 'package:quito_1/openscreen.dart';
-
 import 'helperclasses/user.dart';
+import 'chatscreen.dart';
+import 'openscreen.dart';
 
 class HomePages extends StatefulWidget{
   final User user;
-
   const HomePages({Key key, this.user}) : super(key: key);
   @override
   _HomePagesState createState() => _HomePagesState();
 }
 
 class _HomePagesState extends State<HomePages> {
-  PageController controller = PageController(keepPage: true, );
+  PageController controller = PageController(keepPage: true,);
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView(
+        physics: ScrollPhysics(),
         controller: controller,
         children: <Widget>[
           OpenScreen(user: widget.user,),

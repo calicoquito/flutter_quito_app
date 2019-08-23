@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:quito_1/helperclasses/usersmanager.dart';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
-import 'dart:convert';
 import 'addmembers.dart';
 import 'helperclasses/jsons.dart';
 
@@ -92,7 +91,7 @@ class TaskState extends State<Task> {
                   border: OutlineInputBorder()),
               onChanged: (string) {
                 setState(() {
-                  taskjson["detail"] = string;
+                  taskjson["task_detail"]["data"] = "<h2>$string</h2>";
                 });
               },
               onEditingComplete: () {

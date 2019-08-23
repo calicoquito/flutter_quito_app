@@ -124,6 +124,8 @@ class ChatState extends State<Chat> {
 
   @override
   Widget build(BuildContext context){
+    print('***********Chat Build Method**********');
+    print(widget.project);
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0,0.0,8.0,0.0),
       child: Card(
@@ -133,10 +135,10 @@ class ChatState extends State<Chat> {
           onLongPress: handleLongPress,
           onTap: handleTap,
           leading: CircleAvatar(
-            child: (widget.project['thumbnail']==null) 
+            child: (widget.project['thumbnail']==null || widget.project==null ) 
             ? (widget.type =='direct' ? Icon(Icons.person) : Icon(Icons.group))
             : null,
-            backgroundImage: widget.project['thumbnail']==null
+            backgroundImage: widget.project['thumbnail']==null || widget.project==null
             ? null
             : NetworkImage(
               widget.project['thumbnail']

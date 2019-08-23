@@ -25,7 +25,6 @@ class NetManager {
       });
 
       var resBody = json.decode(response.body);
-      print(response.statusCode);
       data = resBody["items"];
       for (var i in data) {
         i = i as Map;
@@ -38,7 +37,7 @@ class NetManager {
             "Authorization": 'Bearer ${user.ploneToken}'
           });
           var respBody = json.decode(resp.body);
-          if (respBody != null) {
+          if (respBody != null && respBody["image"]!=null) {
             String imageLink = respBody["image"]["scales"]["thumb"]["download"];
             if (respBody['members'].contains(user.username)) {
               data[i].putIfAbsent('id', () => respBody['id']);
@@ -48,7 +47,12 @@ class NetManager {
             }
             return imageLink;
           }
-        } catch (err) {
+          else{
+            return null;
+          }
+        } 
+        catch (err) {
+          print('***********GET IMAGE LINK************');
           print(err);
         }
       }
@@ -73,6 +77,24 @@ class NetManager {
       data = await Saver.getData(name: "projectsdata");
     }
     return data;
+  }
+
+  static Future getLargeImage(int index, String url)async{
+    try {
+      var resp = await http.get(url, headers: {
+        "Accept": "application/json",
+        "Authorization": 'Bearer ${user.ploneToken}'
+      });
+      var respBody = json.decode(resp.body);
+      if (respBody != null) {
+        String imageLink = respBody["image"]["scales"]["large"]["download"];
+        return imageLink;
+      }
+    } 
+    catch (err) {
+      print('********GET LARGE IMAGE***********');
+      print(err);
+    }
   }
 
 
@@ -139,7 +161,6 @@ class NetManager {
       });
       var resBody = json.decode(response.body);
       // print(user.ploneToken);
-      // print(resBody['items']);
       data = resBody["items"];
       // print(data);
       for (var i = 0; i == data.length; i++) {
@@ -150,10 +171,9 @@ class NetManager {
       //data is empty so get saved data when try block fails
       data = await Saver.getData(name: "$url-tasksdata");
       data = data;
-      for (var i = 0; i == data.length; i++) {
+      for (var i in data) {
         setval.add(false);
       }
-      print(data);
       return data;
     }
     return data;
@@ -167,8 +187,6 @@ class NetManager {
         "Authorization": "Bearer ${user.ploneToken}",
       });
       var resBody = json.decode(response.body);
-      print(resBody);
-
       data = resBody;
     } catch (err) {
       print(err);
@@ -178,7 +196,6 @@ class NetManager {
   }
 
 
-  
   static Future<int> uploadProject(String url, Map json) async {
     var response = await http.post(url,
         headers: {
@@ -227,6 +244,24 @@ class NetManager {
 
   static Future<int> editTask(String url, Map json) async {
     print(json);
+    var response = await http.patch(url,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${user.ploneToken}",
+        },
+        body: jsonEncode(json));
+    print(response.statusCode);
+    if (response.statusCode != 201) {
+      UploadQueue.add(uploadtype.edittask, url, json);
+    }
+    return response.statusCode;
+  }
+
+  static Future<int> editTaskComplete(String url, bool value) async {
+    Map json = {
+          "complete": value,
+    };
     var response = await http.patch(url,
         headers: {
           "Accept": "application/json",

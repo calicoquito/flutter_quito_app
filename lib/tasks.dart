@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -12,6 +13,7 @@ import 'dart:math';
 class TaskList extends StatefulWidget {
   final User user;
   final String projecturl;
+
   final String projectName;
   const TaskList(this.user, this.projecturl,{this.projectName});
   @override
@@ -23,9 +25,10 @@ class TaskListState extends State<TaskList> {
   final User user;
   TaskListState(this.user, this.projecturl);
   List data = List();
-  List<bool> setval = List();
+  List<bool> switchlist = List();
   Widget appBarTitle = Text('Tasks');
   Icon actionIcon = Icon(Icons.search);
+  bool isLoading = true;
 
   List newdata = List();
 
@@ -44,23 +47,34 @@ class TaskListState extends State<TaskList> {
   @override
   void initState() {
     super.initState();
+    isLoading = true;
     getSWData();
   }
 
   Future getSWData() async {
     data = await NetManager.getTasksData(projecturl);
-    for (var i = 0; i == data.length; i++) {
-      setval.add(false);
+    print('********TASKS.DART GETSWDATA************');
+    for (var task in data) {
+      var taskinfo = await NetManager.getTask(task['@id']);
+      switchlist.add(taskinfo["complete"] == true ? true : false);
+      // if (data[i]['additiional_files'] == null) {
+      //   data[i]['additiional_files'] = Random().nextInt(15);
+      // }
     }
-    setState(() {
-      data = data;
-      for (var i in data) {
-        setval.add(false);
-        // if (data[i]['additiional_files'] == null) {
-        //   data[i]['additiional_files'] = Random().nextInt(15);
-        // }
+    try{
+      if(this.mounted){
+        setState(() {
+          data = data;
+          switchlist = switchlist;
+          isLoading = false;
+        });
       }
-    });
+      
+    }
+    catch(err){
+      print('*********TASKS.DART GETSWDATA*********');
+      print(err);
+    }
   }
 
   Future delete(int index) async {
@@ -90,43 +104,95 @@ class TaskListState extends State<TaskList> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      Divider(
-                        height: 10.0,
-                      ),
-                      Card(
-                        child: ListTile(
-                            contentPadding:
-                                EdgeInsets.only(top: 4.0, left: 4.0),
-                            onTap: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) {
-                                return TaskData(url: data[index]["@id"], user: widget.user);
-                              }));
-                            },
-                            leading: CircleAvatar(
-                              child: Text(
-                                  "${data[index]["title"].split('')[0]}",
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 20)),
-                              radius: 48.0,
-                              backgroundColor:
-                                  // data[index]['additiional_files'] == null ?
-                                  // Colors.primaries[data[index]['additiional_files']]  :
-                                  Colors.primaries[Random().nextInt(15)],
-                            ),
-                            title: Text("Task Name: ${data[index]["title"]}"),
-                            subtitle: Text(
-                                "Task Data: To do ${data[index]["description"]} ",
-                                style: TextStyle(
-                                    fontSize: 10.0, color: Colors.black54)),
-                            trailing: Checkbox(
-                                value: setval[index],
-                                onChanged: (bool value) {
-                                  setState(() {
-                                    setval[index] = value;
-                                  });
-                                })),
-                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return TaskData(
+                                url: data[index]["@id"], user: widget.user);
+                          }));
+                        },
+                        child: Card(
+                          elevation: 6.0,
+                          child: Padding(
+                              padding: EdgeInsets.only(
+                                  top: 10.0, left: 10.0, right: 10.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Text(" ${data[index]["title"]}",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                              fontSize: 18.0,
+                                              color: Colors.grey[800],
+                                              fontWeight: FontWeight.w800)),
+                                      Container(
+                                        width: 70,
+                                        child: RaisedButton(
+                                          onPressed: () {},
+                                          color: 
+                                          //Color(0xff7e1946),
+                                          Colors.primaries[Random().nextInt(15)],
+                                          shape: StadiumBorder(),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                            children: <Widget>[
+                                              Text(
+                                                "${Random().nextInt(4) + 1}",
+                                                style: TextStyle(
+                                                  fontSize: 16.0,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              Icon(
+                                                Icons.person,
+                                                color: Colors.white,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(10.0),
+                                    child: Text(
+                                        "${data[index]["description"]} ",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: 15.0,
+                                            color: Colors.black54)),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.bottomRight,
+                                    child: FlatButton(
+                                        child: Text(
+                                          "Done",
+                                          style: TextStyle(
+                                              color: Colors.blue[900],
+                                              fontSize: 16.0,
+                                              fontWeight: FontWeight.w800),
+                                        ),
+                                        onPressed: () async {
+                                          Map task = await NetManager.getTask(
+                                              data[index]["@id"]);
+                                          print(task);
+                                          task["complete"] = !task["complete"];
+                                          await NetManager.editTask(
+                                              data[index]["@id"], task);
+                                        }),
+                                  ),
+                                ],
+                              )),
+                        ),
+                      )
                     ],
                   ),
                 ),
@@ -208,7 +274,7 @@ class TaskListState extends State<TaskList> {
                 MaterialPageRoute(
                   builder: (context){
                     return OpenChatScreen(
-                      title: user.channelsByName[widget.projectName]['display_name'],
+                      title: user.channelsByName[widget.projectName]['display_name']?? 'Untitled',
                       user: user,
                       channelId: user.channelsByName[widget.projectName]['id'],
                       project: user.projects[widget.projectName]
@@ -220,12 +286,30 @@ class TaskListState extends State<TaskList> {
           )
         ],
       ),
-      body: Container(child: lst(Icon(Icons.person), data)),
+      body: RefreshIndicator(
+        onRefresh: ()async{
+          await getSWData();
+        },
+        child: isLoading ?
+        Center(child: CircularProgressIndicator(),)
+        : Container(
+          child: data.isEmpty 
+            ?Center(
+              child:Text(
+                'No Tasks Yet',
+                style: TextStyle(
+                  fontSize: 16
+                ),
+              )
+            )
+            :lst(Icon(Icons.person), data) 
+        )
+      ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add, color: Colors.white),
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return Task( widget.user,projecturl);
+            return Task(widget.user, projecturl);
           }));
         },
       ),
