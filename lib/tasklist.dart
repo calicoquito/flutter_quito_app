@@ -4,16 +4,16 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:quito_1/openchatscreen.dart';
 import 'package:quito_1/taskedit.dart';
+import 'helperclasses/dialogmanager.dart';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
-import 'task.dart';
+import 'taskcreate.dart';
 import 'taskdata.dart';
 import 'dart:math';
 
 class TaskList extends StatefulWidget {
   final User user;
   final String projecturl;
-
   final String projectName;
   const TaskList(this.user, this.projecturl,{this.projectName});
   @override
@@ -91,7 +91,6 @@ class TaskListState extends State<TaskList> {
 
   @override
   Widget build(BuildContext context) {
-    print(user.channelsByName);
     Widget lst(Icon ico, List data) {
       return ListView.builder(
           itemCount: data == null ? 0 : data.length,
@@ -135,13 +134,12 @@ class TaskListState extends State<TaskList> {
                                         width: 70,
                                         child: RaisedButton(
                                           onPressed: () {},
-                                          color: 
-                                          //Color(0xff7e1946),
-                                          Colors.primaries[Random().nextInt(15)],
+                                          color: Color(0xff7e1946),
+                                          //Colors.primaries[Random().nextInt(15)],
                                           shape: StadiumBorder(),
                                           child: Row(
                                             mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                                MainAxisAlignment.spaceBetween,
                                             children: <Widget>[
                                               Text(
                                                 "${Random().nextInt(4) + 1}",
@@ -183,10 +181,21 @@ class TaskListState extends State<TaskList> {
                                         onPressed: () async {
                                           Map task = await NetManager.getTask(
                                               data[index]["@id"]);
-                                          print(task);
-                                          task["complete"] = !task["complete"];
-                                          await NetManager.editTask(
-                                              data[index]["@id"], task);
+                                          if (task["complete"] == false) {
+                                            await DialogManager.complete(
+                                                context,
+                                                "Are You Sure You Want mark this task as complete?");
+                                            if (DialogManager.answer == true) {
+                                              task["complete"] =
+                                                  !task["complete"];
+                                              await NetManager.editTask(
+                                                  data[index]["@id"], task);
+                                            }
+                                          } else {
+                                            await DialogManager.okay(
+                                                context,
+                                                "This Task Is Already Finished");
+                                          }
                                         }),
                                   ),
                                 ],
@@ -216,14 +225,17 @@ class TaskListState extends State<TaskList> {
                   color: Colors.red,
                   icon: Icons.delete,
                   onTap: () async {
-                    delete(index);
+                    await DialogManager.delete(
+                        context, "Are You Sure You Want to delete this task?");
+                    if (DialogManager.answer == true) {
+                      delete(index);
+                    }
                   },
                 ),
               ],
             );
           });
     }
-
     return Scaffold(
       appBar: AppBar(
         title: appBarTitle,

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:quito_1/userinfo.dart';
 
+import 'helperclasses/dialogmanager.dart';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
 import 'helperclasses/usersmanager.dart';
@@ -126,11 +127,26 @@ class TaskDataState extends State<TaskData> {
               leading: Text("Set As Completed"),
               trailing: Switch(
                   value: isSwitched,
-                  onChanged: (value) {
-                    setState(() {
-                      isSwitched = value;
-                      data["complete"] = value;
-                    });
+                  onChanged: (value) async {
+                    if (value) {
+                      await DialogManager.complete(context,
+                          "Are You Sure You Want mark this task as complete?");
+                      if (DialogManager.answer == true) {
+                        setState(() {
+                          isSwitched = value;
+                          data["complete"] = value;
+                        });
+                      }
+                    } else {
+                      await DialogManager.complete(context,
+                          "Are You Sure You Want mark this task as Incomplete?");
+                      if (DialogManager.answer == true) {
+                        setState(() {
+                          isSwitched = value;
+                          data["complete"] = value;
+                        });
+                      }
+                    }
                   }),
             ),
           ),

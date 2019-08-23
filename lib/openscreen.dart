@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -6,40 +7,42 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/saver.dart';
 import 'openchatscreen.dart';
+import 'package:quito_1/helperclasses/netmanager.dart';
 import 'helperclasses/curlyline.dart';
+import 'helperclasses/dialogmanager.dart';
 import 'helperclasses/urls.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'helperclasses/user.dart';
+import 'openchatscreen.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'membersview.dart';
 import 'eventsinfo.dart';
 import 'eventsinfoedit.dart';
-import 'tasks.dart';
+import 'tasklist.dart';
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 /*
   The OpenScreen Widget defines the screen a user see immediately after
   logging in to the application. 
-
   Here, the base Scaffold widget is wrapped with a WillPopScope widget 
   which uses the onWillPop property to prevent a user from going back to 
   the login screen after logging out unless he/she wishes to log out of 
   the application.
-
   The Drawer widget defines a slidable view on the left side of the screen
   where various actions such as logging out and viewing in progress projects
   can be performed. The Drawer also display information on the current logged 
   in user of the app
-
   The Scaffold's default FloatingActionButton is used to transfer a user 
   the route from which one may create a  project.
 */
 
 class OpenScreen extends StatefulWidget {
-  final User user; // the current logged in user's data
+  final User user;
 
   const OpenScreen({Key key, this.user}) : super(key: key);
   @override
@@ -58,34 +61,18 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
   final User user;
   final String url = Urls.projects;
   List data = List();
-  Widget appBarTitle = Text('Projects');
-  Icon actionIcon = Icon(Icons.search);
-  var respBody;
-  bool internet = true;
-  List saveimage = List();
-  
-  int count = 1;
-  List holder = List();
+
+
   WebSocket socket;
-  List completelist = List();
+  ImageProvider mainImage = AssetImage('assets/images/default-image.jpg');
+  int _selectedIndex = 0;
+
   get stringdata => null;
-  void setsearchdata() {
-    if (count == 1) {
-      holder = data;
-    }
-    setState(() {
-      data = data;
-    });
-    count += 1;
-  }
 
 
   @override
   void initState() {
     super.initState();
-
-    
-
     getSWData()
     .then((_){
       setState((){
@@ -102,21 +89,19 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
     print('******** OPEN SCREEN DISPOSED**********');
     super.dispose();
   }
-
-
   
   Future getSWData() async {
-    NetManager.user= user;
+    NetManager.user = user;
     data = await NetManager.getProjectsData();
     channels = await NetManager.getChannels();
+    if (data != null) {
+      _onSelected(0);
+    }
     if(this.mounted){
       setState(() {
         projects = NetManager.projects;
         data = data;
       });
-    }
-    for (var project in data) {
-      await gettasksdata(project['@id']);
     }
   }
 
@@ -127,132 +112,135 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
     );
   }
 
-  gettasksdata(String url) async {
-    int complete = 0;
-    var list = await NetManager.getTasksData(url);
-    for (var task in list) {
-      Map taskinfo = await NetManager.getTask(task['@id']);
-      if (taskinfo["complete"] == true) {
-        complete += 1;
-      }
-    }
-    completelist.add([complete, list.length]);
+  _onSelected(int index) async {
+    setState(() {
+      _selectedIndex = index;
+    });
+    String imglink = await NetManager.getLargeImage(index, data[index]["@id"]);
+    setState(() {
+      mainImage = NetworkImage(imglink);
+    });
   }
 
   Future delete(int index) async {
-    var response = await NetManager.delete(data[index]["@id"]);
-    if (response == 204) {
-      data.removeAt(index);
-      getSWData();
+    await DialogManager.delete(
+        context, "Are You Sure You Want to delete this project?");
+    if (DialogManager.answer == true) {
+      var response = await NetManager.delete(data[index]["@id"]);
+      if (response == 204) {
+        data.removeAt(index);
+        getSWData();
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    double height = MediaQuery.of(context).size.height;
     final User user = Provider.of<User>(context);
     user.projects = NetManager.projects;
     user.channels = NetManager.channels;
     user.channelsByName = NetManager.channelsByName;
-
     Widget lst(Icon ico, List data) {
       return ListView.builder(
+          padding: EdgeInsets.only(bottom: height * 0.15),
           itemCount: data == null ? 0 : data.length,
           itemBuilder: (BuildContext context, int index) {
-            int complete = Random().nextInt(10);
-            completelist[index] = completelist[index] == null ? [0,0] : completelist[index];
-            return Slidable(
-              delegate: SlidableDrawerDelegate(),
-              actionExtentRatio: 0.25,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  ListTile(
-                    contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return TaskList(
-                          user,
-                          data[index]["@id"],
-                          projectName: data[index]['id'],
-                        );
-                      }));
-                    },
-                    leading: GestureDetector(
-                      onTap: () async {
-                        var image = await getLargeImage(index);
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            // return object of type Dialog
-                            return AlertDialog(
-                              contentPadding: EdgeInsets.all(0),
-                              // title: Text("Alert Dialog title"),
-                              content: image == null
+            // completelist[index] =
+            //     completelist[index] == null ? [0, 0] : completelist[index];
+            return Container(
+              color: _selectedIndex == index ? Colors.grey[200] : Colors.white,
+              child: Slidable(
+                delegate: SlidableDrawerDelegate(),
+                actionExtentRatio: 0.25,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    ListTile(
+                      contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
+                      onTap: () {
+                        _onSelected(index);
+                      },
+                      leading: GestureDetector(
+                        onTap: () async {
+                          var image = await getLargeImage(index);
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              // return object of type Dialog
+                              return AlertDialog(
+                                contentPadding: EdgeInsets.all(0),
+                                // title: Text("Alert Dialog title"),
+                                content: image == null
+                                    ? Image.asset(
+                                        'assets/images/default-image.jpg')
+                                    : image,
+                                actions: <Widget>[
+                                  // usually buttons at the bottom of the dialog
+                                  FlatButton(
+                                    child: Icon(Icons.close),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  FlatButton(
+                                    child: Icon(Icons.edit),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  FlatButton(
+                                    child: Icon(Icons.info),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: GestureDetector(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 10.0, bottom: 10.0),
+                            child: ClipRRect(
+                              borderRadius: new BorderRadius.circular(5.0),
+                              child: data[index]["image"] == null
                                   ? Image.asset(
                                       'assets/images/default-image.jpg')
-                                  : image,
-                              actions: <Widget>[
-                                // usually buttons at the bottom of the dialog
-                                FlatButton(
-                                  child: Icon(Icons.close),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                                FlatButton(
-                                  child: Icon(Icons.edit),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                                FlatButton(
-                                  child: Icon(Icons.info),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                      child: GestureDetector(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 10.0),
-                          child: ClipRRect(
-                            borderRadius: new BorderRadius.circular(5.0),
-                            child: data[index]["image"] == null
-                                ? Image.asset(
-                                    'assets/images/default-image.jpg')
-                                : CachedNetworkImage(
-                                    imageUrl: data[index]["image"],
-                                    placeholder: (context, url) =>
-                                        CircularProgressIndicator(),
-                                  ),
+                                  : Image.network(
+                                      data[index]["image"],
+                                      // placeholder: (context, url) =>
+                                      //     CircularProgressIndicator(),
+                                    ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    trailing: GestureDetector(
-                      onTap: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return Members(url: data[index]["@id"], user: user);
-                        }));
-                      },
-                      child: Padding(
+                      trailing: Padding(
                         padding: EdgeInsets.only(right: 10.0),
-                        child: CircularPercentIndicator(
-                            radius: 30.0,
-                            lineWidth: 3.0,
-                            animation: true,
-                            percent: completelist[index][0] * .1,
-                            center: new Text("${(completelist[index][0])}"),
-                            progressColor: Color(0xff7e1946)),
+                        child: RaisedButton(
+                          padding: EdgeInsets.all(0),
+                          shape: StadiumBorder(),
+                          child: Text(
+                            'Tasks',
+                            style: TextStyle(color: Colors.white,
+                            fontSize: 13.0,
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return TaskList(
+                                user,
+                                data[index]["@id"],
+                                projectName: data[index]['id'],
+                              );
+                            }));
+                          },
+                        ),
                       ),
-                    ),
                     title: Text("${data[index]["title"]} ",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -265,81 +253,46 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
                             TextStyle(fontSize: 15.0, color: Colors.black54)),
                   ),
                   Divider(
-                    height: 1.0,
+                    height: 1.0,),
+                  ],
+                ),
+                actions: <Widget>[
+                  IconSlideAction(
+                    caption: 'Edit',
+                    color: Colors.blue,
+                    icon: Icons.edit,
+                    onTap: () async {
+                      bool uploaded = await Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return EventsInfoEdit(
+                            url: data[index]["@id"], user: user);
+                      }));
+                      if (uploaded == true) {
+                        getSWData();
+                      }
+                    },
+                  ),
+                ],
+                secondaryActions: <Widget>[
+                  IconSlideAction(
+                    caption: 'Delete',
+                    color: Colors.red,
+                    icon: Icons.delete,
+                    onTap: () {
+                      delete(index);
+                    },
                   ),
                 ],
               ),
-              actions: <Widget>[
-                IconSlideAction(
-                  caption: 'Edit',
-                  color: Colors.blue,
-                  icon: Icons.edit,
-                  onTap: () async {
-                    bool uploaded = await Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return EventsInfoEdit(
-                          url: data[index]["@id"], user: user);
-                    }));
-                    if (uploaded == true) {
-                      getSWData();
-                    }
-                  },
-                ),
-              ],
-              secondaryActions: <Widget>[
-                IconSlideAction(
-                  caption: 'Delete',
-                  color: Colors.red,
-                  icon: Icons.delete,
-                  onTap: () async {
-                    delete(index);
-                  },
-                ),
-              ],
             );
           });
     }
 
+    final GlobalKey<ScaffoldState> _scaffoldKey =
+        new GlobalKey<ScaffoldState>();
     return Scaffold(
+      key: _scaffoldKey,
       drawer: SideDrawer(),
-      appBar: AppBar(title: appBarTitle, 
-      actions: <Widget>[
-        IconButton(
-          icon: actionIcon,
-          onPressed: () {
-            setState(() {
-              if (actionIcon.icon == Icons.search) {
-                actionIcon = Icon(Icons.close);
-                appBarTitle = TextField(
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                  decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.search, color: Colors.white),
-                      hintText: "Search...",
-                      hintStyle: TextStyle(color: Colors.white)),
-                  onChanged: (text) {
-                    if (data.length<holder.length) {
-                      data = holder;
-                    }
-                    text = text.toLowerCase();
-                    setState(() {
-                      data = data.where((project) {
-                        var name = project["title"].toLowerCase();
-                        return name.contains(text);
-                      }).toList();
-                    });
-                    setsearchdata();
-                  },
-                );
-              } else {
-                actionIcon = Icon(Icons.search);
-                appBarTitle = Text('Projects');
-              }
-            });
-          },
-        ),
-      ]),
       body: Stack(
         children: <Widget>[
           data.isEmpty && !isLoading? 
@@ -347,7 +300,9 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Center(child: Text('Start something new today'),),
+              Center(
+                child: Text('Start something new today'),
+              ),
               CurlyLine()
             ],
           )
@@ -356,11 +311,214 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
                 onRefresh: () async {
                   await getSWData();
                 },
-                child: isLoading ?
-                  Center(child: CircularProgressIndicator(),)
-                : data.length ==0 ?
-                  Center(child: Text('Start something new today'),)
-                :lst(Icon(Icons.person), data)),
+                child: isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : data.length == 0
+                        ? Center(
+                            child: Text('Start something new today'),
+                          )
+                        : Column(
+                            children: <Widget>[
+/////////////////////////////////////////////////////////////
+                              Stack(children: <Widget>[
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.transparent,
+                                    image: DecorationImage(
+                                      fit: BoxFit.fitWidth,
+                                      image: mainImage == null
+                                          ? AssetImage(
+                                              'assets/images/default-image.jpg')
+                                          : mainImage,
+                                    ),
+                                  ),
+                                  height: height * 0.4,
+                                ),
+                                Container(
+                                  height: height * 0.4,
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      gradient: LinearGradient(
+                                          begin: Alignment.bottomCenter,
+                                          end: Alignment.topCenter,
+                                          colors: [
+                                            Colors.grey.withOpacity(0.0),
+                                            Colors.black54,
+                                          ],
+                                          stops: [
+                                            0.0,
+                                            1.0
+                                          ])),
+                                ),
+                                Container(
+                                  height: height * 0.4,
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Container(
+                                          height: height * 0.1,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: <Widget>[
+                                              IconButton(
+                                                splashColor: Colors.white10,
+                                                icon: Icon(Icons.menu),
+                                                padding: EdgeInsets.only(
+                                                    top: height * 0.05,
+                                                    left: 10.0),
+                                                color: Colors.white,
+                                                iconSize: 30,
+                                                onPressed: () {
+                                                  _scaffoldKey.currentState
+                                                      .openDrawer();
+                                                },
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      Navigator.push(context,
+                                                          MaterialPageRoute(
+                                                              builder:
+                                                                  (context) {
+                                                        return Members(
+                                                            url: data[
+                                                                    _selectedIndex]
+                                                                ["@id"],
+                                                            user: user);
+                                                      }));
+                                                    },
+                                                    child: Padding(
+                                                      padding: EdgeInsets.only(
+                                                        top: height * 0.05,
+                                                        right: 5.0,
+                                                      ),
+                                                      child:
+                                                          CircularPercentIndicator(
+                                                              radius: 25.0,
+                                                              lineWidth: 3.0,
+                                                              animation: true,
+                                                              percent: 4 * .1,
+                                                              center: Text(
+                                                                "${4}",
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .white),
+                                                              ),
+                                                              progressColor: Color(
+                                                                  0xff7e1946)),
+                                                    ),
+                                                  ),
+                                                  IconButton(
+                                                    icon: Icon(Icons.delete),
+                                                    padding: EdgeInsets.only(
+                                                      top: height * 0.05,
+                                                    ),
+                                                    color: Colors.white,
+                                                    iconSize: 25,
+                                                    onPressed: () {
+                                                      delete(_selectedIndex);
+                                                    },
+                                                  ),
+                                                  IconButton(
+                                                    icon: Icon(Icons.edit),
+                                                    padding: EdgeInsets.only(
+                                                      top: height * 0.05,
+                                                    ),
+                                                    color: Colors.white,
+                                                    iconSize: 25,
+                                                    onPressed: () async {
+                                                      bool uploaded =
+                                                          await Navigator.push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                  builder:
+                                                                      (context) {
+                                                        return EventsInfoEdit(
+                                                            url: data[
+                                                                    _selectedIndex]
+                                                                ["@id"],
+                                                            user: user);
+                                                      }));
+                                                      if (uploaded == true) {
+                                                        getSWData();
+                                                      }
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          )),
+                                      Container(
+                                        height: height * 0.1,
+                                        color: Colors.black38,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                left: 10.0,
+                                              ),
+                                              child: Text(
+                                                  "${data[_selectedIndex]["title"]} ",
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                      fontSize: 20.0,
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w500)),
+                                            ),
+                                            IconButton(
+                                              icon: Icon(Icons.chat),
+                                              padding: EdgeInsets.only(
+                                                left: 10.0,
+                                              ),
+                                              color: Colors.white,
+                                              iconSize: 30,
+                                              onPressed: () {
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) {
+                                                  return OpenChatScreen(
+                                                      title: user.channelsByName[
+                                                              data[_selectedIndex]
+                                                                  ["id"]]
+                                                          ['display_name'],
+                                                      user: user,
+                                                      channelId: user.channelsByName[
+                                                              data[_selectedIndex]
+                                                                  ["id"]]
+                                                          ['id'],
+                                                      project: user.projects[
+                                                              data[_selectedIndex]
+                                                                  ["id"]]);
+                                                }));
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                )
+                              ]),
+/////////////////////////////////////////////////////////////
+                              Container(
+                                height: height * 0.60,
+                                child: lst(Icon(Icons.person), data),
+                              )
+                            ],
+                          )),
           ),
         ],
       ),

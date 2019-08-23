@@ -44,3 +44,63 @@ class _QuitoLogoSliverState extends State<QuitoLogoSliver> {
     );
   }
 }
+
+
+
+  // Widget appBarTitle = Text('Projects');
+  // Icon actionIcon = Icon(Icons.search);
+  // var respBody;
+  // List saveimage = List();
+  // int count = 1;
+  // List holder = List();
+  // List completelist = List();
+
+  // void setsearchdata() {
+  //   if (count == 1) {
+  //     holder = data;
+  //   }
+  //   setState(() {
+  //     data = data;
+  //   });
+  //   count += 1;
+  // }
+
+     // appBar: AppBar(title: appBarTitle,
+      // //backgroundColor: Colors.transparent,
+      //  actions: <Widget>[
+      //   IconButton(
+      //     icon: actionIcon,
+      //     onPressed: () {
+      //       setState(() {
+      //         if (actionIcon.icon == Icons.search) {
+      //           actionIcon = Icon(Icons.close);
+      //           appBarTitle = TextField(
+      //             style: TextStyle(
+      //               color: Colors.white,
+      //             ),
+      //             decoration: InputDecoration(
+      //                 prefixIcon: Icon(Icons.search, color: Colors.white),
+      //                 hintText: "Search...",
+      //                 hintStyle: TextStyle(color: Colors.white)),
+      //             onChanged: (text) {
+      //               if (data.length < holder.length) {
+      //                 data = holder;
+      //               }
+      //               text = text.toLowerCase();
+      //               setState(() {
+      //                 data = data.where((project) {
+      //                   var name = project["title"].toLowerCase();
+      //                   return name.contains(text);
+      //                 }).toList();
+      //               });
+      //               setsearchdata();
+      //             },
+      //           );
+      //         } else {
+      //           actionIcon = Icon(Icons.search);
+      //           appBarTitle = Text('Projects');
+      //         }
+      //       });
+      //     },
+      //   ),
+      // ]),

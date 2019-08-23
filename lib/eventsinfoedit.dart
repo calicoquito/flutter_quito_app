@@ -146,21 +146,31 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
         'Edit Project',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
-      body: ListView(children: <Widget>[
+      body: ListView(
+        padding: EdgeInsets.all(0),
+        children: <Widget>[
         Container(
+          margin: EdgeInsets.all(0),
           color: Colors.black54,
           //padding: EdgeInsets.all(20.0),
           child: FlatButton(
-            padding: EdgeInsets.only(top: 50.0, bottom: 50.0),
+            padding: EdgeInsets.all(0),
             color: Colors.black54,
             child: photo == null
                 ? Icon(
-                      Icons.add_a_photo,
-                      size: 80.0,
-                      color: Colors.white,
-                    )
-                : 
-                Image.file(photo),
+                    Icons.add_a_photo,
+                    size: 80.0,
+                    color: Colors.white,
+                  )
+                : Container(
+                    margin: EdgeInsets.all(0),
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: FileImage(photo),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
             onPressed: () async {
               File newimg = await ImgManager.optionsDialogBox(context);
               if (newimg != null) {
@@ -183,10 +193,14 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                   }));
                   displayMembers =
                       await UsersManager.getmatchingusers(assignedMembers);
-                  setState(() {
-                    jsonstr["members"] = assignedMembers == null ? null : [assignedMembers.join(',')];
-                    displayMembers = displayMembers;
-                  });
+                  if (assignedMembers != null) {
+                    setState(() {
+                      jsonstr["members"] = assignedMembers == null
+                          ? null
+                          : jsonstr["members"].addAll(assignedMembers);
+                      displayMembers = displayMembers;
+                    });
+                  }
                 },
                 child: Icon(
                   Icons.group_add,
@@ -217,10 +231,9 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                               backgroundColor: Colors.transparent,
                             ),
                             onPressed: () => Navigator.push(context,
-                                    MaterialPageRoute(builder: (context) {
-                                  return UserInfo(
-                                      userinfo: displayMembers[index]);
-                                })),
+                                MaterialPageRoute(builder: (context) {
+                              return UserInfo(userinfo: displayMembers[index]);
+                            })),
                           ),
                           Text(
                             "${displayMembers[index]["fullname"]}",

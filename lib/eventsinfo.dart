@@ -111,6 +111,7 @@ class EventsInfoState extends State<EventsInfo> {
 
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
     final User user = Provider.of<User>(context);
     return Scaffold(
       appBar: AppBar(
@@ -118,11 +119,13 @@ class EventsInfoState extends State<EventsInfo> {
         'Add Project',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
-      body: ListView(children: <Widget>[
+      body: ListView(padding: EdgeInsets.all(0), children: <Widget>[
         Container(
+          margin: EdgeInsets.all(0),
+          height: height * 0.4,
           color: Colors.transparent,
           child: FlatButton(
-            padding: EdgeInsets.only(top: 50.0, bottom: 50.0),
+            padding: EdgeInsets.all(0),
             color: Colors.black54,
             child: photo == null
                 ? Icon(
@@ -130,7 +133,15 @@ class EventsInfoState extends State<EventsInfo> {
                     size: 80.0,
                     color: Colors.white,
                   )
-                : Image.file(photo),
+                : Container(
+                    margin: EdgeInsets.all(0),
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: FileImage(photo),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
             onPressed: () async {
               File newimg = await ImgManager.optionsDialogBox(context);
               setState(() {
@@ -149,13 +160,16 @@ class EventsInfoState extends State<EventsInfo> {
                       MaterialPageRoute(builder: (context) {
                     return AddMembersPage(user, datatype.project, url);
                   }));
-                    print(assignedMembers);
-                    displayMembers =
-                        await UsersManager.getmatchingusers(assignedMembers);
+                  print(assignedMembers);
+                  displayMembers =
+                      await UsersManager.getmatchingusers(assignedMembers);
+                  if (assignedMembers != null) {
                     setState(() {
                       displayMembers = displayMembers;
-                      jsonstr["members"] = [assignedMembers.join(',')];
+                      jsonstr["members"] =
+                          jsonstr["members"].addAll(assignedMembers);
                     });
+                  }
                 },
                 child: Icon(
                   Icons.group_add,
@@ -186,10 +200,9 @@ class EventsInfoState extends State<EventsInfo> {
                               backgroundColor: Colors.transparent,
                             ),
                             onPressed: () => Navigator.push(context,
-                                    MaterialPageRoute(builder: (context) {
-                                  return UserInfo(
-                                      userinfo: displayMembers[index]);
-                                })),
+                                MaterialPageRoute(builder: (context) {
+                              return UserInfo(userinfo: displayMembers[index]);
+                            })),
                           ),
                           Text(
                             "${displayMembers[index]["fullname"]}",
@@ -222,7 +235,6 @@ class EventsInfoState extends State<EventsInfo> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           uploadImg();
-
           // Javier
           // I am adding this block of code to facilitate
           // create of channel for when a project is created

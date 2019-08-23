@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import 'homepages.dart';
 import 'openscreen.dart';
 import 'dart:async';
 import 'helperclasses/user.dart';
@@ -133,7 +132,7 @@ class SplashScreenState extends State<SplashScreen> {
     .whenComplete((){
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context)=>HomePages(user: widget.user,)
+          builder: (context)=>OpenScreen(user: widget.user,)
         ),
         (route)=>false
       );
