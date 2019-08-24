@@ -22,7 +22,7 @@ class DialogManager {
               child: Text("Delete",
                   style: TextStyle(
                       fontSize: 18.0,
-                      color: Colors.blue[800],
+                      color: Colors.red,
                       fontWeight: FontWeight.w600)),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -33,7 +33,7 @@ class DialogManager {
               child: Text("Cancle",
                   style: TextStyle(
                       fontSize: 18.0,
-                      color: Colors.red,
+                      color: Colors.blue[800],
                       fontWeight: FontWeight.w600)),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -54,16 +54,15 @@ class DialogManager {
         return AlertDialog(
           contentPadding: EdgeInsets.all(10),
           // title: Text("Alert Dialog title"),
-          content: Text(message,
-              style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w600)),
+          content: Text(message, style: TextStyle(fontSize: 18.0)),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
             FlatButton(
               child: Text("Confirm",
                   style: TextStyle(
-                    fontSize: 18.0,
-                    color: Colors.blue[800],
-                  )),
+                      fontSize: 18.0,
+                      color: Colors.blue[800],
+                      fontWeight: FontWeight.w600)),
               onPressed: () {
                 Navigator.of(context).pop();
                 answer = true;
@@ -99,13 +98,8 @@ class DialogManager {
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
             FlatButton(
-              child: Text("OK",
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    color: Colors.blue[800],
-                    fontWeight: FontWeight.w600
-
-                  )),
+              child: Text("Ok",
+                  style: TextStyle(fontSize: 18.0, color: Colors.blue[800])),
               onPressed: () {
                 Navigator.of(context).pop();
               },
