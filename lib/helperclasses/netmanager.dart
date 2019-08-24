@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:quito_1/helperclasses/uploadqueue.dart';
@@ -11,7 +13,6 @@ class NetManager {
   static Map projects = Map();
   static Map<String, dynamic> channels = Map();
   static Map<String, dynamic> channelsByName = Map();
-  
 
   static Future<List> getProjectsData() async {
     String url = Urls.projects;
@@ -37,7 +38,7 @@ class NetManager {
             "Authorization": 'Bearer ${user.ploneToken}'
           });
           var respBody = json.decode(resp.body);
-          if (respBody != null && respBody["image"]!=null) {
+          if (respBody != null && respBody["image"] != null) {
             String imageLink = respBody["image"]["scales"]["thumb"]["download"];
             if (respBody['members'].contains(user.username)) {
               data[i].putIfAbsent('id', () => respBody['id']);
@@ -46,12 +47,10 @@ class NetManager {
               projectsData.putIfAbsent(respBody['id'], () => data[i]);
             }
             return imageLink;
-          }
-          else{
+          } else {
             return null;
           }
-        } 
-        catch (err) {
+        } catch (err) {
           print('***********GET IMAGE LINK************');
           print(err);
         }
@@ -66,7 +65,7 @@ class NetManager {
       }
 
       // set data state and save json for online use when this try block works
-      data = filterProjects; //data
+      data = filterProjects; //data;
       Saver.setData(data: data, name: "projectsdata");
       projects = projectsData;
 
@@ -79,7 +78,7 @@ class NetManager {
     return data;
   }
 
-  static Future getLargeImage(int index, String url)async{
+  static Future getLargeImage(int index, String url) async {
     try {
       var resp = await http.get(url, headers: {
         "Accept": "application/json",
@@ -90,42 +89,39 @@ class NetManager {
         String imageLink = respBody["image"]["scales"]["large"]["download"];
         return imageLink;
       }
-    } 
-    catch (err) {
+    } catch (err) {
       print('********GET LARGE IMAGE***********');
       print(err);
     }
   }
 
-
-
   static Future getProjectEditData(String url) async {
     Map data = Map();
     List assignedMembers = List();
-    var file;
+    File file;
     var resp = await http.get(url, headers: {
       "Accept": "application/json",
       "Authorization": "Bearer ${user.ploneToken}",
     });
     print(resp.statusCode);
     data = json.decode(resp.body);
-    if (data["contributors"] != null) {
-      assignedMembers = data["contributors"].isEmpty
+    if (data["members"] != null) {
+      assignedMembers = data["members"].isEmpty
           ? null
-          : json.decode(data["contributors"][0]);
+          : data["members"];
     }
     if (data['image'] != null) {
-      file =
-          await DefaultCacheManager().getSingleFile(data['image']['download']);
+      file = await DefaultCacheManager()
+          .getSingleFile(data['image']['download'], headers: {
+        "Accept": "application/json",
+        "Authorization": 'Bearer ${user.ploneToken}'
+      });
     }
-
     return {"data": data, "file": file, "assignedMembers": assignedMembers};
   }
 
-
-
   static Future<List> getUsersData() async {
-    List  data = List();
+    List data = List();
     List<bool> setval = List();
     String url = Urls.users;
     try {
@@ -195,7 +191,6 @@ class NetManager {
     return data;
   }
 
-
   static Future<int> uploadProject(String url, Map json) async {
     var response = await http.post(url,
         headers: {
@@ -205,9 +200,7 @@ class NetManager {
         },
         body: jsonEncode(json));
     print(response.statusCode);
-    if (response.statusCode != 204) {
-      
-    }
+    if (response.statusCode != 204) {}
     return response.statusCode;
   }
 
@@ -220,7 +213,7 @@ class NetManager {
         },
         body: jsonEncode(json));
     print(response.statusCode);
-        if (response.statusCode != 201) {
+    if (response.statusCode != 201) {
       UploadQueue.add(uploadtype.editproject, url, json);
     }
     return response.statusCode;
@@ -260,7 +253,7 @@ class NetManager {
 
   static Future<int> editTaskComplete(String url, bool value) async {
     Map json = {
-          "complete": value,
+      "complete": value,
     };
     var response = await http.patch(url,
         headers: {
@@ -279,7 +272,7 @@ class NetManager {
   static Future<int> delete(String url) async {
     var resp;
     try {
-       resp = await http.delete(
+      resp = await http.delete(
         url,
         headers: {
           "Accept": "application/json",
@@ -299,38 +292,36 @@ class NetManager {
   }
 
 // Gets the Mattermost channels which will be used to create each chat
-  static Future<Map> getChannels() async{
-    try{
-      List teamEndpoints = user.teams.map((team){
+  static Future<Map> getChannels() async {
+    try {
+      List teamEndpoints = user.teams.map((team) {
         return 'http://mattermost.alteroo.com/api/v4/users/${user.userId}/teams/${team['id']}/channels';
       }).toList();
 
-      List<Future> requests = teamEndpoints.map((endpoint){
-        try{
-          return http.get(
-            endpoint,
-            headers: {'Authorization':'Bearer ${user.mattermostToken}'}
-          );
-        }
-        catch(err){
+      List<Future> requests = teamEndpoints.map((endpoint) {
+        try {
+          return http.get(endpoint,
+              headers: {'Authorization': 'Bearer ${user.mattermostToken}'});
+        } catch (err) {
           print(err);
         }
       }).toList();
-      
-      final responses = await Future.wait(requests).catchError((err){print('Error awaiting all responses');});
-      responses.forEach((resp){
+
+      final responses = await Future.wait(requests).catchError((err) {
+        print('Error awaiting all responses');
+      });
+      responses.forEach((resp) {
         final json = jsonDecode(resp.body);
-        final channelsList = json.where((channel){
+        final channelsList = json.where((channel) {
           bool isMember = projects.keys.toList().contains(channel['name']);
           return isMember;
         }).toList();
-        channelsList.forEach((channel){
-          channels.putIfAbsent(channel['id'], ()=>channel);
-          channelsByName.putIfAbsent(channel['name'], ()=>channel);
+        channelsList.forEach((channel) {
+          channels.putIfAbsent(channel['id'], () => channel);
+          channelsByName.putIfAbsent(channel['name'], () => channel);
         });
       });
-    }
-    catch(err){
+    } catch (err) {
       print(err);
     }
     return channels;

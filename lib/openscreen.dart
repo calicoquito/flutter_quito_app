@@ -1,11 +1,9 @@
 import 'dart:io';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'helperclasses/netmanager.dart';
-import 'helperclasses/saver.dart';
 import 'openchatscreen.dart';
 import 'package:quito_1/helperclasses/netmanager.dart';
 import 'helperclasses/curlyline.dart';
@@ -15,7 +13,6 @@ import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'helperclasses/user.dart';
-import 'openchatscreen.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -24,8 +21,7 @@ import 'eventsinfo.dart';
 import 'eventsinfoedit.dart';
 import 'tasklist.dart';
 import 'dart:async';
-
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 /*
   The OpenScreen Widget defines the screen a user see immediately after
   logging in to the application. 
@@ -49,33 +45,32 @@ class OpenScreen extends StatefulWidget {
   _OpenScreenState createState() => _OpenScreenState(user: user);
 }
 
-class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMixin<OpenScreen> {
+class _OpenScreenState extends State<OpenScreen>
+    with AutomaticKeepAliveClientMixin<OpenScreen> {
   _OpenScreenState({this.user});
 
-  bool isLoading = true; // checks wether the app is still fetching data 
-  final FirebaseMessaging firebaseMessaging = FirebaseMessaging(); // used to receive push notification top the app
-  Map projects = Map(); // the projects that the user is involved in 
-  Map<String, dynamic> channels = Map(); // the channel for each chat the user is involved in
+  bool isLoading = true; // checks wether the app is still fetching data
+  final FirebaseMessaging firebaseMessaging =
+      FirebaseMessaging(); // used to receive push notification top the app
+  Map projects = Map(); // the projects that the user is involved in
+  Map<String, dynamic> channels =
+      Map(); // the channel for each chat the user is involved in
 
-  
   final User user;
   final String url = Urls.projects;
   List data = List();
 
-
   WebSocket socket;
   ImageProvider mainImage = AssetImage('assets/images/default-image.jpg');
-  int _selectedIndex = 0;
+  int selectedIndex = 0;
 
   get stringdata => null;
-
 
   @override
   void initState() {
     super.initState();
-    getSWData()
-    .then((_){
-      setState((){
+    getSWData().then((_) {
+      setState(() {
         isLoading = false; //Tells when to stop displaying the progres indicator
       });
     });
@@ -84,12 +79,12 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
     listenForMessages();
   }
 
-  void dispose(){
+  void dispose() {
     socket.close();
     print('******** OPEN SCREEN DISPOSED**********');
     super.dispose();
   }
-  
+
   Future getSWData() async {
     NetManager.user = user;
     data = await NetManager.getProjectsData();
@@ -97,7 +92,7 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
     if (data != null) {
       _onSelected(0);
     }
-    if(this.mounted){
+    if (this.mounted) {
       setState(() {
         projects = NetManager.projects;
         data = data;
@@ -114,11 +109,15 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
 
   _onSelected(int index) async {
     setState(() {
-      _selectedIndex = index;
+      selectedIndex = index;
     });
     String imglink = await NetManager.getLargeImage(index, data[index]["@id"]);
+    var imgfile = await DefaultCacheManager().getSingleFile(imglink, headers: {
+      "Accept": "application/json",
+      "Authorization": 'Bearer ${user.ploneToken}'
+    });
     setState(() {
-      mainImage = NetworkImage(imglink);
+      mainImage = FileImage(imgfile);
     });
   }
 
@@ -147,10 +146,9 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
           padding: EdgeInsets.only(bottom: height * 0.15),
           itemCount: data == null ? 0 : data.length,
           itemBuilder: (BuildContext context, int index) {
-            // completelist[index] =
-            //     completelist[index] == null ? [0, 0] : completelist[index];
+            
             return Container(
-              color: _selectedIndex == index ? Colors.grey[200] : Colors.white,
+              color: selectedIndex == index ? Colors.grey[200] : Colors.white,
               child: Slidable(
                 delegate: SlidableDrawerDelegate(),
                 actionExtentRatio: 0.25,
@@ -160,7 +158,9 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
                     ListTile(
                       contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
                       onTap: () {
-                        _onSelected(index);
+                        if (selectedIndex != index) {
+                          _onSelected(index);
+                        }
                       },
                       leading: GestureDetector(
                         onTap: () async {
@@ -206,14 +206,18 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
                             padding: EdgeInsets.only(left: 10.0, bottom: 10.0),
                             child: ClipRRect(
                               borderRadius: new BorderRadius.circular(5.0),
-                              child: data[index]["image"] == null
+                              child: data[index]["thumbnail"] == null
                                   ? Image.asset(
                                       'assets/images/default-image.jpg')
-                                  : Image.network(
-                                      data[index]["image"],
+                                  : Image.network(data[index]["thumbnail"],
+                                      headers: {
+                                          "Accept": "application/json",
+                                          "Authorization":
+                                              'Bearer ${user.ploneToken}'
+                                        }
                                       // placeholder: (context, url) =>
                                       //     CircularProgressIndicator(),
-                                    ),
+                                      ),
                             ),
                           ),
                         ),
@@ -221,12 +225,13 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
                       trailing: Padding(
                         padding: EdgeInsets.only(right: 10.0),
                         child: RaisedButton(
-                          padding: EdgeInsets.all(0),
+                          padding: EdgeInsets.symmetric(horizontal: 10.0),
                           shape: StadiumBorder(),
                           child: Text(
-                            'Tasks',
-                            style: TextStyle(color: Colors.white,
-                            fontSize: 13.0,
+                            '${Random().nextInt(4) + 1} Tasks',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13.0,
                             ),
                           ),
                           onPressed: () {
@@ -241,19 +246,20 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
                           },
                         ),
                       ),
-                    title: Text("${data[index]["title"]} ",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 18.0,
-                            color: Colors.grey[800],
-                            fontWeight: FontWeight.w500)),
-                    subtitle: Text("Event type: ${data[index]["@type"]}",
-                        style:
-                            TextStyle(fontSize: 15.0, color: Colors.black54)),
-                  ),
-                  Divider(
-                    height: 1.0,),
+                      title: Text("${data[index]["title"]} ",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 18.0,
+                              color: Colors.grey[800],
+                              fontWeight: FontWeight.w500)),
+                      subtitle: Text("Event type: ${data[index]["@type"]}",
+                          style:
+                              TextStyle(fontSize: 15.0, color: Colors.black54)),
+                    ),
+                    Divider(
+                      height: 1.0,
+                    ),
                   ],
                 ),
                 actions: <Widget>[
@@ -295,231 +301,253 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
       drawer: SideDrawer(),
       body: Stack(
         children: <Widget>[
-          data.isEmpty && !isLoading? 
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Center(
-                child: Text('Start something new today'),
-              ),
-              CurlyLine()
-            ],
-          )
-          :Container(
-            child: RefreshIndicator(
-                onRefresh: () async {
-                  await getSWData();
-                },
-                child: isLoading
-                    ? Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    : data.length == 0
-                        ? Center(
-                            child: Text('Start something new today'),
-                          )
-                        : Column(
-                            children: <Widget>[
+          data.isEmpty && !isLoading
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Center(
+                      child: Text('Start something new today'),
+                    ),
+                    CurlyLine()
+                  ],
+                )
+              : Container(
+                  child: RefreshIndicator(
+                      onRefresh: () async {
+                        await getSWData();
+                      },
+                      child: isLoading
+                          ? Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : data.length == 0
+                              ? Center(
+                                  child: Text('Start something new today'),
+                                )
+                              : Column(
+                                  children: <Widget>[
 /////////////////////////////////////////////////////////////
-                              Stack(children: <Widget>[
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.transparent,
-                                    image: DecorationImage(
-                                      fit: BoxFit.fitWidth,
-                                      image: mainImage == null
-                                          ? AssetImage(
-                                              'assets/images/default-image.jpg')
-                                          : mainImage,
-                                    ),
-                                  ),
-                                  height: height * 0.4,
-                                ),
-                                Container(
-                                  height: height * 0.4,
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      gradient: LinearGradient(
-                                          begin: Alignment.bottomCenter,
-                                          end: Alignment.topCenter,
-                                          colors: [
-                                            Colors.grey.withOpacity(0.0),
-                                            Colors.black54,
-                                          ],
-                                          stops: [
-                                            0.0,
-                                            1.0
-                                          ])),
-                                ),
-                                Container(
-                                  height: height * 0.4,
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
+                                    Stack(children: <Widget>[
                                       Container(
-                                          height: height * 0.1,
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: <Widget>[
-                                              IconButton(
-                                                splashColor: Colors.white10,
-                                                icon: Icon(Icons.menu),
-                                                padding: EdgeInsets.only(
-                                                    top: height * 0.05,
-                                                    left: 10.0),
-                                                color: Colors.white,
-                                                iconSize: 30,
-                                                onPressed: () {
-                                                  _scaffoldKey.currentState
-                                                      .openDrawer();
-                                                },
-                                              ),
-                                              Row(
+                                        decoration: BoxDecoration(
+                                          color: Colors.transparent,
+                                          image: DecorationImage(
+                                            fit: BoxFit.fitWidth,
+                                            image: mainImage == null
+                                                ? AssetImage(
+                                                    'assets/images/default-image.jpg')
+                                                : mainImage,
+                                          ),
+                                        ),
+                                        height: height * 0.4,
+                                      ),
+                                      Container(
+                                        height: height * 0.4,
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            gradient: LinearGradient(
+                                                begin: Alignment.bottomCenter,
+                                                end: Alignment.topCenter,
+                                                colors: [
+                                                  Colors.grey.withOpacity(0.0),
+                                                  Colors.black54,
+                                                ],
+                                                stops: [
+                                                  0.0,
+                                                  1.0
+                                                ])),
+                                      ),
+                                      Container(
+                                        height: height * 0.4,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            Container(
+                                                height: height * 0.1,
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: <Widget>[
+                                                    IconButton(
+                                                      splashColor:
+                                                          Colors.white10,
+                                                      icon: Icon(Icons.menu),
+                                                      padding: EdgeInsets.only(
+                                                          top: height * 0.05,
+                                                          left: 10.0),
+                                                      color: Colors.white,
+                                                      iconSize: 30,
+                                                      onPressed: () {
+                                                        _scaffoldKey
+                                                            .currentState
+                                                            .openDrawer();
+                                                      },
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: <Widget>[
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            Navigator.push(
+                                                                context,
+                                                                MaterialPageRoute(
+                                                                    builder:
+                                                                        (context) {
+                                                              return Members(
+                                                                  url: data[
+                                                                          selectedIndex]
+                                                                      ["@id"],
+                                                                  user: user);
+                                                            }));
+                                                          },
+                                                          child: Padding(
+                                                            padding:
+                                                                EdgeInsets.only(
+                                                              top:
+                                                                  height * 0.05,
+                                                              right: 8.0,
+                                                            ),
+                                                            child:
+                                                                CircularPercentIndicator(
+                                                                    radius:
+                                                                        25.0,
+                                                                    lineWidth:
+                                                                        3.0,
+                                                                    animation:
+                                                                        true,
+                                                                    percent:
+                                                                        (Random().nextInt(7) + 1) *
+                                                                            .1,
+                                                                    center:
+                                                                        Text(
+                                                                      "${Random().nextInt(4) + 1}",
+                                                                      style: TextStyle(
+                                                                          color:
+                                                                              Colors.white),
+                                                                    ),
+                                                                    progressColor:
+                                                                        Color(
+                                                                            0xff7e1946)),
+                                                          ),
+                                                        ),
+                                                        IconButton(
+                                                          icon: Icon(
+                                                              Icons.delete),
+                                                          padding:
+                                                              EdgeInsets.only(
+                                                            top: height * 0.05,
+                                                          ),
+                                                          color: Colors.white,
+                                                          iconSize: 25,
+                                                          onPressed: () {
+                                                            delete(
+                                                                selectedIndex);
+                                                          },
+                                                        ),
+                                                        IconButton(
+                                                          icon:
+                                                              Icon(Icons.edit),
+                                                          padding:
+                                                              EdgeInsets.only(
+                                                            top: height * 0.05,
+                                                          ),
+                                                          color: Colors.white,
+                                                          iconSize: 25,
+                                                          onPressed: () async {
+                                                            bool uploaded =
+                                                                await Navigator.push(
+                                                                    context,
+                                                                    MaterialPageRoute(
+                                                                        builder:
+                                                                            (context) {
+                                                              return EventsInfoEdit(
+                                                                  url: data[
+                                                                          selectedIndex]
+                                                                      ["@id"],
+                                                                  user: user);
+                                                            }));
+                                                            if (uploaded ==
+                                                                true) {
+                                                              getSWData();
+                                                            }
+                                                          },
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                )),
+                                            Container(
+                                              height: height * 0.1,
+                                              color: Colors.black38,
+                                              child: Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
                                                         .spaceBetween,
                                                 children: <Widget>[
-                                                  GestureDetector(
-                                                    onTap: () {
-                                                      Navigator.push(context,
+                                                  Padding(
+                                                    padding: EdgeInsets.only(
+                                                      left: 10.0,
+                                                    ),
+                                                    child: Text(
+                                                        "${data[selectedIndex]["title"]} ",
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                            fontSize: 20.0,
+                                                            color: Colors.white,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w500)),
+                                                  ),
+                                                  IconButton(
+                                                    icon: Icon(Icons.chat),
+                                                    padding: EdgeInsets.only(
+                                                      left: 10.0,
+                                                    ),
+                                                    color: Colors.white,
+                                                    iconSize: 30,
+                                                    onPressed: () {
+                                                      Navigator.of(context).push(
                                                           MaterialPageRoute(
                                                               builder:
                                                                   (context) {
-                                                        return Members(
-                                                            url: data[
-                                                                    _selectedIndex]
-                                                                ["@id"],
-                                                            user: user);
+                                                        return OpenChatScreen(
+                                                            title: user.channelsByName[
+                                                                    data[selectedIndex]
+                                                                        ["id"]][
+                                                                'display_name'],
+                                                            user: user,
+                                                            channelId: user.channelsByName[
+                                                                    data[selectedIndex]
+                                                                        ["id"]]
+                                                                ['id'],
+                                                            project: user.projects[
+                                                                data[selectedIndex]
+                                                                    ["id"]]);
                                                       }));
-                                                    },
-                                                    child: Padding(
-                                                      padding: EdgeInsets.only(
-                                                        top: height * 0.05,
-                                                        right: 5.0,
-                                                      ),
-                                                      child:
-                                                          CircularPercentIndicator(
-                                                              radius: 25.0,
-                                                              lineWidth: 3.0,
-                                                              animation: true,
-                                                              percent: 4 * .1,
-                                                              center: Text(
-                                                                "${4}",
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .white),
-                                                              ),
-                                                              progressColor: Color(
-                                                                  0xff7e1946)),
-                                                    ),
-                                                  ),
-                                                  IconButton(
-                                                    icon: Icon(Icons.delete),
-                                                    padding: EdgeInsets.only(
-                                                      top: height * 0.05,
-                                                    ),
-                                                    color: Colors.white,
-                                                    iconSize: 25,
-                                                    onPressed: () {
-                                                      delete(_selectedIndex);
-                                                    },
-                                                  ),
-                                                  IconButton(
-                                                    icon: Icon(Icons.edit),
-                                                    padding: EdgeInsets.only(
-                                                      top: height * 0.05,
-                                                    ),
-                                                    color: Colors.white,
-                                                    iconSize: 25,
-                                                    onPressed: () async {
-                                                      bool uploaded =
-                                                          await Navigator.push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                  builder:
-                                                                      (context) {
-                                                        return EventsInfoEdit(
-                                                            url: data[
-                                                                    _selectedIndex]
-                                                                ["@id"],
-                                                            user: user);
-                                                      }));
-                                                      if (uploaded == true) {
-                                                        getSWData();
-                                                      }
                                                     },
                                                   ),
                                                 ],
                                               ),
-                                            ],
-                                          )),
-                                      Container(
-                                        height: height * 0.1,
-                                        color: Colors.black38,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            Padding(
-                                              padding: EdgeInsets.only(
-                                                left: 10.0,
-                                              ),
-                                              child: Text(
-                                                  "${data[_selectedIndex]["title"]} ",
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                      fontSize: 20.0,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.w500)),
-                                            ),
-                                            IconButton(
-                                              icon: Icon(Icons.chat),
-                                              padding: EdgeInsets.only(
-                                                left: 10.0,
-                                              ),
-                                              color: Colors.white,
-                                              iconSize: 30,
-                                              onPressed: () {
-                                                Navigator.of(context).push(
-                                                    MaterialPageRoute(
-                                                        builder: (context) {
-                                                  return OpenChatScreen(
-                                                      title: user.channelsByName[
-                                                              data[_selectedIndex]
-                                                                  ["id"]]
-                                                          ['display_name'],
-                                                      user: user,
-                                                      channelId: user.channelsByName[
-                                                              data[_selectedIndex]
-                                                                  ["id"]]
-                                                          ['id'],
-                                                      project: user.projects[
-                                                              data[_selectedIndex]
-                                                                  ["id"]]);
-                                                }));
-                                              },
-                                            ),
+                                            )
                                           ],
                                         ),
                                       )
-                                    ],
-                                  ),
-                                )
-                              ]),
+                                    ]),
 /////////////////////////////////////////////////////////////
-                              Container(
-                                height: height * 0.60,
-                                child: lst(Icon(Icons.person), data),
-                              )
-                            ],
-                          )),
-          ),
+                                    Container(
+                                      height: height * 0.60,
+                                      child: lst(Icon(Icons.person), data),
+                                    )
+                                  ],
+                                )),
+                ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -545,8 +573,8 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
    * This method displays a clickable Flushbar with the data regarding new messages 
    * for the user
    */
-  void listenForMessages() async{
-    try{
+  void listenForMessages() async {
+    try {
       socket = await WebSocket.connect(
           'ws://mattermost.alteroo.com/api/v4/websocket',
           headers: {'Authorization': 'Bearer ${widget.user.mattermostToken}'});
@@ -558,50 +586,49 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
           if (jsonData['event'] == 'posted') {
             final postData = jsonData['data'];
             final post = jsonDecode(postData['post']);
-            if(channels.containsKey(post['channel_id'])){
+            if (channels.containsKey(post['channel_id'])) {
               Flushbar(
-                onTap: (flushbar){
-                  flushbar.dismiss();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder:(context)=> OpenChatScreen(
-                        title: postData['channel_display_name'],
-                        user: user,
-                        channelId: post['channel_id'],
-                        project: projects[postData['channel_name']],
-                      )
-                    )
-                  );
-                },
-                titleText: Text(
-                  postData['channel_display_name'],
-                  overflow: TextOverflow.fade,
-                ),
-                backgroundColor: Colors.blue,
-                padding: EdgeInsets.all(8),
-                duration: Duration(seconds: 8),
-                flushbarPosition: FlushbarPosition.TOP,
-                messageText: ListTile(
-                  leading: CircleAvatar(
-                    child: projects[postData['channel_name']]['thumbnail']==null
-                    ?Icon(Icons.chat) 
-                    :null,
-                    backgroundImage: projects[postData['channel_name']]['thumbnail']==null
-                    ?null
-                    :NetworkImage(
-                      projects[postData['channel_name']]['thumbnail']
-                    ) ,
-                  ),
-                  title: Text(
-                    user.members[post['user_id']],
+                  onTap: (flushbar) {
+                    flushbar.dismiss();
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => OpenChatScreen(
+                              title: postData['channel_display_name'],
+                              user: user,
+                              channelId: post['channel_id'],
+                              project: projects[postData['channel_name']],
+                            )));
+                  },
+                  titleText: Text(
+                    postData['channel_display_name'],
                     overflow: TextOverflow.fade,
                   ),
-                  subtitle: Text(
-                    post['message'],
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ) 
-              )..show(context);
+                  backgroundColor: Colors.blue,
+                  padding: EdgeInsets.all(8),
+                  duration: Duration(seconds: 8),
+                  flushbarPosition: FlushbarPosition.TOP,
+                  messageText: ListTile(
+                    leading: CircleAvatar(
+                      child: projects[postData['channel_name']]['thumbnail'] ==
+                              null
+                          ? Icon(Icons.chat)
+                          : null,
+                      backgroundImage: projects[postData['channel_name']]
+                                  ['thumbnail'] ==
+                              null
+                          ? null
+                          : NetworkImage(
+                              projects[postData['channel_name']]['thumbnail']),
+                    ),
+                    title: Text(
+                      user.members[post['user_id']],
+                      overflow: TextOverflow.fade,
+                    ),
+                    subtitle: Text(
+                      post['message'],
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ))
+                ..show(context);
             }
           }
         } else {
@@ -612,7 +639,6 @@ class _OpenScreenState extends State<OpenScreen> with AutomaticKeepAliveClientMi
       print(err);
     }
   }
-
 
   // Configures the actions taken by the app on notification received
   // Currently not funtional due to the unresponsive mattermost push proxy

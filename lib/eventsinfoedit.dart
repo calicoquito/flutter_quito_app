@@ -48,11 +48,9 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     Map netdata = await NetManager.getProjectEditData(url);
     data = netdata["data"];
     var file = netdata["file"];
-    //assignedMembers = netdata["assignedMembers"];
     setState(() {
       photo = data['image'] == null ? null : file;
     });
-    //print('${data["members"]}');
 
     displayMembers = await UsersManager.getmatchingusers(data['members']);
     print(data["members"]);
@@ -140,29 +138,32 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
 
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
           title: Text(
         'Edit Project',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
-      body: ListView(
-        padding: EdgeInsets.all(0),
-        children: <Widget>[
+      body: ListView(padding: EdgeInsets.all(0), children: <Widget>[
         Container(
           margin: EdgeInsets.all(0),
           color: Colors.black54,
-          //padding: EdgeInsets.all(20.0),
           child: FlatButton(
             padding: EdgeInsets.all(0),
             color: Colors.black54,
             child: photo == null
-                ? Icon(
-                    Icons.add_a_photo,
-                    size: 80.0,
-                    color: Colors.white,
+                ? Container(
+                    height: height * 0.4,
+                    margin: EdgeInsets.all(0),
+                    child: Icon(
+                      Icons.add_a_photo,
+                      size: 80.0,
+                      color: Colors.white,
+                    ),
                   )
                 : Container(
+                    height: height * 0.4,
                     margin: EdgeInsets.all(0),
                     decoration: BoxDecoration(
                       image: DecorationImage(

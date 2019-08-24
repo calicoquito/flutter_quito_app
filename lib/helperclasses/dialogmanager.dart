@@ -33,7 +33,7 @@ class DialogManager {
               child: Text("Cancle",
                   style: TextStyle(
                       fontSize: 18.0,
-                      color: Colors.blue[800],
+                      color: Colors.red,
                       fontWeight: FontWeight.w600)),
               onPressed: () {
                 Navigator.of(context).pop();
