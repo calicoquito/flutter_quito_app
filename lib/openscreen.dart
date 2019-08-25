@@ -107,7 +107,7 @@ class _OpenScreenState extends State<OpenScreen>
     if (this.mounted) {
       setState(() {
         projects = NetManager.projects;
-        data = data;
+        data = data.reversed.toList();
       });
     }
   }
@@ -224,9 +224,9 @@ class _OpenScreenState extends State<OpenScreen>
                                         ),
                                         IconButton(
                                           icon: Icon(Icons.delete),
-                                          // padding: EdgeInsets.only(
-                                          //   top: height * 0.05,
-                                          // ),
+                                          padding: EdgeInsets.only(
+                                            left: 4.0,
+                                          ),
                                           color: Colors.white,
                                           iconSize: 25,
                                           onPressed: () {

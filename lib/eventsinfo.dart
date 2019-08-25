@@ -166,8 +166,7 @@ class EventsInfoState extends State<EventsInfo> {
                   if (assignedMembers != null) {
                     setState(() {
                       displayMembers = displayMembers;
-                      jsonstr["members"] =
-                          jsonstr["members"].addAll(assignedMembers);
+                      jsonstr["members"].addAll(assignedMembers);
                     });
                   }
                 },

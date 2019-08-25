@@ -104,22 +104,22 @@ class NetManager {
     return data;
   }
 
-  static Future getLargeImage(int index, String url) async {
-    try {
-      var resp = await http.get(url, headers: {
-        "Accept": "application/json",
-        "Authorization": 'Bearer ${user.ploneToken}'
-      });
-      var respBody = json.decode(resp.body);
-      if (respBody != null) {
-        String imageLink = respBody["image"]["scales"]["large"]["download"];
-        return imageLink;
-      }
-    } catch (err) {
-      print('********GET LARGE IMAGE***********');
-      print(err);
-    }
-  }
+  // static Future getLargeImage(int index, String url) async {
+  //   try {
+  //     var resp = await http.get(url, headers: {
+  //       "Accept": "application/json",
+  //       "Authorization": 'Bearer ${user.ploneToken}'
+  //     });
+  //     var respBody = json.decode(resp.body);
+  //     if (respBody != null) {
+  //       String imageLink = respBody["image"]["scales"]["large"]["download"];
+  //       return imageLink;
+  //     }
+  //   } catch (err) {
+  //     print('********GET LARGE IMAGE***********');
+  //     print(err);
+  //   }
+  // }
 
   static Future getProjectEditData(String url) async {
     Map data = Map();
@@ -131,6 +131,7 @@ class NetManager {
     });
     print(resp.statusCode);
     data = json.decode(resp.body);
+    print(data["mambers"]);
     if (data["members"] != null) {
       assignedMembers = data["members"].isEmpty ? null : data["members"];
     }
@@ -181,9 +182,7 @@ class NetManager {
         "Authorization": "Bearer ${user.ploneToken}",
       });
       var resBody = json.decode(response.body);
-      // print(user.ploneToken);
       data = resBody["items"];
-      // print(data);
       for (var i = 0; i == data.length; i++) {
         setval.add(false);
       }
@@ -245,7 +244,6 @@ class NetManager {
   }
 
   static Future<int> uploadTask(String url, Map json) async {
-    print(json);
     var response = await http.post(url,
         headers: {
           "Accept": "application/json",
@@ -261,7 +259,6 @@ class NetManager {
   }
 
   static Future<int> editTask(String url, Map json) async {
-    print(json);
     var response = await http.patch(url,
         headers: {
           "Accept": "application/json",
@@ -306,7 +303,6 @@ class NetManager {
         },
       );
       print(resp.statusCode);
-      print(resp.body);
       if (resp.statusCode == 204) {
         return resp.statusCode;
       }

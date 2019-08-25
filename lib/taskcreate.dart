@@ -5,7 +5,6 @@ import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
 import 'addmembers.dart';
 import 'helperclasses/jsons.dart';
-
 import 'userinfo.dart';
 
 class Task extends StatefulWidget {
@@ -20,7 +19,6 @@ class TaskState extends State<Task> {
   final User user;
   final String projecturl;
   TaskState(this.user, this.projecturl);
-  //TextEditingController controller = TextEditingController();
   String textString = "";
   bool isSwitched = false;
   List setval;
@@ -60,6 +58,7 @@ class TaskState extends State<Task> {
           Padding(
             padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
             child: TextField(
+              maxLines: 2,
               autocorrect: true,
               //controller: controller,
               decoration: InputDecoration(

@@ -46,15 +46,21 @@ class TaskDataState extends State<TaskData> {
     details = details.replaceAll(new RegExp(r'<h2>'), ' ');
     details = details.replaceAll(new RegExp(r'</h2>'), ' ');
     displayMembers = await UsersManager.getmatchingusers(data["members"]);
-
-    setState(() {
-      assignedMembers = assignedMembers;
-      title = title;
-      description = description;
-      details = details;
-      displayMembers = displayMembers;
-    });
+    if (this.mounted) {
+      setState(() {
+        assignedMembers = assignedMembers;
+        title = title;
+        description = description;
+        details = details;
+        displayMembers = displayMembers;
+        isSwitched = data["complete"];
+      });
+    }
     return "Success!";
+  }
+
+  editTask() {
+    NetManager.editTask(url, data);
   }
 
   @override
@@ -136,6 +142,7 @@ class TaskDataState extends State<TaskData> {
                           isSwitched = value;
                           data["complete"] = value;
                         });
+                        editTask();
                       }
                     } else {
                       await DialogManager.complete(context,
@@ -145,6 +152,7 @@ class TaskDataState extends State<TaskData> {
                           isSwitched = value;
                           data["complete"] = value;
                         });
+                        editTask();
                       }
                     }
                   }),
@@ -180,10 +188,10 @@ class TaskDataState extends State<TaskData> {
                                 backgroundColor: Colors.transparent,
                               ),
                               onPressed: () => Navigator.push(context,
-                                      MaterialPageRoute(builder: (context) {
-                                    return UserInfo(
-                                        userinfo: displayMembers[index]);
-                                  })),
+                                  MaterialPageRoute(builder: (context) {
+                                return UserInfo(
+                                    userinfo: displayMembers[index]);
+                              })),
                             ),
                             Text(
                               "${displayMembers[index]["fullname"]}",

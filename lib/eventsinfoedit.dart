@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 import 'addmembers.dart';
 import 'helperclasses/imgmanager.dart';
-import 'helperclasses/jsons.dart';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
 import 'helperclasses/usersmanager.dart';
@@ -30,12 +29,10 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
 
   File photo;
   Map data = Map();
-  bool uploaded;
 
   @override
   void initState() {
     super.initState();
-    //print(url);
     getdata();
   }
 
@@ -43,27 +40,38 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     Map netdata = await NetManager.getProjectEditData(url);
     data = netdata["data"];
     var file = netdata["file"];
-    setState(() {
-      photo = data['image'] == null ? null : file;
-    });
-    print(data['members']);
+    if (this.mounted) {
+      setState(() {
+        photo = data['image'] == null ? null : file;
+      });
+    }
     displayMembers = await UsersManager.getmatchingusers(data['members']);
-    print(data["members"]);
-    setState(() {
-      displayMembers = displayMembers;
-    });
+    if (this.mounted) {
+      setState(() {
+        displayMembers = displayMembers;
+      });
+    }
 
     return "Success!";
   }
 
   Future<String> uploadPatch() async {
-    data["image"] = data["image"] == null ? {"data": ""} : data["image"];
-    data["image"]["data"] =
-        photo == null ? "" : base64Encode(photo.readAsBytesSync());
-    int respcode = await NetManager.editProject(url, data); // NEW
-    if (respcode != 204) {
-      //UploadQueue.addproject(url, data);
-    }
+    data["image"] = photo == null
+        ? {
+            "filename": "test.jpg",
+            "content-type": "image/jpeg",
+            "data": "",
+            "encoding": "base64"
+          }
+        : {
+            "filename": "test.jpg",
+            "content-type": "image/jpeg",
+            "data": base64Encode(photo.readAsBytesSync()),
+            "encoding": "base64"
+          };
+    print(data["image"]["data"]);
+    NetManager.editProject(url, data);
+
     return "Success!";
   }
 
@@ -183,13 +191,12 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                       MaterialPageRoute(builder: (context) {
                     return AddMembersPage(user, datatype.project, url);
                   }));
+                  print(assignedMembers);
                   displayMembers =
                       await UsersManager.getmatchingusers(assignedMembers);
                   if (assignedMembers != null) {
                     setState(() {
-                      data["members"] = assignedMembers == null
-                          ? null
-                          : data["members"].addAll(assignedMembers);
+                      data["members"].addAll(assignedMembers);
                       displayMembers = displayMembers;
                     });
                   }
@@ -256,7 +263,9 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           uploadPatch();
-          Navigator.pop(context, uploaded);
+          Navigator.pop(
+            context,
+          );
         },
         tooltip: 'Edit Project',
         child: Icon(Icons.check),

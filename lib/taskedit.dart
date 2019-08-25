@@ -106,6 +106,7 @@ class TaskeditState extends State<Taskedit> {
           Padding(
             padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
             child: TextField(
+              maxLines: 2,
               autocorrect: true,
               decoration: InputDecoration(
                   helperText: "Description...",
