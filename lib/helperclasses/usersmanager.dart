@@ -15,13 +15,10 @@ class UsersManager {
 
     List users = await NetManager.getUsersData();
     List matchingusers = List();
-    //print(usernames[1]);jenniferwhite   jenniferwhite
 
     try {
       for (String username in usernames) {
         for (Map<dynamic, dynamic> userinfo in users) {
-          // print(username.compareTo(userinfo["username"]) == 0);
-          // print('$username   ${userinfo["username"]}');
           if (username == userinfo["username"]) {
             matchingusers.add(userinfo);
           }
@@ -30,8 +27,6 @@ class UsersManager {
     } catch (err) {
       print('no users found');
     }
-    // print("matchingusers");
-    // print(matchingusers);
     return matchingusers;
   }
 }

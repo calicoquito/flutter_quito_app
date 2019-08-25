@@ -32,8 +32,6 @@ class MembersState extends State<Members> {
   }
 
   Future<String> getData() async {
-    // var bytes = utf8.encode("admin:admin");
-    // var credentials = base64.encode(bytes);
     var response = await http.get(url, headers: {
       "Accept": "application/json",
       "Authorization": "Bearer ${widget.user.ploneToken}",
@@ -55,7 +53,7 @@ class MembersState extends State<Members> {
 
   gettasksdata(String url) async {
     int complete = 0;
-    var list = await NetManager.getTasksData(url);
+    var list = await NetManager.getTasks(url);
     for (var task in list) {
       Map taskinfo = await NetManager.getTask(task['@id']);
       if (taskinfo["complete"] == true) {

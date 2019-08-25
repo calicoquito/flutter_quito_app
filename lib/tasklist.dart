@@ -52,7 +52,8 @@ class TaskListState extends State<TaskList> {
   }
 
   Future getSWData() async {
-    data = await NetManager.getTasksData(projecturl);
+    //data = await NetManager.getTasksData(projecturl);
+    data = await NetManager.getTasks(projecturl);
     print('********TASKS.DART GETSWDATA************');
     for (var task in data) {
       var taskinfo = await NetManager.getTask(task['@id']);
@@ -132,7 +133,7 @@ class TaskListState extends State<TaskList> {
                                               fontWeight: FontWeight.w800)),
                                       Container(
                                         width: 70,
-                                        child: RaisedButton(
+                                        child: FlatButton(
                                           onPressed: () {},
                                           color: Color(0xff7e1946),
                                           //Colors.primaries[Random().nextInt(15)],
@@ -142,7 +143,7 @@ class TaskListState extends State<TaskList> {
                                                 MainAxisAlignment.spaceBetween,
                                             children: <Widget>[
                                               Text(
-                                                "${Random().nextInt(4) + 1}",
+                                                "${data[index]["data"]["members"].where((member)=> member != 'admin').toList().length}",
                                                 style: TextStyle(
                                                   fontSize: 16.0,
                                                   color: Colors.white,

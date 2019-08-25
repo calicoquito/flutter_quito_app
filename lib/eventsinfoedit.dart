@@ -23,16 +23,13 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   final String url;
   final User user;
   EventsInfoEditState({@required this.url, this.user});
-  String textString = "";
   bool isSwitched = false;
-  List setval = List();
   List<String> assignedMembers;
   List members = [];
   List displayMembers = List();
 
   File photo;
   Map data = Map();
-  File croppedFile;
   bool uploaded;
 
   @override
@@ -42,8 +39,6 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     getdata();
   }
 
-  Map jsonstr = Jsons.projectsjson;
-
   Future<String> getdata() async {
     Map netdata = await NetManager.getProjectEditData(url);
     data = netdata["data"];
@@ -51,7 +46,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
     setState(() {
       photo = data['image'] == null ? null : file;
     });
-
+    print(data['members']);
     displayMembers = await UsersManager.getmatchingusers(data['members']);
     print(data["members"]);
     setState(() {
@@ -62,15 +57,12 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   }
 
   Future<String> uploadPatch() async {
-    var file = photo == null ? File('assets/images/default-image.jpg') : photo;
-    String imgstring =
-        croppedFile == null ? "" : base64Encode(croppedFile.readAsBytesSync());
-    jsonstr["image"]["data"] = data["image"] != null
-        ? base64Encode(file.readAsBytesSync())
-        : imgstring;
-    int respcode = await NetManager.editProject(url, jsonstr); // NEW
+    data["image"] = data["image"] == null ? {"data": ""} : data["image"];
+    data["image"]["data"] =
+        photo == null ? "" : base64Encode(photo.readAsBytesSync());
+    int respcode = await NetManager.editProject(url, data); // NEW
     if (respcode != 204) {
-      //UploadQueue.addproject(url, jsonstr);
+      //UploadQueue.addproject(url, data);
     }
     return "Success!";
   }
@@ -94,16 +86,15 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
       ),
       onChanged: (string) {
         setState(() {
-          //print(jsonstr[txt]);
-          jsonstr[txt] = string;
+          data[txt] = string;
         });
       },
     );
     var switchtrue = Switch(
-        value: jsonstr[useswitch] == true ? true : false,
+        value: data[useswitch] == true ? true : false,
         onChanged: (value) {
           setState(() {
-            jsonstr[useswitch] = value;
+            data[useswitch] = value;
           });
         });
     return Container(
@@ -196,9 +187,9 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                       await UsersManager.getmatchingusers(assignedMembers);
                   if (assignedMembers != null) {
                     setState(() {
-                      jsonstr["members"] = assignedMembers == null
+                      data["members"] = assignedMembers == null
                           ? null
-                          : jsonstr["members"].addAll(assignedMembers);
+                          : data["members"].addAll(assignedMembers);
                       displayMembers = displayMembers;
                     });
                   }
@@ -247,29 +238,27 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
             },
           ),
         ),
-        inputWidget(icon: Icon(Icons.title), txt: jsonstr.keys.elementAt(1)),
-        inputWidget(
-            icon: Icon(Icons.import_contacts), txt: jsonstr.keys.elementAt(2)),
+        inputWidget(icon: Icon(Icons.title), txt: "title"),
+        inputWidget(icon: Icon(Icons.import_contacts), txt: "description"),
         inputWidget(
             icon: Icon(Icons.access_time),
-            txt: jsonstr.keys.elementAt(6),
-            useswitch: jsonstr.keys.elementAt(6)),
+            txt: "open_end",
+            useswitch: "open_end"),
         inputWidget(
             icon: Icon(Icons.timer_off),
-            txt: jsonstr.keys.elementAt(7),
-            useswitch: jsonstr.keys.elementAt(7)),
-        inputWidget(icon: Icon(Icons.contacts), txt: jsonstr.keys.elementAt(9)),
-        inputWidget(icon: Icon(Icons.email), txt: jsonstr.keys.elementAt(10)),
-        inputWidget(icon: Icon(Icons.phone), txt: jsonstr.keys.elementAt(11)),
-        inputWidget(
-            icon: Icon(Icons.add_location), txt: jsonstr.keys.elementAt(13)),
+            txt: "open_end",
+            useswitch: "open_end"),
+        inputWidget(icon: Icon(Icons.contacts), txt: "contact_name"),
+        inputWidget(icon: Icon(Icons.email), txt: "contact_email"),
+        inputWidget(icon: Icon(Icons.phone), txt: "contact_phone"),
+        inputWidget(icon: Icon(Icons.add_location), txt: "location"),
       ]),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           uploadPatch();
           Navigator.pop(context, uploaded);
         },
-        tooltip: 'Create Project',
+        tooltip: 'Edit Project',
         child: Icon(Icons.check),
       ),
     );

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:quito_1/helperclasses/uploadqueue.dart';
@@ -7,12 +5,40 @@ import 'dart:convert';
 import 'saver.dart';
 import 'user.dart';
 import 'urls.dart';
+import 'dart:io';
 
 class NetManager {
   static User user;
   static Map projects = Map();
   static Map<String, dynamic> channels = Map();
   static Map<String, dynamic> channelsByName = Map();
+
+  static getProjects() async {
+    String url = Urls.fullcontet;
+    List data = List();
+    try {
+      var resp = await http.get(url, headers: {
+        "Accept": "application/json",
+        "Authorization": 'Bearer ${user.ploneToken}'
+      });
+      var respBody = json.decode(resp.body);
+      data = respBody["data"]["items"];
+    } catch (err) {
+      print(err);
+    }
+    data.removeWhere((item) => item["@type"] != "project");
+    return data;
+  }
+
+  static getTasks(String projecturl) async {
+    List projectlist = List();
+    projectlist = await getProjects();
+    projectlist =
+        projectlist.where((item) => item["@id"] == projecturl).toList();
+    return projectlist[0]["data"]["items"] == null
+        ? []
+        : projectlist[0]["data"]["items"];
+  }
 
   static Future<List> getProjectsData() async {
     String url = Urls.projects;
@@ -39,7 +65,7 @@ class NetManager {
           });
           var respBody = json.decode(resp.body);
           if (respBody != null && respBody["image"] != null) {
-            String imageLink = respBody["image"]["scales"]["thumb"]["download"];
+            String imageLink = respBody["image"]["scales"]["large"]["download"];
             if (respBody['members'].contains(user.username)) {
               data[i].putIfAbsent('id', () => respBody['id']);
               data[i].putIfAbsent('thumbnail', () => imageLink);
@@ -106,9 +132,7 @@ class NetManager {
     print(resp.statusCode);
     data = json.decode(resp.body);
     if (data["members"] != null) {
-      assignedMembers = data["members"].isEmpty
-          ? null
-          : data["members"];
+      assignedMembers = data["members"].isEmpty ? null : data["members"];
     }
     if (data['image'] != null) {
       file = await DefaultCacheManager()
@@ -117,6 +141,7 @@ class NetManager {
         "Authorization": 'Bearer ${user.ploneToken}'
       });
     }
+
     return {"data": data, "file": file, "assignedMembers": assignedMembers};
   }
 
