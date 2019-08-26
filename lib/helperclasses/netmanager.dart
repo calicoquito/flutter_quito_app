@@ -342,8 +342,11 @@ class NetManager {
       responses.forEach((resp) {
         try{
           final json = jsonDecode(resp.body);
+          projects.keys.toList().forEach((key){print(key);});
+          print('**********************************');
           final channelsList = json.where((channel) {
             bool isMember = projects.keys.toList().contains(channel['name']);
+            print(channel['name']);
             return isMember;
           }).toList();
           channelsList.forEach((channel) {

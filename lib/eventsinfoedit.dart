@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-
 import 'addmembers.dart';
 import 'helperclasses/imgmanager.dart';
 import 'helperclasses/netmanager.dart';
