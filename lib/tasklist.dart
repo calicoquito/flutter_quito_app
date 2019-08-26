@@ -117,7 +117,7 @@ class TaskListState extends State<TaskList> {
                                   border: Border(
                                       left: BorderSide(
                                 color: switchlist[index] == true
-                                    ? Colors.blue[800]
+                                    ? Colors.green[700] 
                                     : Colors.red,
                                 width: 6.0,
                               ))),

@@ -94,17 +94,20 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
         contentPadding: EdgeInsets.all(14.0),
       ),
       onChanged: (string) {
+        if (this.mounted) {
         setState(() {
           data[txt] = string;
-        });
+        });}
       },
     );
     var switchtrue = Switch(
         value: data[useswitch] == true ? true : false,
         onChanged: (value) {
+          if (this.mounted) {
           setState(() {
             data[useswitch] = value;
           });
+          }
         });
     return Container(
         padding: EdgeInsets.only(top: 4.0),
@@ -174,10 +177,12 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                   ),
             onPressed: () async {
               File newimg = await ImgManager.optionsDialogBox(context);
+
               if (newimg != null) {
+                if (this.mounted) {
                 setState(() {
                   photo = newimg;
-                });
+                });}
               }
             },
           ),
@@ -196,10 +201,13 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                   displayMembers =
                       await UsersManager.getmatchingusers(assignedMembers);
                   if (assignedMembers != null) {
-                    setState(() {
-                      data["members"].addAll(assignedMembers);
-                      displayMembers = displayMembers;
-                    });
+                    if (this.mounted) {
+                      setState(() {
+                        data["members"].addAll(assignedMembers.where(
+                            (member) => !data["members"].contains(member)));
+                        displayMembers = displayMembers;
+                      });
+                    }
                   }
                 },
                 child: Icon(
@@ -246,7 +254,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
             },
           ),
         ),
-                Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             RaisedButton(
@@ -254,7 +262,7 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                 onPressed: () {
                   DatePicker.showDateTimePicker(context, showTitleActions: true,
                       onConfirm: (date) {
-                        print(date.runtimeType);
+                    print(date.runtimeType);
                     data["start"] = date.toString();
                   }, currentTime: DateTime.now(), locale: LocaleType.en);
                 },

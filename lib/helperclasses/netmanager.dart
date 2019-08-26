@@ -224,6 +224,7 @@ class NetManager {
         },
         body: jsonEncode(json));
     print(response.statusCode);
+    print(response.body);
     if (response.statusCode != 204) {}
     return response.statusCode;
   }

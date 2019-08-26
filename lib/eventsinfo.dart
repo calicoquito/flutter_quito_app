@@ -163,10 +163,13 @@ class EventsInfoState extends State<EventsInfo> {
                   print(assignedMembers);
                   displayMembers =
                       await UsersManager.getmatchingusers(assignedMembers);
+
                   if (assignedMembers != null) {
                     setState(() {
                       displayMembers = displayMembers;
+                      
                       jsonstr["members"].addAll(assignedMembers);
+                      print(jsonstr["members"]);
                     });
                   }
                 },
@@ -243,6 +246,7 @@ class EventsInfoState extends State<EventsInfo> {
                 onPressed: () {
                   DatePicker.showDateTimePicker(context, showTitleActions: true,
                       onConfirm: (date) {
+                    print(date.toString());
                     jsonstr["end"] = date.toString();
                   }, currentTime: DateTime.now(), locale: LocaleType.en);
                 },
