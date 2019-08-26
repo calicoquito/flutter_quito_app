@@ -301,9 +301,7 @@ class TaskListState extends State<TaskList> {
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(builder: (context) {
                 return OpenChatScreen(
-                    title: user.channelsByName[widget.projectName]
-                            ['display_name'] ??
-                        'Untitled',
+                    title: user.channelsByName[widget.projectName]['display_name'] ?? 'Untitled',
                     user: user,
                     channelId: user.channelsByName[widget.projectName]['id'],
                     project: user.projects[widget.projectName]);

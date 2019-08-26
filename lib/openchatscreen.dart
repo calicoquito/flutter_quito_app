@@ -205,8 +205,15 @@ class _OpenChatScreenState extends State<OpenChatScreen>{
           children: <Widget>[
             CircleAvatar(
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              child: widget.project['thumbnail'] ==null ? Icon(Icons.person, color: Theme.of(context).primaryColor,):null,
-              backgroundImage: widget.project['thumbnail'] !=null ? NetworkImage(widget.project['thumbnail']):null,
+              child: widget.project["image"] ==null ? Icon(Icons.person, color: Theme.of(context).primaryColor,):null,
+              backgroundImage: widget.project["image"]["download"] !=null ? 
+                NetworkImage(
+                  widget.project["image"]["download"],
+                  headers: {
+                    "Authorization": 'Bearer ${widget.user.ploneToken}'
+                  }
+                )
+                :null,
             ),
             SizedBox(width: 5.0,),
             Text(
