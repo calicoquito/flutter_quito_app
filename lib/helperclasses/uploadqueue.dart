@@ -73,20 +73,8 @@ class UploadQueue {
   }
 
 
-//  static uploader() async {
-//    final taskId = await uploader.enqueue(
-//        url: "your upload link", //required: url to upload to
-////        files: [FileItem(filename: filename, savedDir: savedDir, fieldname:"file")], // required: list of files that you want to upload
-//        method: UploadMethod.POST, // HTTP method  (POST or PUT or PATCH)
-//        headers: {"apikey": "api_123456", "userkey": "userkey_123456"},
-//        data: {"name": "john"}, // any data you want to send in upload request
-//        showNotification: false, // send local notification (android only) for upload status
-//        tag: "upload 1"); // unique tag for upload task
-//    );
-//  }
 
   static Future<String> uploadAll() async {
-    print('yo yo');
     bool connected = await connection();
     var uploaded;
     if (connected == true) {

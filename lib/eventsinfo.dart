@@ -11,6 +11,7 @@ import 'helperclasses/imgmanager.dart';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/urls.dart';
 import 'helperclasses/user.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'userinfo.dart';
 
 class EventsInfo extends StatefulWidget {
@@ -24,7 +25,6 @@ class EventsInfoState extends State<EventsInfo> {
   final String url = Urls.main;
   final User user;
   EventsInfoState({this.user});
-  String textString = "";
   bool isSwitched = false;
   List setval;
   var photo;
@@ -163,11 +163,13 @@ class EventsInfoState extends State<EventsInfo> {
                   print(assignedMembers);
                   displayMembers =
                       await UsersManager.getmatchingusers(assignedMembers);
+
                   if (assignedMembers != null) {
                     setState(() {
                       displayMembers = displayMembers;
-                      jsonstr["members"] =
-                          jsonstr["members"].addAll(assignedMembers);
+                      
+                      jsonstr["members"].addAll(assignedMembers);
+                      print(jsonstr["members"]);
                     });
                   }
                 },
@@ -214,6 +216,51 @@ class EventsInfoState extends State<EventsInfo> {
                       )));
             },
           ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            RaisedButton(
+                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                onPressed: () {
+                  DatePicker.showDateTimePicker(context, showTitleActions: true,
+                      onConfirm: (date) {
+                    jsonstr["start"] = date.toString();
+                  }, currentTime: DateTime.now(), locale: LocaleType.en);
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.calendar_today,
+                      color: Colors.white,
+                    ),
+                    Text('    Start', style: TextStyle(color: Colors.white))
+                  ],
+                )),
+            SizedBox(
+              width: 10,
+            ),
+            RaisedButton(
+                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                onPressed: () {
+                  DatePicker.showDateTimePicker(context, showTitleActions: true,
+                      onConfirm: (date) {
+                    print(date.toString());
+                    jsonstr["end"] = date.toString();
+                  }, currentTime: DateTime.now(), locale: LocaleType.en);
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.calendar_today,
+                      color: Colors.white,
+                    ),
+                    Text('    End', style: TextStyle(color: Colors.white))
+                  ],
+                )),
+          ],
         ),
         inputWidget(icon: Icon(Icons.title), txt: jsonstr.keys.elementAt(1)),
         inputWidget(

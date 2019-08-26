@@ -83,10 +83,10 @@ class AddMembersPageState extends State<AddMembersPage>
       projectdata = projectdata["data"];
      data = await UsersManager.getmatchingusers(projectdata['members']);
     }
-
+if (this.mounted) {
     setState(() {
       data = data;
-    });
+    });}
     for (var i = 0; i < data.length; i++) {
       setval.add(false);
     }
@@ -94,9 +94,12 @@ class AddMembersPageState extends State<AddMembersPage>
   }
 
   Widget lst(List data) {
+    double height = MediaQuery.of(context).size.height;
     return ListView.builder(
+      padding: EdgeInsets.only(bottom: height * 0.15),
         itemCount: data == null ? 0 : data.length,
         itemBuilder: (BuildContext context, int index) {
+          
           return Container(
             child: Center(
               child: Column(

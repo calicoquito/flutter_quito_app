@@ -23,7 +23,7 @@ class MembersState extends State<Members> {
   MembersState({@required this.url, this.user});
   List data = List();
   List newdata = List();
-  List completelist = [0,0];
+  List completelist = [0, 0];
   @override
   void initState() {
     super.initState();
@@ -32,30 +32,28 @@ class MembersState extends State<Members> {
   }
 
   Future<String> getData() async {
-    // var bytes = utf8.encode("admin:admin");
-    // var credentials = base64.encode(bytes);
     var response = await http.get(url, headers: {
       "Accept": "application/json",
       "Authorization": "Bearer ${widget.user.ploneToken}",
     });
     var resBody = json.decode(response.body);
-    print(resBody);
     var members = resBody["members"].isEmpty ? [] : resBody["members"];
-    print(resBody);
     data = await UsersManager.getmatchingusers(members);
-    setState(() {
-      if (members != null && members != []) {
-        data = data;
-      } else {
-        data = [];
-      }
-    });
+    if (this.mounted) {
+      setState(() {
+        if (members != null && members != []) {
+          data = data;
+        } else {
+          data = [];
+        }
+      });
+    }
     return "Success!";
   }
 
   gettasksdata(String url) async {
     int complete = 0;
-    var list = await NetManager.getTasksData(url);
+    var list = await NetManager.getTasks(url);
     for (var task in list) {
       Map taskinfo = await NetManager.getTask(task['@id']);
       if (taskinfo["complete"] == true) {
@@ -64,7 +62,6 @@ class MembersState extends State<Members> {
     }
     completelist[0] = [complete, list.length];
   }
-
 
   Widget inputWidget(List data) {
     return ListView.builder(
@@ -78,9 +75,9 @@ class MembersState extends State<Members> {
                   ListTile(
                     contentPadding: EdgeInsets.only(top: 4.0, left: 4.0),
                     onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return UserInfo(userinfo: data[index]);
-                        })),
+                        MaterialPageRoute(builder: (context) {
+                      return UserInfo(userinfo: data[index]);
+                    })),
                     leading: CircleAvatar(
                       radius: 20.0,
                       backgroundImage: data[index]["portrait"] == null
@@ -117,17 +114,17 @@ class MembersState extends State<Members> {
           child: Column(
         children: <Widget>[
           Container(
-            height: height*0.25,
+            height: height * 0.25,
             child: CircularPercentIndicator(
-                radius: height*0.2,
+                radius: height * 0.2,
                 lineWidth: 5.0,
-                animation:true,
+                animation: true,
                 percent: percent * .1,
-                center: new Text("${percent*10}%"),
+                center: new Text("${percent * 10}%"),
                 progressColor: Color(0xff7e1946)),
           ),
           Container(
-            height: height*0.6,
+            height: height * 0.6,
             child: inputWidget(data),
           )
         ],

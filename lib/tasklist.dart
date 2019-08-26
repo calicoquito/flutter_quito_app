@@ -9,13 +9,12 @@ import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
 import 'taskcreate.dart';
 import 'taskdata.dart';
-import 'dart:math';
 
 class TaskList extends StatefulWidget {
   final User user;
   final String projecturl;
   final String projectName;
-  const TaskList(this.user, this.projecturl,{this.projectName});
+  const TaskList(this.user, this.projecturl, {this.projectName});
   @override
   TaskListState createState() => TaskListState(user, projecturl);
 }
@@ -52,26 +51,20 @@ class TaskListState extends State<TaskList> {
   }
 
   Future getSWData() async {
-    data = await NetManager.getTasksData(projecturl);
+    data = await NetManager.getTasks(projecturl);
     print('********TASKS.DART GETSWDATA************');
     for (var task in data) {
-      var taskinfo = await NetManager.getTask(task['@id']);
-      switchlist.add(taskinfo["complete"] == true ? true : false);
-      // if (data[i]['additiional_files'] == null) {
-      //   data[i]['additiional_files'] = Random().nextInt(15);
-      // }
+      switchlist.add(task["data"]["complete"]);
     }
-    try{
-      if(this.mounted){
+    try {
+      if (this.mounted) {
         setState(() {
           data = data;
           switchlist = switchlist;
           isLoading = false;
         });
       }
-      
-    }
-    catch(err){
+    } catch (err) {
       print('*********TASKS.DART GETSWDATA*********');
       print(err);
     }
@@ -112,10 +105,22 @@ class TaskListState extends State<TaskList> {
                           }));
                         },
                         child: Card(
+                          clipBehavior: Clip.hardEdge,
                           elevation: 6.0,
                           child: Padding(
+                            padding: EdgeInsets.only(left: 0, right: 10.0),
+                            child: Container(
                               padding: EdgeInsets.only(
-                                  top: 10.0, left: 10.0, right: 10.0),
+                                left: 10.0,
+                              ),
+                              decoration: BoxDecoration(
+                                  border: Border(
+                                      left: BorderSide(
+                                color: switchlist[index] == true
+                                    ? Colors.green[700] 
+                                    : Colors.red,
+                                width: 6.0,
+                              ))),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
@@ -132,7 +137,7 @@ class TaskListState extends State<TaskList> {
                                               fontWeight: FontWeight.w800)),
                                       Container(
                                         width: 70,
-                                        child: RaisedButton(
+                                        child: FlatButton(
                                           onPressed: () {},
                                           color: Color(0xff7e1946),
                                           //Colors.primaries[Random().nextInt(15)],
@@ -142,7 +147,7 @@ class TaskListState extends State<TaskList> {
                                                 MainAxisAlignment.spaceBetween,
                                             children: <Widget>[
                                               Text(
-                                                "${Random().nextInt(4) + 1}",
+                                                "${data[index]["data"]["members"].where((member) => member != 'admin').toList().length}",
                                                 style: TextStyle(
                                                   fontSize: 16.0,
                                                   color: Colors.white,
@@ -179,27 +184,34 @@ class TaskListState extends State<TaskList> {
                                               fontWeight: FontWeight.w800),
                                         ),
                                         onPressed: () async {
-                                          Map task = await NetManager.getTask(
-                                              data[index]["@id"]);
-                                          if (task["complete"] == false) {
+                                          if (data[index]["data"]["complete"] ==
+                                              false) {
                                             await DialogManager.complete(
                                                 context,
                                                 "Are You Sure You Want mark this task as complete?");
                                             if (DialogManager.answer == true) {
-                                              task["complete"] =
-                                                  !task["complete"];
+                                              data[index]["data"]["complete"] =
+                                                  true;
                                               await NetManager.editTask(
-                                                  data[index]["@id"], task);
+                                                  data[index]["@id"],
+                                                  data[index]["data"]);
+                                            }
+                                            getSWData();
+                                            if (this.mounted) {
+                                              setState(() {
+                                                switchlist[index] = true;
+                                              });
                                             }
                                           } else {
-                                            await DialogManager.okay(
-                                                context,
+                                            await DialogManager.okay(context,
                                                 "This Task Is Already Finished");
                                           }
                                         }),
                                   ),
                                 ],
-                              )),
+                              ),
+                            ),
+                          ),
                         ),
                       )
                     ],
@@ -211,11 +223,15 @@ class TaskListState extends State<TaskList> {
                   caption: 'Edit',
                   color: Colors.blue,
                   icon: Icons.edit,
-                  onTap: () {
-                    Navigator.push(context,
+                  onTap: () async {
+                    await Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
                       return Taskedit(data[index]["@id"], user, projecturl);
-                    }));
+                    })).then((value)=> getSWData());
+                    await data[index]["data"]["complete"] ;
+                    setState(() {
+                      switchlist = switchlist;
+                    });
                   },
                 ),
               ],
@@ -236,6 +252,7 @@ class TaskListState extends State<TaskList> {
             );
           });
     }
+
     return Scaffold(
       appBar: AppBar(
         title: appBarTitle,
@@ -281,42 +298,36 @@ class TaskListState extends State<TaskList> {
               Icons.chat,
               color: Colors.white,
             ),
-            onPressed: (){
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context){
-                    return OpenChatScreen(
-                      title: user.channelsByName[widget.projectName]['display_name']?? 'Untitled',
-                      user: user,
-                      channelId: user.channelsByName[widget.projectName]['id'],
-                      project: user.projects[widget.projectName]
-                    );
-                  }
-                )
-              );
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                return OpenChatScreen(
+                    title: user.channelsByName[widget.projectName]
+                            ['display_name'] ??
+                        'Untitled',
+                    user: user,
+                    channelId: user.channelsByName[widget.projectName]['id'],
+                    project: user.projects[widget.projectName]);
+              }));
             },
           )
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: ()async{
-          await getSWData();
-        },
-        child: isLoading ?
-        Center(child: CircularProgressIndicator(),)
-        : Container(
-          child: data.isEmpty 
-            ?Center(
-              child:Text(
-                'No Tasks Yet',
-                style: TextStyle(
-                  fontSize: 16
-                ),
-              )
-            )
-            :lst(Icon(Icons.person), data) 
-        )
-      ),
+          onRefresh: () async {
+            await getSWData();
+          },
+          child: isLoading
+              ? Center(
+                  child: CircularProgressIndicator(),
+                )
+              : Container(
+                  child: data.isEmpty
+                      ? Center(
+                          child: Text(
+                          'No Tasks Yet',
+                          style: TextStyle(fontSize: 16),
+                        ))
+                      : lst(Icon(Icons.person), data))),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add, color: Colors.white),
         onPressed: () {

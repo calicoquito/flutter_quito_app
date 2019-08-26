@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:quito_1/helperclasses/usersmanager.dart';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
 import 'addmembers.dart';
 import 'helperclasses/jsons.dart';
-
 import 'userinfo.dart';
 
 class Task extends StatefulWidget {
@@ -20,7 +20,6 @@ class TaskState extends State<Task> {
   final User user;
   final String projecturl;
   TaskState(this.user, this.projecturl);
-  //TextEditingController controller = TextEditingController();
   String textString = "";
   bool isSwitched = false;
   List setval;
@@ -42,6 +41,7 @@ class TaskState extends State<Task> {
             padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
             child: TextField(
               autocorrect: true,
+
               ///controller: controller,
               decoration: InputDecoration(
                   labelText: "Title...",
@@ -60,6 +60,7 @@ class TaskState extends State<Task> {
           Padding(
             padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
             child: TextField(
+              maxLines: 2,
               autocorrect: true,
               //controller: controller,
               decoration: InputDecoration(
@@ -156,6 +157,30 @@ class TaskState extends State<Task> {
                               softWrap: true,
                               maxLines: 2,
                             ),
+                            //*****Doesnt Work *****/
+                            RaisedButton(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 10.0, horizontal: 20.0),
+                                onPressed: () {
+                                  DatePicker.showDateTimePicker(context,
+                                      showTitleActions: true,
+                                      onConfirm: (date) {
+                                    taskjson["extra"] = date.toString();
+                                  },
+                                      currentTime: DateTime.now(),
+                                      locale: LocaleType.en);
+                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Icon(
+                                      Icons.calendar_today,
+                                      color: Colors.white,
+                                    ),
+                                    Text('    Deadline',
+                                        style: TextStyle(color: Colors.white))
+                                  ],
+                                )),
                           ],
                         )));
               },

@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 import 'addmembers.dart';
 import 'helperclasses/imgmanager.dart';
-import 'helperclasses/jsons.dart';
 import 'helperclasses/netmanager.dart';
 import 'helperclasses/user.dart';
 import 'helperclasses/usersmanager.dart';
@@ -23,57 +23,56 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
   final String url;
   final User user;
   EventsInfoEditState({@required this.url, this.user});
-  String textString = "";
   bool isSwitched = false;
-  List setval = List();
   List<String> assignedMembers;
   List members = [];
   List displayMembers = List();
 
   File photo;
   Map data = Map();
-  File croppedFile;
-  bool uploaded;
 
   @override
   void initState() {
     super.initState();
-    //print(url);
     getdata();
   }
-
-  Map jsonstr = Jsons.projectsjson;
 
   Future<String> getdata() async {
     Map netdata = await NetManager.getProjectEditData(url);
     data = netdata["data"];
     var file = netdata["file"];
-    //assignedMembers = netdata["assignedMembers"];
-    setState(() {
-      photo = data['image'] == null ? null : file;
-    });
-    //print('${data["members"]}');
-
+    if (this.mounted) {
+      setState(() {
+        photo = data['image'] == null ? null : file;
+      });
+    }
     displayMembers = await UsersManager.getmatchingusers(data['members']);
-    print(data["members"]);
-    setState(() {
-      displayMembers = displayMembers;
-    });
+    if (this.mounted) {
+      setState(() {
+        displayMembers = displayMembers;
+      });
+    }
 
     return "Success!";
   }
 
   Future<String> uploadPatch() async {
-    var file = photo == null ? File('assets/images/default-image.jpg') : photo;
-    String imgstring =
-        croppedFile == null ? "" : base64Encode(croppedFile.readAsBytesSync());
-    jsonstr["image"]["data"] = data["image"] != null
-        ? base64Encode(file.readAsBytesSync())
-        : imgstring;
-    int respcode = await NetManager.editProject(url, jsonstr); // NEW
-    if (respcode != 204) {
-      //UploadQueue.addproject(url, jsonstr);
-    }
+    data["image"] = photo == null
+        ? {
+            "filename": "test.jpg",
+            "content-type": "image/jpeg",
+            "data": "",
+            "encoding": "base64"
+          }
+        : {
+            "filename": "test.jpg",
+            "content-type": "image/jpeg",
+            "data": base64Encode(photo.readAsBytesSync()),
+            "encoding": "base64"
+          };
+    print(data["image"]["data"]);
+    NetManager.editProject(url, data);
+
     return "Success!";
   }
 
@@ -95,18 +94,20 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
         contentPadding: EdgeInsets.all(14.0),
       ),
       onChanged: (string) {
+        if (this.mounted) {
         setState(() {
-          //print(jsonstr[txt]);
-          jsonstr[txt] = string;
-        });
+          data[txt] = string;
+        });}
       },
     );
     var switchtrue = Switch(
-        value: jsonstr[useswitch] == true ? true : false,
+        value: data[useswitch] == true ? true : false,
         onChanged: (value) {
+          if (this.mounted) {
           setState(() {
-            jsonstr[useswitch] = value;
+            data[useswitch] = value;
           });
+          }
         });
     return Container(
         padding: EdgeInsets.only(top: 4.0),
@@ -140,29 +141,32 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
 
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
           title: Text(
         'Edit Project',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
-      body: ListView(
-        padding: EdgeInsets.all(0),
-        children: <Widget>[
+      body: ListView(padding: EdgeInsets.all(0), children: <Widget>[
         Container(
           margin: EdgeInsets.all(0),
           color: Colors.black54,
-          //padding: EdgeInsets.all(20.0),
           child: FlatButton(
             padding: EdgeInsets.all(0),
             color: Colors.black54,
             child: photo == null
-                ? Icon(
-                    Icons.add_a_photo,
-                    size: 80.0,
-                    color: Colors.white,
+                ? Container(
+                    height: height * 0.4,
+                    margin: EdgeInsets.all(0),
+                    child: Icon(
+                      Icons.add_a_photo,
+                      size: 80.0,
+                      color: Colors.white,
+                    ),
                   )
                 : Container(
+                    height: height * 0.4,
                     margin: EdgeInsets.all(0),
                     decoration: BoxDecoration(
                       image: DecorationImage(
@@ -173,10 +177,12 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                   ),
             onPressed: () async {
               File newimg = await ImgManager.optionsDialogBox(context);
+
               if (newimg != null) {
+                if (this.mounted) {
                 setState(() {
                   photo = newimg;
-                });
+                });}
               }
             },
           ),
@@ -191,15 +197,17 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                       MaterialPageRoute(builder: (context) {
                     return AddMembersPage(user, datatype.project, url);
                   }));
+                  print(assignedMembers);
                   displayMembers =
                       await UsersManager.getmatchingusers(assignedMembers);
                   if (assignedMembers != null) {
-                    setState(() {
-                      jsonstr["members"] = assignedMembers == null
-                          ? null
-                          : jsonstr["members"].addAll(assignedMembers);
-                      displayMembers = displayMembers;
-                    });
+                    if (this.mounted) {
+                      setState(() {
+                        data["members"].addAll(assignedMembers.where(
+                            (member) => !data["members"].contains(member)));
+                        displayMembers = displayMembers;
+                      });
+                    }
                   }
                 },
                 child: Icon(
@@ -246,29 +254,74 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
             },
           ),
         ),
-        inputWidget(icon: Icon(Icons.title), txt: jsonstr.keys.elementAt(1)),
-        inputWidget(
-            icon: Icon(Icons.import_contacts), txt: jsonstr.keys.elementAt(2)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            RaisedButton(
+                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                onPressed: () {
+                  DatePicker.showDateTimePicker(context, showTitleActions: true,
+                      onConfirm: (date) {
+                    print(date.runtimeType);
+                    data["start"] = date.toString();
+                  }, currentTime: DateTime.now(), locale: LocaleType.en);
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.calendar_today,
+                      color: Colors.white,
+                    ),
+                    Text('    Start', style: TextStyle(color: Colors.white))
+                  ],
+                )),
+            SizedBox(
+              width: 10,
+            ),
+            RaisedButton(
+                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                onPressed: () {
+                  DatePicker.showDateTimePicker(context, showTitleActions: true,
+                      onConfirm: (date) {
+                    data["end"] = date.toString();
+                  }, currentTime: DateTime.now(), locale: LocaleType.en);
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.calendar_today,
+                      color: Colors.white,
+                    ),
+                    Text('    End', style: TextStyle(color: Colors.white))
+                  ],
+                )),
+          ],
+        ),
+        inputWidget(icon: Icon(Icons.title), txt: "title"),
+        inputWidget(icon: Icon(Icons.import_contacts), txt: "description"),
         inputWidget(
             icon: Icon(Icons.access_time),
-            txt: jsonstr.keys.elementAt(6),
-            useswitch: jsonstr.keys.elementAt(6)),
+            txt: "open_end",
+            useswitch: "open_end"),
         inputWidget(
             icon: Icon(Icons.timer_off),
-            txt: jsonstr.keys.elementAt(7),
-            useswitch: jsonstr.keys.elementAt(7)),
-        inputWidget(icon: Icon(Icons.contacts), txt: jsonstr.keys.elementAt(9)),
-        inputWidget(icon: Icon(Icons.email), txt: jsonstr.keys.elementAt(10)),
-        inputWidget(icon: Icon(Icons.phone), txt: jsonstr.keys.elementAt(11)),
-        inputWidget(
-            icon: Icon(Icons.add_location), txt: jsonstr.keys.elementAt(13)),
+            txt: "open_end",
+            useswitch: "open_end"),
+        inputWidget(icon: Icon(Icons.contacts), txt: "contact_name"),
+        inputWidget(icon: Icon(Icons.email), txt: "contact_email"),
+        inputWidget(icon: Icon(Icons.phone), txt: "contact_phone"),
+        inputWidget(icon: Icon(Icons.add_location), txt: "location"),
       ]),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           uploadPatch();
-          Navigator.pop(context, uploaded);
+          Navigator.pop(
+            context,
+          );
         },
-        tooltip: 'Create Project',
+        tooltip: 'Edit Project',
         child: Icon(Icons.check),
       ),
     );
