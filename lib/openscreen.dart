@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
-import 'dart:math';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:percent_indicator/percent_indicator.dart';
 import 'helperclasses/netmanager.dart';
 import 'openchatscreen.dart';
 import 'package:quito_1/helperclasses/netmanager.dart';
@@ -15,13 +13,11 @@ import 'package:provider/provider.dart';
 import 'helperclasses/user.dart';
 import 'sidedrawer.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'membersview.dart';
 import 'eventsinfo.dart';
 import 'eventsinfoedit.dart';
 import 'tasklist.dart';
 import 'dart:async';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 /*
   The OpenScreen Widget defines the screen a user see immediately after
   logging in to the application. 
@@ -309,14 +305,10 @@ class _OpenScreenState extends State<OpenScreen>
                                       Navigator.of(context).push(
                                           MaterialPageRoute(builder: (context) {
                                         return OpenChatScreen(
-                                            title: user.channelsByName[
-                                                    data[index]["id"]]
-                                                ['display_name'],
+                                            title: user.channelsByName[ data[index]['data']["id"]]['display_name'],
                                             user: user,
-                                            channelId: user.channelsByName[
-                                                data[index]['id']],
-                                            project: user
-                                                .projects[data[index]["id"]]);
+                                            channelId: user.channelsByName[data[index]['data']['id']]['id'],
+                                            project: user.projects[data[index]['data']["id"]]);
                                       }));
                                     },
                                   ),
@@ -365,7 +357,7 @@ class _OpenScreenState extends State<OpenScreen>
                                   return TaskList(
                                     user,
                                     data[index]["@id"],
-                                    projectName: data[index]['id'],
+                                    projectName: data[index]['data']['id'],
                                   );
                                 }));
                               },
@@ -514,16 +506,20 @@ class _OpenScreenState extends State<OpenScreen>
                   flushbarPosition: FlushbarPosition.TOP,
                   messageText: ListTile(
                     leading: CircleAvatar(
-                      child: projects[postData['channel_name']]['thumbnail'] ==
+                      child: projects[postData['channel_name']]["image"] ==
                               null
                           ? Icon(Icons.chat)
                           : null,
                       backgroundImage: projects[postData['channel_name']]
-                                  ['thumbnail'] ==
+                                  ["image"]["download"] ==
                               null
                           ? null
                           : NetworkImage(
-                              projects[postData['channel_name']]['thumbnail']),
+                              projects[postData['channel_name']]["image"]["download"],
+                              headers: {
+                                "Authorization": 'Bearer ${widget.user.ploneToken}'
+                              }
+                            ),
                     ),
                     title: Text(
                       user.members[post['user_id']],

@@ -16,6 +16,7 @@ class NetManager {
   static getProjects() async {
     String url = Urls.fullcontet;
     List data = List();
+    
     try {
       var resp = await http.get(url, headers: {
         "Accept": "application/json",
@@ -23,10 +24,15 @@ class NetManager {
       });
       var respBody = json.decode(resp.body);
       data = respBody["data"]["items"];
+      data.removeWhere((item) => item["@type"] != "project");
+      data.forEach((project){
+        if(project['data']['creators'].contains(user.username) || project['data']['members'].contains(user.username)){
+          projects.putIfAbsent(project['data']['id'], ()=> project['data']);
+        }
+      });
     } catch (err) {
       print(err);
     }
-    data.removeWhere((item) => item["@type"] != "project");
     return data;
   }
 
@@ -40,69 +46,69 @@ class NetManager {
         : projectlist[0]["data"]["items"];
   }
 
-  static Future<List> getProjectsData() async {
-    String url = Urls.projects;
-    List data = List();
-    List filterProjects = List();
-    Map projectsData = Map();
-    try {
-      var response = await http.get(url, headers: {
-        "Accept": "application/json",
-        "Authorization": 'Bearer ${user.ploneToken}'
-      });
+  // static Future<List> getProjectsData() async {
+  //   String url = Urls.projects;
+  //   List data = List();
+  //   List filterProjects = List();
+  //   Map projectsData = Map();
+  //   try {
+  //     var response = await http.get(url, headers: {
+  //       "Accept": "application/json",
+  //       "Authorization": 'Bearer ${user.ploneToken}'
+  //     });
 
-      var resBody = json.decode(response.body);
-      data = resBody["items"];
-      for (var i in data) {
-        i = i as Map;
-      }
+  //     var resBody = json.decode(response.body);
+  //     data = resBody["items"];
+  //     for (var i in data) {
+  //       i = i as Map;
+  //     }
 
-      Future getimglink(int i) async {
-        try {
-          var resp = await http.get(data[i]["@id"], headers: {
-            "Accept": "application/json",
-            "Authorization": 'Bearer ${user.ploneToken}'
-          });
-          var respBody = json.decode(resp.body);
-          if (respBody != null && respBody["image"] != null) {
-            String imageLink = respBody["image"]["scales"]["large"]["download"];
-            if (respBody['members'].contains(user.username)) {
-              data[i].putIfAbsent('id', () => respBody['id']);
-              data[i].putIfAbsent('thumbnail', () => imageLink);
-              filterProjects.add(data[i]);
-              projectsData.putIfAbsent(respBody['id'], () => data[i]);
-            }
-            return imageLink;
-          } else {
-            return null;
-          }
-        } catch (err) {
-          print('***********GET IMAGE LINK************');
-          print(err);
-        }
-      }
+  //     Future getimglink(int i) async {
+  //       try {
+  //         var resp = await http.get(data[i]["@id"], headers: {
+  //           "Accept": "application/json",
+  //           "Authorization": 'Bearer ${user.ploneToken}'
+  //         });
+  //         var respBody = json.decode(resp.body);
+  //         if (respBody != null && respBody["image"] != null) {
+  //           String imageLink = respBody["image"]["scales"]["large"]["download"];
+  //           if (respBody['members'].contains(user.username)) {
+  //             data[i].putIfAbsent('id', () => respBody['id']);
+  //             data[i].putIfAbsent('thumbnail', () => imageLink);
+  //             filterProjects.add(data[i]);
+  //             projectsData.putIfAbsent(respBody['id'], () => data[i]);
+  //           }
+  //           return imageLink;
+  //         } else {
+  //           return null;
+  //         }
+  //       } catch (err) {
+  //         print('***********GET IMAGE LINK************');
+  //         print(err);
+  //       }
+  //     }
 
-      for (var i = 0; i < data.length; i++) {
-        var imgs = await getimglink(i);
-        if (imgs != null) {
-          data[i] = data[i];
-          data[i]['image'] = imgs;
-        }
-      }
+  //     for (var i = 0; i < data.length; i++) {
+  //       var imgs = await getimglink(i);
+  //       if (imgs != null) {
+  //         data[i] = data[i];
+  //         data[i]['image'] = imgs;
+  //       }
+  //     }
 
-      // set data state and save json for online use when this try block works
-      data = filterProjects; //data;
-      Saver.setData(data: data, name: "projectsdata");
-      projects = projectsData;
+  //     // set data state and save json for online use when this try block works
+  //     data = filterProjects; //data;
+  //     Saver.setData(data: data, name: "projectsdata");
+  //     projects = projectsData;
 
-      return data;
-    } catch (err) {
-      print(err);
-      //data is empty so get saved data when try block fails
-      data = await Saver.getData(name: "projectsdata");
-    }
-    return data;
-  }
+  //     return data;
+  //   } catch (err) {
+  //     print(err);
+  //     //data is empty so get saved data when try block fails
+  //     data = await Saver.getData(name: "projectsdata");
+  //   }
+  //   return data;
+  // }
 
   // static Future getLargeImage(int index, String url) async {
   //   try {
@@ -326,6 +332,7 @@ class NetManager {
               headers: {'Authorization': 'Bearer ${user.mattermostToken}'});
         } catch (err) {
           print(err);
+          return Future<http.Response>.error(HttpException);
         }
       }).toList();
 
@@ -333,15 +340,20 @@ class NetManager {
         print('Error awaiting all responses');
       });
       responses.forEach((resp) {
-        final json = jsonDecode(resp.body);
-        final channelsList = json.where((channel) {
-          bool isMember = projects.keys.toList().contains(channel['name']);
-          return isMember;
-        }).toList();
-        channelsList.forEach((channel) {
-          channels.putIfAbsent(channel['id'], () => channel);
-          channelsByName.putIfAbsent(channel['name'], () => channel);
-        });
+        try{
+          final json = jsonDecode(resp.body);
+          final channelsList = json.where((channel) {
+            bool isMember = projects.keys.toList().contains(channel['name']);
+            return isMember;
+          }).toList();
+          channelsList.forEach((channel) {
+            channels.putIfAbsent(channel['id'], () => channel);
+            channelsByName.putIfAbsent(channel['name'], () => channel);
+          });
+        }
+        catch(err){
+          print(err);
+        }
       });
     } catch (err) {
       print(err);
