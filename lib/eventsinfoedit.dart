@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 import 'addmembers.dart';
 import 'helperclasses/imgmanager.dart';
@@ -244,6 +245,51 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                       )));
             },
           ),
+        ),
+                Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            RaisedButton(
+                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                onPressed: () {
+                  DatePicker.showDateTimePicker(context, showTitleActions: true,
+                      onConfirm: (date) {
+                        print(date.runtimeType);
+                    data["start"] = date.toString();
+                  }, currentTime: DateTime.now(), locale: LocaleType.en);
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.calendar_today,
+                      color: Colors.white,
+                    ),
+                    Text('    Start', style: TextStyle(color: Colors.white))
+                  ],
+                )),
+            SizedBox(
+              width: 10,
+            ),
+            RaisedButton(
+                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                onPressed: () {
+                  DatePicker.showDateTimePicker(context, showTitleActions: true,
+                      onConfirm: (date) {
+                    data["end"] = date.toString();
+                  }, currentTime: DateTime.now(), locale: LocaleType.en);
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.calendar_today,
+                      color: Colors.white,
+                    ),
+                    Text('    End', style: TextStyle(color: Colors.white))
+                  ],
+                )),
+          ],
         ),
         inputWidget(icon: Icon(Icons.title), txt: "title"),
         inputWidget(icon: Icon(Icons.import_contacts), txt: "description"),

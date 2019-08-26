@@ -138,6 +138,12 @@ class _OpenScreenState extends State<OpenScreen>
           padding: EdgeInsets.only(bottom: height * 0.15),
           itemCount: data == null ? 0 : data.length,
           itemBuilder: (BuildContext context, int index) {
+            String start = data[index]["data"]["start"].isEmpty
+                ? "None"
+                : data[index]["data"]["start"].substring(0, 10);
+            String end = data[index]["data"]["end"].isEmpty
+                ? "None"
+                : data[index]["data"]["end"].substring(0, 10);
             int nummembers = data[index]["data"]["members"] == null
                 ? 0
                 : data[index]["data"]["members"]
@@ -197,8 +203,11 @@ class _OpenScreenState extends State<OpenScreen>
                                     Padding(
                                       padding: EdgeInsets.only(left: 10),
                                       child: Text(
-                                        "start: ${Random().nextInt(11) + 1}:00 AM\n end: ${Random().nextInt(11) + 1}:00 PM",
-                                        style: TextStyle(color: Colors.white),
+                                        "start: $start\n end: $end",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                     Row(
@@ -246,8 +255,7 @@ class _OpenScreenState extends State<OpenScreen>
                                                     MaterialPageRoute(
                                                         builder: (context) {
                                               return EventsInfoEdit(
-                                                  url: data[index]
-                                                      ["@id"],
+                                                  url: data[index]["@id"],
                                                   user: user);
                                             }));
                                             if (uploaded == true) {
@@ -260,7 +268,7 @@ class _OpenScreenState extends State<OpenScreen>
                                   ],
                                 )),
                             FlatButton(
-                              color: Colors.transparent,
+                                color: Colors.transparent,
                                 onPressed: () {
                                   Navigator.push(context,
                                       MaterialPageRoute(builder: (context) {
@@ -282,8 +290,7 @@ class _OpenScreenState extends State<OpenScreen>
                                     padding: EdgeInsets.only(
                                       left: 10.0,
                                     ),
-                                    child: Text(
-                                        "${data[index]["title"]} ",
+                                    child: Text("${data[index]["title"]} ",
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
