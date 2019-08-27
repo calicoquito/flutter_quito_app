@@ -511,7 +511,7 @@ class _OpenScreenState extends State<OpenScreen>
                           ? Icon(Icons.chat)
                           : null,
                       backgroundImage: projects[postData['channel_name']]
-                                  ["image"]["download"] ==
+                                  ["image"] ==
                               null
                           ? null
                           : NetworkImage(
