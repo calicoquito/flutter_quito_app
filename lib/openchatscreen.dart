@@ -206,7 +206,7 @@ class _OpenChatScreenState extends State<OpenChatScreen>{
             CircleAvatar(
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               child: widget.project["image"] ==null ? Icon(Icons.person, color: Theme.of(context).primaryColor,):null,
-              backgroundImage: widget.project["image"]["download"] !=null ? 
+              backgroundImage: widget.project["image"] !=null ? 
                 NetworkImage(
                   widget.project["image"]["download"],
                   headers: {

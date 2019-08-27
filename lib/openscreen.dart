@@ -305,7 +305,7 @@ class _OpenScreenState extends State<OpenScreen>
                                       Navigator.of(context).push(
                                           MaterialPageRoute(builder: (context) {
                                         return OpenChatScreen(
-                                            title: user.channelsByName[ data[index]['data']["id"]]['display_name'],
+                                            title: user.channelsByName[data[index]['data']["id"]]['display_name'],
                                             user: user,
                                             channelId: user.channelsByName[data[index]['data']['id']]['id'],
                                             project: user.projects[data[index]['data']["id"]]);
@@ -511,7 +511,7 @@ class _OpenScreenState extends State<OpenScreen>
                           ? Icon(Icons.chat)
                           : null,
                       backgroundImage: projects[postData['channel_name']]
-                                  ["image"]["download"] ==
+                                  ["image"] ==
                               null
                           ? null
                           : NetworkImage(
