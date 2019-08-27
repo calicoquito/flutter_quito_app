@@ -69,7 +69,6 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
             "data": base64Encode(photo.readAsBytesSync()),
             "encoding": "base64"
           };
-    print(data["image"]["data"]);
     NetManager.editProject(url, data);
 
     return "Success!";
@@ -94,18 +93,19 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
       ),
       onChanged: (string) {
         if (this.mounted) {
-        setState(() {
-          data[txt] = string;
-        });}
+          setState(() {
+            data[txt] = string;
+          });
+        }
       },
     );
     var switchtrue = Switch(
         value: data[useswitch] == true ? true : false,
         onChanged: (value) {
           if (this.mounted) {
-          setState(() {
-            data[useswitch] = value;
-          });
+            setState(() {
+              data[useswitch] = value;
+            });
           }
         });
     return Container(
@@ -179,9 +179,10 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
 
               if (newimg != null) {
                 if (this.mounted) {
-                setState(() {
-                  photo = newimg;
-                });}
+                  setState(() {
+                    photo = newimg;
+                  });
+                }
               }
             },
           ),
@@ -196,7 +197,6 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                       MaterialPageRoute(builder: (context) {
                     return AddMembersPage(user, datatype.project, url);
                   }));
-                  print(assignedMembers);
                   displayMembers =
                       await UsersManager.getmatchingusers(assignedMembers);
                   if (assignedMembers != null) {
@@ -261,7 +261,6 @@ class EventsInfoEditState extends State<EventsInfoEdit> {
                 onPressed: () {
                   DatePicker.showDateTimePicker(context, showTitleActions: true,
                       onConfirm: (date) {
-                    print(date.runtimeType);
                     data["start"] = date.toString();
                   }, currentTime: DateTime.now(), locale: LocaleType.en);
                 },

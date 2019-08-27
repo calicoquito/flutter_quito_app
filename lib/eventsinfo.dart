@@ -66,18 +66,21 @@ class EventsInfoState extends State<EventsInfo> {
         contentPadding: EdgeInsets.all(14.0),
       ),
       onChanged: (string) {
-        setState(() {
-          jsonstr[txt] = string;
-          print(jsonstr);
-        });
+        if (this.mounted) {
+          setState(() {
+            jsonstr[txt] = string;
+          });
+        }
       },
     );
     var switchtrue = Switch(
         value: jsonstr[useswitch] == true ? true : false,
         onChanged: (value) {
-          setState(() {
-            jsonstr[useswitch] = value;
-          });
+          if (this.mounted) {
+            setState(() {
+              jsonstr[useswitch] = value;
+            });
+          }
         });
     return Container(
         padding: EdgeInsets.only(top: 4.0),
@@ -144,9 +147,11 @@ class EventsInfoState extends State<EventsInfo> {
                   ),
             onPressed: () async {
               File newimg = await ImgManager.optionsDialogBox(context);
-              setState(() {
-                photo = newimg;
-              });
+              if (this.mounted) {
+                setState(() {
+                  photo = newimg;
+                });
+              }
             },
           ),
         ),
@@ -160,17 +165,17 @@ class EventsInfoState extends State<EventsInfo> {
                       MaterialPageRoute(builder: (context) {
                     return AddMembersPage(user, datatype.project, url);
                   }));
-                  print(assignedMembers);
                   displayMembers =
                       await UsersManager.getmatchingusers(assignedMembers);
 
                   if (assignedMembers != null) {
-                    setState(() {
-                      displayMembers = displayMembers;
-                      
-                      jsonstr["members"].addAll(assignedMembers);
-                      print(jsonstr["members"]);
-                    });
+                    if (this.mounted) {
+                      setState(() {
+                        displayMembers = displayMembers;
+
+                        jsonstr["members"].addAll(assignedMembers);
+                      });
+                    }
                   }
                 },
                 child: Icon(
@@ -246,7 +251,6 @@ class EventsInfoState extends State<EventsInfo> {
                 onPressed: () {
                   DatePicker.showDateTimePicker(context, showTitleActions: true,
                       onConfirm: (date) {
-                    print(date.toString());
                     jsonstr["end"] = date.toString();
                   }, currentTime: DateTime.now(), locale: LocaleType.en);
                 },

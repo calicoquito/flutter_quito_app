@@ -37,7 +37,7 @@ dependencies:
   #  ***Message to future developers***
   # These are pinned to the version available when making the app, it might 
   # be usefull to update to newer versions in the future but that might create
-  # compatibility issues
+  # compatibility issues, also note the flutter version used is 1.7.8
 
     
 dev_dependencies:

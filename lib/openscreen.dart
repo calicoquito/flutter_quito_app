@@ -200,6 +200,7 @@ class _OpenScreenState extends State<OpenScreen>
                                       padding: EdgeInsets.only(left: 10),
                                       child: Text(
                                         "start: $start\n end: $end",
+                                        textAlign: TextAlign.left,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
                                           color: Colors.white,

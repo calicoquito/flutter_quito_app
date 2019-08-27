@@ -8,7 +8,6 @@ class Saver {
   static Future<dynamic> getData({name: String}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //print(prefs.getString('stringdata'));
     var data = prefs.getString(name) == null
         ? null
         : json.decode(prefs.getString(name));

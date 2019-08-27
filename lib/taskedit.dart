@@ -11,7 +11,7 @@ class Taskedit extends StatefulWidget {
   final User user;
   final String taskurl;
   final String projecturl;
-  Taskedit( this.taskurl, this.user, this.projecturl);
+  Taskedit(this.taskurl, this.user, this.projecturl);
   @override
   TaskeditState createState() => TaskeditState(taskurl, user, projecturl);
 }
@@ -45,9 +45,7 @@ class TaskeditState extends State<Taskedit> {
       assignedMembers = data["members"].isEmpty ? null : data["members"];
     }
     title = data["title"] == null ? "" : "${data["title"]}";
-    description = data["description"] == null
-        ? ""
-        : " ${data["description"]}";
+    description = data["description"] == null ? "" : " ${data["description"]}";
     details = data["task_detail"]["data"] == null
         ? ""
         : "${data["task_detail"]["data"]}";
@@ -63,9 +61,7 @@ class TaskeditState extends State<Taskedit> {
       displayMembers = displayMembers;
     });
 
-
     displayMembers = await UsersManager.getmatchingusers(data['members']);
-    print(data["members"]);
     setState(() {
       displayMembers = displayMembers;
     });
@@ -77,7 +73,7 @@ class TaskeditState extends State<Taskedit> {
     NetManager.editTask(taskurl, data);
   }
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -157,7 +153,6 @@ class TaskeditState extends State<Taskedit> {
                         MaterialPageRoute(builder: (context) {
                       return AddMembersPage(user, datatype.task, projecturl);
                     }));
-                    print(assignedMembers);
                     displayMembers =
                         await UsersManager.getmatchingusers(assignedMembers);
                     if (displayMembers != null) {
@@ -218,7 +213,7 @@ class TaskeditState extends State<Taskedit> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(
-          Icons.arrow_upward,
+          Icons.check,
           color: Colors.white,
         ),
         onPressed: () {

@@ -84,6 +84,7 @@ class TaskListState extends State<TaskList> {
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
     Widget lst(Icon ico, List data) {
       return ListView.builder(
           itemCount: data == null ? 0 : data.length,
@@ -113,14 +114,14 @@ class TaskListState extends State<TaskList> {
                               padding: EdgeInsets.only(
                                 left: 10.0,
                               ),
-                              decoration: BoxDecoration(
-                                  border: Border(
-                                      left: BorderSide(
-                                color: switchlist[index] == true
-                                    ? Colors.green[700] 
-                                    : Colors.red,
-                                width: 6.0,
-                              ))),
+                              // decoration: BoxDecoration(
+                              //     border: Border(
+                              //         left: BorderSide(
+                              //   color: switchlist[index] == true
+                              //       ? Colors.green[700]
+                              //       : Colors.red,
+                              //   width: 6.0,
+                              // ))),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
@@ -128,19 +129,22 @@ class TaskListState extends State<TaskList> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: <Widget>[
-                                      Text(" ${data[index]["title"]}",
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              fontSize: 18.0,
-                                              color: Colors.grey[800],
-                                              fontWeight: FontWeight.w800)),
+                                      Container(
+                                        width: width * 0.5,
+                                        child: Text(" ${data[index]["title"]}",
+                                            softWrap: true,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: 18.0,
+                                                color: Colors.grey[800],
+                                                fontWeight: FontWeight.w800)),
+                                      ),
                                       Container(
                                         width: 70,
                                         child: FlatButton(
                                           onPressed: () {},
-                                          color: Color(0xff7e1946),
-                                          //Colors.primaries[Random().nextInt(15)],
+                                          color: Theme.of(context).primaryColor,
                                           shape: StadiumBorder(),
                                           child: Row(
                                             mainAxisAlignment:
@@ -176,13 +180,22 @@ class TaskListState extends State<TaskList> {
                                   Align(
                                     alignment: Alignment.bottomRight,
                                     child: FlatButton(
-                                        child: Text(
-                                          "Done",
-                                          style: TextStyle(
-                                              color: Colors.blue[900],
-                                              fontSize: 16.0,
-                                              fontWeight: FontWeight.w800),
-                                        ),
+                                        child: data[index]["data"]
+                                                    ["complete"] ==
+                                                false
+                                            ? Text(
+                                                "Done",
+                                                style: TextStyle(
+                                                    color: Colors.blue[900],
+                                                    fontSize: 16.0,
+                                                    fontWeight:
+                                                        FontWeight.w800),
+                                              )
+                                            : Icon(
+                                                Icons.check,
+                                                color: Colors.green,
+                                                size: 35.0,
+                                              ),
                                         onPressed: () async {
                                           if (data[index]["data"]["complete"] ==
                                               false) {
@@ -227,8 +240,8 @@ class TaskListState extends State<TaskList> {
                     await Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
                       return Taskedit(data[index]["@id"], user, projecturl);
-                    })).then((value)=> getSWData());
-                    await data[index]["data"]["complete"] ;
+                    })).then((value) => getSWData());
+                    await data[index]["data"]["complete"];
                     setState(() {
                       switchlist = switchlist;
                     });
@@ -301,7 +314,9 @@ class TaskListState extends State<TaskList> {
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(builder: (context) {
                 return OpenChatScreen(
-                    title: user.channelsByName[widget.projectName]['display_name'] ?? 'Untitled',
+                    title: user.channelsByName[widget.projectName]
+                            ['display_name'] ??
+                        'Untitled',
                     user: user,
                     channelId: user.channelsByName[widget.projectName]['id'],
                     project: user.projects[widget.projectName]);

@@ -17,71 +17,77 @@ import 'helperclasses/user.dart';
 
 // All print statements are temporary and for debugging purposes
 
-class OpenChatScreen extends StatefulWidget{
+class OpenChatScreen extends StatefulWidget {
   final String title;
   final String channelId;
   final User user;
   final project;
 
   @override
-  OpenChatScreen({Key key, this.title, @required this.channelId, this.user, this.project}) : super(key:key);
+  OpenChatScreen(
+      {Key key, this.title, @required this.channelId, this.user, this.project})
+      : super(key: key);
 
   @override
-  _OpenChatScreenState createState() => _OpenChatScreenState(); 
+  _OpenChatScreenState createState() => _OpenChatScreenState();
 }
 
-class _OpenChatScreenState extends State<OpenChatScreen>{
+class _OpenChatScreenState extends State<OpenChatScreen> {
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
   TextEditingController controller = TextEditingController();
   ScrollController scrollController = ScrollController();
   final refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
   WebSocket socket;
-  String message; //used to store the message after the controller is cleared so it can still be used
-  
+  String
+      message; //used to store the message after the controller is cleared so it can still be used
+
   bool isLoading = true;
 
-  List<Widget> messages =[
-  ];
+  List<Widget> messages = [];
 
-  Future<void> connect() async{
-    try{
+  Future<void> connect() async {
+    try {
       socket = await WebSocket.connect(
-        'ws://mattermost.alteroo.com/api/v4/websocket',
-        headers: {'Authorization': 'Bearer ${widget.user.mattermostToken}'}
-      );
+          'ws://mattermost.alteroo.com/api/v4/websocket',
+          headers: {'Authorization': 'Bearer ${widget.user.mattermostToken}'});
       int seq = -1; // used to keep track of each data packet
-      socket.listen((data){
+      socket.listen((data) {
         final jsonData = jsonDecode(data);
         int newSeq = jsonData['seq'];
-        if(seq<newSeq){
-          if (jsonData['event']=='posted'){
+        if (seq < newSeq) {
+          if (jsonData['event'] == 'posted') {
             final postData = jsonData['data'];
             final post = jsonDecode(postData['post']);
-            
-            if(post['user_id']!=widget.user.userId && post['channel_id']==widget.channelId){
+
+            if (post['user_id'] != widget.user.userId &&
+                post['channel_id'] == widget.channelId) {
               setState(() {
-                messages.add(Message(message: post['message'], username: widget.user.members[post['user_id']],type: 'incoming',)); 
+                messages.add(Message(
+                  message: post['message'],
+                  username: widget.user.members[post['user_id']],
+                  type: 'incoming',
+                ));
               });
-              Timer(
-                Duration(milliseconds: 100),
-                (){
-                  scrollController.jumpTo(scrollController.position.maxScrollExtent);
-                }
-              );
+              Timer(Duration(milliseconds: 100), () {
+                scrollController
+                    .jumpTo(scrollController.position.maxScrollExtent);
+              });
             }
           }
-        }
-        else{
+        } else {
           seq = newSeq;
         }
-      },
-      onError: (err){
+      }, onError: (err) {
         print(err);
-      },
-      onDone: (){
+      }, onDone: () {
         print('done');
       });
-    }
-    catch(err){
+    } catch (err) {
       Flushbar(
         flushbarPosition: FlushbarPosition.BOTTOM,
         message: 'No Internet',
@@ -90,37 +96,45 @@ class _OpenChatScreenState extends State<OpenChatScreen>{
     }
   }
 
-  Future<void> getMessages() async{
+  Future<void> getMessages() async {
     try {
       final resp = await http.get(
-        'http://mattermost.alteroo.com/api/v4/channels/${widget.channelId}/posts?page=0&per_page=30',
-        headers: {'Authorization':'Bearer ${widget.user.mattermostToken}', 'Accept':'application/json'}
-      );
+          'http://mattermost.alteroo.com/api/v4/channels/${widget.channelId}/posts?page=0&per_page=30',
+          headers: {
+            'Authorization': 'Bearer ${widget.user.mattermostToken}',
+            'Accept': 'application/json'
+          });
       final jsonData = jsonDecode(resp.body);
-      
+
       final order = jsonData['order'].reversed.toList();
       final posts = jsonData['posts'];
-     
-      order.forEach((postId){
+
+      order.forEach((postId) {
         final type = posts[postId]['type'];
         final message = posts[postId]['message'];
         final senderId = posts[postId]['user_id'];
         final channelId = posts[postId]['channel_id'];
-        if(channelId==widget.channelId && type ==""){
-          if(senderId==widget.user.userId){
+        if (channelId == widget.channelId && type == "") {
+          if (senderId == widget.user.userId) {
             setState(() {
-              messages.add(Message(message: message, username: "Me", type: 'outgoing',));
+              messages.add(Message(
+                message: message,
+                username: "Me",
+                type: 'outgoing',
+              ));
+            });
+          } else {
+            setState(() {
+              messages.add(Message(
+                message: message,
+                username: widget.user.members[senderId],
+                type: 'incoming',
+              ));
             });
           }
-          else{
-            setState(() {
-              messages.add(Message(message: message, username: widget.user.members[senderId], type: 'incoming',));
-            });
-          }  
         }
       });
-    }
-    catch(err){
+    } catch (err) {
       Flushbar(
         flushbarPosition: FlushbarPosition.BOTTOM,
         message: 'No Internet',
@@ -129,8 +143,8 @@ class _OpenChatScreenState extends State<OpenChatScreen>{
     }
   }
 
-  void closeConnection() async{
-    if(socket!=null){
+  void closeConnection() async {
+    if (socket != null) {
       await socket.close();
     }
   }
@@ -138,7 +152,7 @@ class _OpenChatScreenState extends State<OpenChatScreen>{
   void handleSend() async {
     final User user = Provider.of<User>(context);
     final connection = await Connectivity().checkConnectivity();
-    if(connection == ConnectivityResult.none){
+    if (connection == ConnectivityResult.none) {
       Flushbar(
         flushbarPosition: FlushbarPosition.BOTTOM,
         message: "No Internet Connection",
@@ -146,35 +160,34 @@ class _OpenChatScreenState extends State<OpenChatScreen>{
       )..show(context);
       return;
     }
-    if(controller.text.isNotEmpty){
+    if (controller.text.isNotEmpty) {
       setState(() {
-        messages.add(Message(message: controller.text.trim(), username: "Me", type: 'outgoing',));
+        messages.add(Message(
+          message: controller.text.trim(),
+          username: "Me",
+          type: 'outgoing',
+        ));
         message = controller.text.trim();
         controller.clear();
       });
-      http.post(
-        'http://mattermost.alteroo.com/api/v4/posts',
-        headers: {'Authorization':'Bearer ${user.mattermostToken}'},
-        body: jsonEncode({'message':message, 'channel_id':'${widget.channelId}'})
-      );
-      Timer(
-        Duration(milliseconds: 100),
-        (){
-          scrollController.animateTo(scrollController.position.maxScrollExtent, duration: Duration(seconds: 1), curve: Curves.ease);
-        }
-      );
+      http.post('http://mattermost.alteroo.com/api/v4/posts',
+          headers: {'Authorization': 'Bearer ${user.mattermostToken}'},
+          body: jsonEncode(
+              {'message': message, 'channel_id': '${widget.channelId}'}));
+      Timer(Duration(milliseconds: 100), () {
+        scrollController.animateTo(scrollController.position.maxScrollExtent,
+            duration: Duration(seconds: 1), curve: Curves.ease);
+      });
     }
   }
 
-  void initialize() async{
-    try{
+  void initialize() async {
+    try {
       await getMessages();
       await connect();
-    }
-    catch(err){
+    } catch (err) {
       print(err);
-    }
-    finally{
+    } finally {
       setState(() {
         isLoading = false;
       });
@@ -182,19 +195,20 @@ class _OpenChatScreenState extends State<OpenChatScreen>{
   }
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     initialize();
   }
 
   @override
-  void dispose(){
+  void dispose() {
     closeConnection();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.grey[100],
       //Appbar at the top of the page
@@ -205,31 +219,39 @@ class _OpenChatScreenState extends State<OpenChatScreen>{
           children: <Widget>[
             CircleAvatar(
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              child: widget.project["image"] ==null ? Icon(Icons.person, color: Theme.of(context).primaryColor,):null,
-              backgroundImage: widget.project["image"] !=null ? 
-                NetworkImage(
-                  widget.project["image"]["download"],
-                  headers: {
-                    "Authorization": 'Bearer ${widget.user.ploneToken}'
-                  }
-                )
-                :null,
+              child: widget.project["image"] == null
+                  ? Icon(
+                      Icons.image,
+                      color: Colors.grey[700],
+                    )
+                  : null,
+              backgroundImage: widget.project["image"] != null
+                  ? NetworkImage(widget.project["image"]["download"], headers: {
+                      "Authorization": 'Bearer ${widget.user.ploneToken}'
+                    })
+                  : null,
             ),
-            SizedBox(width: 5.0,),
-            Text(
-              widget.title,
-              overflow: TextOverflow.fade,
+            SizedBox(
+              width: 5.0,
+            ),
+            Container(
+              width: width * 0.5,
+              child: Text(
+                widget.title,
+                overflow: TextOverflow.fade,
+              ),
             )
           ],
         ),
         actions: <Widget>[
           PopupMenuButton(
-            onSelected: (index){
-              if(index==1){
-                Navigator.of(context).pushNamedAndRemoveUntil('/', ModalRoute.withName('/'));
+            onSelected: (index) {
+              if (index == 1) {
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/', ModalRoute.withName('/'));
               }
             },
-            itemBuilder: (context){
+            itemBuilder: (context) {
               return <PopupMenuItem>[
                 PopupMenuItem(
                   child: Text('Chat Settings'),
@@ -247,7 +269,7 @@ class _OpenChatScreenState extends State<OpenChatScreen>{
 
       //Contents of the page
       body: RefreshIndicator(
-        onRefresh: () async{
+        onRefresh: () async {
           messages.clear();
           return getMessages();
         },
@@ -255,17 +277,19 @@ class _OpenChatScreenState extends State<OpenChatScreen>{
           children: <Widget>[
             //This is the area where the chat messages will be displayed
             Flexible(
-              child: isLoading ? Center(child: CircularProgressIndicator(),):
-              messages.length==0 
-              ?Center(child: Text('No messages'))
-              :ListView.builder(
-                controller: scrollController,
-                itemCount: messages.length,
-                itemBuilder: (context, index){
-                  return messages[index];
-                },
-              )
-            ),
+                child: isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : messages.length == 0
+                        ? Center(child: Text('No messages'))
+                        : ListView.builder(
+                            controller: scrollController,
+                            itemCount: messages.length,
+                            itemBuilder: (context, index) {
+                              return messages[index];
+                            },
+                          )),
 
             //This is the bar at the bottom of the page where text is written to be sent
             Container(
@@ -274,7 +298,7 @@ class _OpenChatScreenState extends State<OpenChatScreen>{
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Expanded( 
+                  Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TextField(
@@ -283,22 +307,23 @@ class _OpenChatScreenState extends State<OpenChatScreen>{
                         maxLines: null,
                         autocorrect: true,
                         decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(horizontal:10),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
-                          filled: true,
-                          fillColor: Color(0xffffffff),
-                          hasFloatingPlaceholder: false,
-                          labelText: "Type..."
-                        ),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 10),
+                            border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(15.0))),
+                            filled: true,
+                            fillColor: Color(0xffffffff),
+                            hasFloatingPlaceholder: false,
+                            labelText: "Type..."),
                       ),
                     ),
                   ),
                   //This button sends the message
                   IconButton(
-                    color: Theme.of(context).primaryColor,
-                    icon: Icon(Icons.send),
-                    onPressed: handleSend
-                  )
+                      color: Theme.of(context).primaryColor,
+                      icon: Icon(Icons.send),
+                      onPressed: handleSend)
                 ],
               ),
             ),

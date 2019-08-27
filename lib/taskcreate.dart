@@ -157,30 +157,6 @@ class TaskState extends State<Task> {
                               softWrap: true,
                               maxLines: 2,
                             ),
-                            //*****Doesnt Work *****/
-                            RaisedButton(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 10.0, horizontal: 20.0),
-                                onPressed: () {
-                                  DatePicker.showDateTimePicker(context,
-                                      showTitleActions: true,
-                                      onConfirm: (date) {
-                                    taskjson["extra"] = date.toString();
-                                  },
-                                      currentTime: DateTime.now(),
-                                      locale: LocaleType.en);
-                                },
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Icon(
-                                      Icons.calendar_today,
-                                      color: Colors.white,
-                                    ),
-                                    Text('    Deadline',
-                                        style: TextStyle(color: Colors.white))
-                                  ],
-                                )),
                           ],
                         )));
               },
@@ -190,7 +166,7 @@ class TaskState extends State<Task> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(
-          Icons.arrow_upward,
+          Icons.check,
           color: Colors.white,
         ),
         onPressed: () {

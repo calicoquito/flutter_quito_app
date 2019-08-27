@@ -47,7 +47,6 @@ class RouterState extends State<Router> {
   Widget build(BuildContext context) {
     final User user = Provider.of<User>(context);
     if (isSignedIn == true) {
-      UploadQueue.uploadAll();
       NetManager.user = user;
       return OpenScreen(
         user: user,

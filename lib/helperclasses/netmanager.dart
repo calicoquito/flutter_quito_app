@@ -137,7 +137,6 @@ class NetManager {
     });
     print(resp.statusCode);
     data = json.decode(resp.body);
-    print(data["mambers"]);
     if (data["members"] != null) {
       assignedMembers = data["members"].isEmpty ? null : data["members"];
     }
@@ -230,7 +229,6 @@ class NetManager {
         },
         body: jsonEncode(json));
     print(response.statusCode);
-    print(response.body);
     if (response.statusCode != 204) {}
     return response.statusCode;
   }
