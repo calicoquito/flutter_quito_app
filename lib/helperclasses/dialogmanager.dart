@@ -30,7 +30,7 @@ class DialogManager {
               },
             ),
             FlatButton(
-              child: Text("Cancle",
+              child: Text("Cancel",
                   style: TextStyle(
                       fontSize: 18.0,
                       color: Colors.blue[800],
@@ -69,7 +69,7 @@ class DialogManager {
               },
             ),
             FlatButton(
-              child: Text("Cancle",
+              child: Text("Cancel",
                   style: TextStyle(
                       fontSize: 18.0,
                       color: Colors.blue[800],

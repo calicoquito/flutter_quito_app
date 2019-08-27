@@ -110,8 +110,8 @@ class MembersState extends State<Members> {
         'Project Details',
         style: TextStyle(fontFamily: 'Nunito', fontSize: 20.0),
       )),
-      body: Container(
-          child: Column(
+      body: ListView(
+          //child: Column(
         children: <Widget>[
           Container(
             height: height * 0.25,
@@ -121,7 +121,7 @@ class MembersState extends State<Members> {
                 animation: true,
                 percent: percent * .1,
                 center: new Text("${percent * 10}%"),
-                progressColor: Color(0xff7e1946)),
+                progressColor: Theme.of(context).primaryColor),
           ),
           Container(
             height: height * 0.6,
@@ -131,7 +131,7 @@ class MembersState extends State<Members> {
       )
           //child: inputWidget(data)
 
-          ),
+         // ),
     );
   }
 }

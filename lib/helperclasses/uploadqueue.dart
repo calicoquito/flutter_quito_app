@@ -14,6 +14,9 @@ enum uploadtype {
   delete,
 }
 
+
+// ***** this was experimental code feel free to delete
+
 class UploadQueue {
   static User user;
 
