@@ -287,13 +287,16 @@ class _OpenScreenState extends State<OpenScreen>
                                     padding: EdgeInsets.only(
                                       left: 10.0,
                                     ),
-                                    child: Text("${data[index]["title"]} ",
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontSize: 20.0,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w500)),
+                                    child: Container(
+                                      width: width * 0.7,
+                                      child: Text("${data[index]["title"]} ",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                              fontSize: 20.0,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w500)),
+                                    ),
                                   ),
                                   IconButton(
                                     icon: Icon(Icons.chat),
@@ -306,10 +309,15 @@ class _OpenScreenState extends State<OpenScreen>
                                       Navigator.of(context).push(
                                           MaterialPageRoute(builder: (context) {
                                         return OpenChatScreen(
-                                            title: user.channelsByName[data[index]['data']["id"]]['display_name'],
+                                            title: user.channelsByName[
+                                                    data[index]['data']["id"]]
+                                                ['display_name'],
                                             user: user,
-                                            channelId: user.channelsByName[data[index]['data']['id']]['id'],
-                                            project: user.projects[data[index]['data']["id"]]);
+                                            channelId: user.channelsByName[
+                                                    data[index]['data']['id']]
+                                                ['id'],
+                                            project: user.projects[data[index]
+                                                ['data']["id"]]);
                                       }));
                                     },
                                   ),
@@ -507,20 +515,19 @@ class _OpenScreenState extends State<OpenScreen>
                   flushbarPosition: FlushbarPosition.TOP,
                   messageText: ListTile(
                     leading: CircleAvatar(
-                      child: projects[postData['channel_name']]["image"] ==
-                              null
+                      child: projects[postData['channel_name']]["image"] == null
                           ? Icon(Icons.chat)
                           : null,
-                      backgroundImage: projects[postData['channel_name']]
-                                  ["image"] ==
-                              null
-                          ? null
-                          : NetworkImage(
-                              projects[postData['channel_name']]["image"]["download"],
-                              headers: {
-                                "Authorization": 'Bearer ${widget.user.ploneToken}'
-                              }
-                            ),
+                      backgroundImage:
+                          projects[postData['channel_name']]["image"] == null
+                              ? null
+                              : NetworkImage(
+                                  projects[postData['channel_name']]["image"]
+                                      ["download"],
+                                  headers: {
+                                      "Authorization":
+                                          'Bearer ${widget.user.ploneToken}'
+                                    }),
                     ),
                     title: Text(
                       user.members[post['user_id']],
